@@ -62,9 +62,8 @@ public class Gripper extends SubsystemBase {
     beambreak =
         switch (Constants.currentMode) {
           case REAL -> new LaserCanIOReal(Constants.CANConstants.GRIPPER_LASERCAN);
-          case SIM -> LaserCanIO.beambreakSim(
-              () -> SimulationHelper.getInstance().isOuttakeLoaded(),
-              GripperConstants.BEAMBREAK_THRESHOLD);
+          case SIM -> SimulationHelper.getInstance()
+              .getGripperLaserCan(GripperConstants.BEAMBREAK_THRESHOLD);
           case REPLAY -> inputs -> {};
         };
   }

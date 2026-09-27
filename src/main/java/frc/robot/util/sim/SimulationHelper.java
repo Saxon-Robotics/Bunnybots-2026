@@ -7,16 +7,17 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.gripper.Gripper;
 import frc.robot.subsystems.trader.Trader;
+import frc.robot.util.io.sensors.lasercan.LaserCanIO;
 import java.util.function.Supplier;
 import lombok.Getter;
 import org.ironmaple.simulation.IntakeSimulation;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
-import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class SimulationHelper {
   public static final Translation3d ELEVATOR_TO_CARROT = new Translation3d(/* TODO find this */ );
+  public static final Translation3d ROBOT_TO_TRADER = new Translation3d(/* TODO find this */ );
 
   @Getter private static SimulationHelper instance;
 
@@ -38,7 +39,8 @@ public class SimulationHelper {
   private final IntakeSimulation gripperIntake;
   private final IntakeSimulation traderIntake;
 
-  @Getter private boolean outtakeLoaded = false;
+  private Pose3d carrotInGripper;
+  private Pose3d carrotInTrader;
 
   private SimulationHelper(
       Elevator elevator,
@@ -62,77 +64,95 @@ public class SimulationHelper {
 
   public void simulationPeriodic() {
     SimulatedArena.getInstance().simulationPeriodic();
-    Pose3d[] carrotPoses = SimulatedArena.getInstance().getGamePiecesArrayByType("Carrot");
 
-    Pose2d simPose = driveSimulation.getSimulatedDriveTrainPose();
-
-    // Publish to telemetry using AdvantageKit
-    Logger.recordOutput("FieldSimulation/RobotPosition", simPose);
-
-    // Publish ComponentPositions
+    Pose3d robotPose = new Pose3d(driveSimulation.getSimulatedDriveTrainPose());
+    Logger.recordOutput("FieldSimulation/RobotPosition", robotPose.toPose2d());
     Logger.recordOutput(
         "FieldSimulation/RobotComponentPosition",
         new Pose3d(0, 0, elevator.getPositionMeters(), Rotation3d.kZero));
 
-    // to set up the model
+    Pose3d[] carrotPoses = SimulatedArena.getInstance().getGamePiecesArrayByType("Carrot");
     Logger.recordOutput("FieldSimulation/Carrots", carrotPoses);
-
-    if (!outtakeLoaded
-        && getNumHeldCarrots() > 0
-        && trader.getVelocityRPS() > 50
-        && elevator.getSetpoint() == Elevator.Setpoint.STOWED) {
-      outtakeLoaded = true;
-      Logger.recordOutput("FieldSimulation/IsOuttakeLoaded", outtakeLoaded);
+    // gripper carrot
+    if (isGripperLoaded()) {
+      Translation3d elevatorTranslation = new Translation3d(0, 0, elevator.getPositionMeters());
+      carrotInGripper =
+          new Pose3d(
+              robotPose.getTranslation().plus(elevatorTranslation).plus(ELEVATOR_TO_CARROT),
+              Rotation3d.kZero);
+      Logger.recordOutput("FieldSimulation/HeldCarrots/Gripper",  carrotInGripper);
+    }
+    else {
+      Logger.recordOutput("FieldSimulation/HeldCarrots/Gripper", new Pose3d());
+    }
+    // trader carrot
+    if (isTraderLoaded()) {
+      carrotInTrader =
+          new Pose3d(
+              robotPose.getTranslation().plus(ROBOT_TO_TRADER),
+              Rotation3d.kZero);
+      Logger.recordOutput("FieldSimulation/HeldCarrots/Trader", carrotInTrader);
+    }
+    else {
+      Logger.recordOutput("FieldSimulation/HeldCarrots/Trader", new Pose3d());
     }
   }
 
-  /** Returns the total number of carrots in the robot. */
-  @AutoLogOutput(key = "FieldSimulation/NumCarrotsInBot")
-  public int getNumHeldCarrots() {
-    return gripperIntake.getGamePiecesAmount();
-  }
-
-  /** Returns the number of carrots in the robot's hopper (excludes carrot in outtake). */
-  public int getNumCarrotsInHopper() {
-    return outtakeLoaded ? getNumHeldCarrots() - 1 : getNumHeldCarrots();
-  }
-
-  /** Returns whether there is a game piece in the robot at all */
-  public boolean hasAnyGamePiece() {
+  private boolean isGripperLoaded() {
     return gripperIntake.getGamePiecesAmount() > 0;
   }
 
-  public void score() {
-    if (!outtakeLoaded) {
-      return;
-    }
+  private boolean isTraderLoaded() {
+    return traderIntake.getGamePiecesAmount() > 0;
+  }
 
-    gripperIntake.obtainGamePieceFromIntake();
-    outtakeLoaded = false;
+  public LaserCanIO getGripperLaserCan(double threshold) {
+    return inputs -> {
+      inputs.connected = true;
+      inputs.measurementValid = true;
+      inputs.distanceMillimeters = isGripperLoaded() ? threshold - 1 : threshold + 1;
+    };
+  }
 
-    Pose3d globalPose = new Pose3d(driveSimulation.getSimulatedDriveTrainPose());
-    Translation3d elevatorTranslation = new Translation3d(0, 0, elevator.getPositionMeters());
-    Translation3d carrotTranslation =
-        globalPose.getTranslation().plus(elevatorTranslation).plus(ELEVATOR_TO_CARROT);
+  public LaserCanIO getTraderLaserCan(double threshold) {
+    return inputs -> {
+      inputs.connected = true;
+      inputs.measurementValid = true;
+      inputs.distanceMillimeters = isTraderLoaded() ? threshold - 1 : threshold + 1;
+    };
+  }
+
+  public void gripperScore() {
+    if (!gripperIntake.obtainGamePieceFromIntake()) return;
 
     HarvestHavocCarrotOnFly carrotOnFly =
         new HarvestHavocCarrotOnFly(
             driveSimulation.getSimulatedDriveTrainPose().getTranslation(),
-            new Translation2d(carrotTranslation.getX(), carrotTranslation.getY()),
+            new Translation2d(carrotInGripper.getX(), carrotInGripper.getY()),
             chassisSpeeds.get(),
             driveSimulation.getSimulatedDriveTrainPose().getRotation(),
-            Meters.of(carrotTranslation.getZ()),
+            Meters.of(carrotInGripper.getZ()),
             MetersPerSecond.of(1),
             Degrees.of(0 /* TODO put outtake angle here (static angle) */));
 
     carrotOnFly.enableBecomesGamePieceOnFieldAfterTouchGround();
-    carrotOnFly.withProjectileTrajectoryDisplayCallBack(
-        hitTrajectory ->
-            Logger.recordOutput(
-                "FieldSimulation/CarrotHitTrajectory", hitTrajectory.toArray(new Pose3d[0])),
-        missTrajectory ->
-            Logger.recordOutput(
-                "FieldSimulation/CarrotMissTrajectory", missTrajectory.toArray(new Pose3d[0])));
+    SimulatedArena.getInstance().addGamePieceProjectile(carrotOnFly);
+  }
+
+  public void traderScore() {
+    if (!traderIntake.obtainGamePieceFromIntake()) return;
+
+    HarvestHavocCarrotOnFly carrotOnFly =
+        new HarvestHavocCarrotOnFly(
+            driveSimulation.getSimulatedDriveTrainPose().getTranslation(),
+            new Translation2d(carrotInTrader.getX(), carrotInTrader.getY()),
+            chassisSpeeds.get(),
+            driveSimulation.getSimulatedDriveTrainPose().getRotation(),
+            Meters.of(carrotInTrader.getZ()),
+            MetersPerSecond.of(1),
+            Degrees.of(0 /* TODO put outtake angle here (static angle) */));
+
+    carrotOnFly.enableBecomesGamePieceOnFieldAfterTouchGround();
     SimulatedArena.getInstance().addGamePieceProjectile(carrotOnFly);
   }
 

@@ -62,9 +62,8 @@ public class Trader extends SubsystemBase {
     beambreak =
         switch (Constants.currentMode) {
           case REAL -> new LaserCanIOReal(Constants.CANConstants.TRADER_LASERCAN);
-          case SIM -> LaserCanIO.beambreakSim(
-              () -> SimulationHelper.getInstance().getNumCarrotsInHopper() > 0,
-              TraderConstants.BEAMBREAK_THRESHOLD);
+          case SIM -> SimulationHelper.getInstance()
+              .getTraderLaserCan(TraderConstants.BEAMBREAK_THRESHOLD);
           case REPLAY -> inputs -> {};
         };
   }
