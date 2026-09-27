@@ -7,6 +7,10 @@
 
 package frc.robot.commands;
 
+import static edu.wpi.first.units.Units.*;
+
+import com.therekrab.autopilot.APTarget;
+import com.therekrab.autopilot.Autopilot;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
@@ -272,6 +276,43 @@ public class DriveCommands {
         .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()))
         // End the command when angle is reached
         .until(angleController::atGoal);
+  }
+
+  public static Command alignToTarget(Drive drive, Supplier<APTarget> target) {
+    ProfiledPIDController angleController =
+        new ProfiledPIDController(
+            ANGLE_KP,
+            0.0,
+            ANGLE_KD,
+            new TrapezoidProfile.Constraints(ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
+    angleController.enableContinuousInput(-Math.PI, Math.PI);
+
+    return Commands.run(
+            () -> {
+              // Calculate linear speeds & target angle
+              Autopilot.APResult output =
+                  drive.autopilot.calculate(
+                      drive.getPose(), drive.getChassisSpeeds(), target.get());
+
+              // Calculate angular speed
+              double omega =
+                  angleController.calculate(
+                      drive.getRotation().getRadians(), output.targetAngle().getRadians());
+
+              // Convert to field relative speeds & send command
+              ChassisSpeeds speeds =
+                  new ChassisSpeeds(
+                      output.vx().in(MetersPerSecond), output.vy().in(MetersPerSecond), omega);
+              drive.runVelocity(
+                  ChassisSpeeds.fromFieldRelativeSpeeds(
+                      speeds,
+                      RobotUtil.isRedAlliance()
+                          ? drive.getRotation().plus(Rotation2d.kPi)
+                          : drive.getRotation()),
+                  true);
+            },
+            drive)
+        .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()));
   }
 
   /**

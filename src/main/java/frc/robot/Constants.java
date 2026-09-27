@@ -7,9 +7,6 @@ package frc.robot;
 import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.CANBus;
-import com.therekrab.autopilot.APConstraints;
-import com.therekrab.autopilot.APProfile;
-import com.therekrab.autopilot.Autopilot;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -29,18 +26,6 @@ import frc.robot.util.FieldUtils;
 public final class Constants {
   public static final Mode simMode = Mode.SIM;
   public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
-
-  // auto pilot
-  private static final APConstraints kConstraints =
-      new APConstraints().withAcceleration(8.0).withJerk(4.0);
-
-  private static final APProfile kProfile =
-      new APProfile(kConstraints)
-          .withErrorXY(Centimeters.of(2))
-          .withErrorTheta(Degrees.of(0.5))
-          .withBeelineRadius(Centimeters.of(8));
-
-  public static final Autopilot kAutopilot = new Autopilot(kProfile);
 
   public enum Mode {
     /** Running on a real robot. */

@@ -23,14 +23,13 @@ import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.PathPlannerLogging;
-import com.therekrab.autopilot.APTarget;
-import com.therekrab.autopilot.Autopilot.APResult;
+import com.therekrab.autopilot.APConstraints;
+import com.therekrab.autopilot.APProfile;
+import com.therekrab.autopilot.Autopilot;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -44,7 +43,6 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -63,7 +61,6 @@ import frc.robot.util.subsystems.ExtendedSubsystem;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 import lombok.Getter;
 import org.ironmaple.simulation.drivesims.COTS;
 import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
@@ -155,12 +152,16 @@ public class Drive extends ExtendedSubsystem implements Vision.VisionConsumer {
 
   private final Consumer<Pose2d> resetSimulationPoseCallBack;
 
+  public final Autopilot autopilot =
+      new Autopilot(
+          new APProfile(new APConstraints(5.0, 8.0, 16.0))
+              .withErrorXY(Centimeters.of(2))
+              .withErrorTheta(Degrees.of(0.5))
+              .withBeelineRadius(Centimeters.of(8)));
+
   /** The maximum linear speed in meters per sec. */
   @Getter
   private double maxLinearSpeedMetersPerSec = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
-
-  // autopilot
-  private final PIDController headingController = new PIDController(5.0, 0.0, 0.4);
 
   public Drive(
       GyroIO gyroIO,
@@ -169,9 +170,6 @@ public class Drive extends ExtendedSubsystem implements Vision.VisionConsumer {
       ModuleIO blModuleIO,
       ModuleIO brModuleIO,
       Consumer<Pose2d> resetSimulationPoseCallBack) {
-    // autopilot
-    headingController.enableContinuousInput(-Math.PI, Math.PI);
-
     this.gyroIO = gyroIO;
     this.resetSimulationPoseCallBack = resetSimulationPoseCallBack;
     modules[0] = new Module(flModuleIO, 0, TunerConstants.FrontLeft);
@@ -473,40 +471,5 @@ public class Drive extends ExtendedSubsystem implements Vision.VisionConsumer {
               fieldRelativeVelocity, getRotation().plus(angularVelocity));
     }
     return robotRelativeVelocity;
-  }
-
-  public void runAutopilot(
-      LinearVelocity veloX, LinearVelocity veloY, Rotation2d headingReference) {
-    double rotationSpeed =
-        headingController.calculate(getRotation().getRadians(), headingReference.getRadians());
-    rotationSpeed =
-        MathUtil.clamp(
-            rotationSpeed, -getMaxAngularSpeedRadPerSec(), getMaxAngularSpeedRadPerSec());
-
-    ChassisSpeeds fieldSpeeds =
-        new ChassisSpeeds(veloX.in(MetersPerSecond), veloY.in(MetersPerSecond), rotationSpeed);
-
-    runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(fieldSpeeds, getRotation()), false);
-  }
-
-  public void resetHeadingController() {
-    headingController.reset();
-  }
-
-  public Command align(Supplier<APTarget> targetSupplier) {
-    return this.run(
-            () -> {
-              APTarget target = targetSupplier.get();
-
-              ChassisSpeeds robotRelativeSpeeds = getChassisSpeeds();
-              Pose2d pose = getPose();
-
-              APResult output = Constants.kAutopilot.calculate(pose, robotRelativeSpeeds, target);
-
-              runAutopilot(output.vx(), output.vy(), output.targetAngle());
-            })
-        .beforeStarting(this::resetHeadingController)
-        .until(() -> Constants.kAutopilot.atTarget(getPose(), targetSupplier.get()))
-        .finallyDo(this::stop);
   }
 }

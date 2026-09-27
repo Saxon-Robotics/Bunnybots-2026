@@ -221,17 +221,6 @@ public class RobotContainer {
     Command lockWheels = Commands.startEnd(drive::stopWithX, () -> {}, drive);
     // Reset gyro to 0°
     Command zeroGyro = Commands.runOnce(() -> drive.zeroGyro(true), drive).ignoringDisable(true);
-    // Auto align to pantry (angle only)
-    Command lockToAngle =
-        DriveCommands.joystickDriveAtAngle(
-                drive,
-                () -> -driverController.getLeftY(),
-                () -> -driverController.getLeftX(),
-                () -> AutoAlign.getTargetPose().getRotation(),
-                // no feedforward
-                () -> 0)
-            .beforeStarting(() -> drive.setSpeedLimiter(true))
-            .finallyDo(() -> drive.setSpeedLimiter(false));
     // Auto align to pantry (locked angle and y)
     Command lockToPantry =
         DriveCommands.singleAxisJoystickDrive(
@@ -243,7 +232,8 @@ public class RobotContainer {
             .beforeStarting(() -> drive.setSpeedLimiter(true))
             .finallyDo(() -> drive.setSpeedLimiter(false));
 
-    Command alignCommand = drive.align(() -> new APTarget(AutoAlign.getTargetPose()));
+    APTarget target = new APTarget(AutoAlign.getTargetPose()); // temp
+    Command alignCommand = DriveCommands.alignToTarget(drive, () -> target);
 
     /* Elevator commands */
     DoubleSupplier elevatorJoystick =
@@ -330,9 +320,6 @@ public class RobotContainer {
     }
 
     driverController.x().whileTrue(lockWheels);
-    driverController.povLeft().onTrue(zeroGyro);
-    driverController.a().whileTrue(lockToAngle);
-    driverController.rightTrigger(0.7).whileTrue(lockToPantry);
 
     /* operator controls */
     // main profile
