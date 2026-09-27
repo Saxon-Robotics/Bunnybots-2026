@@ -253,10 +253,9 @@ public class RobotContainer {
     Command manualElevator = elevator.manualControl(elevatorJoystick);
     Command elevatorHoming = elevator.homingSequence();
     Command stowElevator = elevator.stow();
-    Command ovenElevator = elevator.oven();
+    Command rampElevator = elevator.ramp();
     Command l1Elevator = elevator.l1();
     Command l2Elevator = elevator.l2();
-    Command l3Elevator = elevator.l3();
     // emergency disable while true
     Command disableElevator =
         elevator.release().withInterruptBehavior(Command.InterruptionBehavior.kCancelIncoming);
@@ -264,14 +263,10 @@ public class RobotContainer {
     /* End effector commands */
     Command gripperIntake = gripper.intake();
     Command gripperEject = gripper.eject();
-    Command gripperSterilize = gripper.sterilize();
-    Command gripperHalt =
-        Commands.idle(gripper).withInterruptBehavior(Command.InterruptionBehavior.kCancelIncoming);
 
     /* Trader commands */
     Command traderIntake = trader.intake();
     Command traderEject = trader.eject();
-    Command traderSterilize = trader.sterilize();
 
     // Default command, normal field-relative drive
     Command defaultDriveCommand =
@@ -296,7 +291,7 @@ public class RobotContainer {
     if (currentMode == Constants.Mode.SIM) {
       CommandGenericHID keyboard = new CommandGenericHID(3);
 
-      // superstructure commands
+      // superstructure keybinds
 
       // drop carrots
       keyboard
@@ -336,7 +331,24 @@ public class RobotContainer {
 
     /* operator controls */
     // main profile
+    RobotUtil.RumbleRequest elevatorRumble = new RobotUtil.RumbleRequest(0.8, 0);
+    Command rumbleCommand =
+        Commands.startEnd(
+            () -> RobotUtil.requestOperatorRumble(elevatorRumble),
+            () -> RobotUtil.stopOperatorRumble(elevatorRumble));
+    // controller vibrates when elevator buttons are pressed
+    operatorController.povDown().onTrue(stowElevator).whileTrue(rumbleCommand);
+    operatorController.povRight().onTrue(rampElevator).whileTrue(rumbleCommand);
+    operatorController.povLeft().onTrue(l1Elevator).whileTrue(rumbleCommand);
+    operatorController.povUp().onTrue(l2Elevator).whileTrue(rumbleCommand);
+    operatorController.rightBumper().onTrue(elevatorHoming).whileTrue(rumbleCommand);
+    operatorController.leftTrigger(0.85).whileTrue(disableElevator);
 
+    operatorController.b().whileTrue(gripperIntake);
+    operatorController.y().whileTrue(gripperEject);
+
+    operatorController.a().whileTrue(traderIntake);
+    operatorController.x().whileTrue(traderEject);
     // test mode (single controller)
 
   }
@@ -358,14 +370,59 @@ public class RobotContainer {
 
       // configure triggers only once
       /* Elevator commands */
+      DoubleSupplier elevatorJoystick =
+          // scale tilt axis to [-1, 1]
+          () -> Math.fma(200.0 / 81.0, guitarHeroController.getTiltAxis(), -119.0 / 81.0);
+      Command manualElevator = elevator.manualControl(elevatorJoystick);
+      Command elevatorHoming = elevator.homingSequence();
+      Command stowElevator = elevator.stow();
+      Command rampElevator = elevator.ramp();
+      Command l1Elevator = elevator.l1();
+      Command l2Elevator = elevator.l2();
+
+      /* End effector commands */
+      Command gripperIntake = gripper.intake();
+      Command gripperEject = gripper.eject();
+
+      /* Trader commands */
+      Command traderIntake = trader.intake();
+      Command traderEject = trader.eject();
 
       // controls are only active during the correct mode
       BooleanSupplier guitarHeroControls = () -> controlScheme == ControlScheme.GUITAR_HERO;
       // devious strum bar combinations
       BooleanSupplier upStrumBar = guitarHeroController.povUp();
       BooleanSupplier downStrumBar = guitarHeroController.povDown();
-      BooleanSupplier neutralStrumBar =
-          () -> !upStrumBar.getAsBoolean() && !downStrumBar.getAsBoolean();
+      BooleanSupplier neutralStrumBar = guitarHeroController.povCenter();
+
+      guitarHeroController
+          .green()
+          .and(guitarHeroControls)
+          .and(neutralStrumBar)
+          .onTrue(stowElevator);
+      guitarHeroController.red().and(guitarHeroControls).and(neutralStrumBar).onTrue(rampElevator);
+      guitarHeroController.yellow().and(guitarHeroControls).and(neutralStrumBar).onTrue(l1Elevator);
+      guitarHeroController.blue().and(guitarHeroControls).and(neutralStrumBar).onTrue(l2Elevator);
+      guitarHeroController
+          .orange()
+          .and(guitarHeroControls)
+          .and(neutralStrumBar)
+          .onTrue(elevatorHoming);
+      guitarHeroController
+          .orange()
+          .and(guitarHeroControls)
+          .and(upStrumBar)
+          .whileTrue(manualElevator);
+
+      guitarHeroController.green().and(guitarHeroControls).and(upStrumBar).whileTrue(gripperIntake);
+      guitarHeroController.red().and(guitarHeroControls).and(upStrumBar).whileTrue(gripperEject);
+
+      guitarHeroController
+          .green()
+          .and(guitarHeroControls)
+          .and(downStrumBar)
+          .whileTrue(traderIntake);
+      guitarHeroController.red().and(guitarHeroControls).and(downStrumBar).whileTrue(traderEject);
     }
   }
 

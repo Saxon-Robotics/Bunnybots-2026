@@ -22,9 +22,10 @@ public final class ElevatorConstants {
 
   static {
     SETPOINTS.put(Elevator.Setpoint.STOWED, Rotations.of(0));
-    SETPOINTS.put(Elevator.Setpoint.OVEN, metersToRotations(Meters.of(0)));
+    SETPOINTS.put(Elevator.Setpoint.RAMP, metersToRotations(Meters.of(0)));
     SETPOINTS.put(Elevator.Setpoint.L1, metersToRotations(Meters.of(0)));
     SETPOINTS.put(Elevator.Setpoint.L2, metersToRotations(Meters.of(0)));
+    SETPOINTS.put(Elevator.Setpoint.L3, metersToRotations(Meters.of(0)));
   }
 
   public static final double SETPOINT_TOLERANCE = 0.06;

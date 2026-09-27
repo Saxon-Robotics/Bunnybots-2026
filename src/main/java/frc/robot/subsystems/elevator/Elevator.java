@@ -28,7 +28,7 @@ public class Elevator extends ExtendedSubsystem {
   public enum Setpoint {
     NONE(false),
     STOWED(false),
-    OVEN(true),
+    RAMP(true),
     L1(true),
     L2(true),
     L3(true);
@@ -103,8 +103,8 @@ public class Elevator extends ExtendedSubsystem {
     return startEnd(() -> runSetpoint(Setpoint.STOWED), () -> {}).until(this::hasReachedSetpoint);
   }
 
-  public Command oven() {
-    return startEnd(() -> runSetpoint(Setpoint.OVEN), () -> {}).until(this::hasReachedSetpoint);
+  public Command ramp() {
+    return startEnd(() -> runSetpoint(Setpoint.RAMP), () -> {}).until(this::hasReachedSetpoint);
   }
 
   public Command l1() {
