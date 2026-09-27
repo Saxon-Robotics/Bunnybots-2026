@@ -146,7 +146,7 @@ public class Elevator extends ExtendedSubsystem {
             },
             () -> {
               if (homingDebouncer.calculate(
-                      elevator.getVelocityRadPerSec()
+                      Math.abs(elevator.getVelocityRadPerSec())
                           <= ElevatorConstants.HOMING_VELOCITY_THRESHOLD)
                   && !homingTimer.isRunning()) {
                 elevator.stop();

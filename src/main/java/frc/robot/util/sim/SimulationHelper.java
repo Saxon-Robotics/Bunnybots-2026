@@ -68,6 +68,12 @@ public class SimulationHelper {
 
     // Publish to telemetry using AdvantageKit
     Logger.recordOutput("FieldSimulation/RobotPosition", simPose);
+
+    // Publish ComponentPositions
+    Logger.recordOutput(
+        "FieldSimulation/RobotComponentPosition",
+        new Pose3d(0, 0, elevator.getPositionMeters(), Rotation3d.kZero));
+
     // to set up the model
     Logger.recordOutput("FieldSimulation/Carrots", carrotPoses);
 

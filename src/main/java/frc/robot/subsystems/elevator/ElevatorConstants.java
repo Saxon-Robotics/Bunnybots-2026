@@ -17,17 +17,6 @@ public final class ElevatorConstants {
     return Rotations.of(Units.radiansToRotations(meters.in(Meters) / DRUM_RADIUS));
   }
 
-  public static final EnumMap<Elevator.Setpoint, Angle> SETPOINTS =
-      new EnumMap<>(Elevator.Setpoint.class);
-
-  static {
-    SETPOINTS.put(Elevator.Setpoint.STOWED, Rotations.of(0));
-    SETPOINTS.put(Elevator.Setpoint.RAMP, metersToRotations(Meters.of(0)));
-    SETPOINTS.put(Elevator.Setpoint.L1, metersToRotations(Meters.of(0)));
-    SETPOINTS.put(Elevator.Setpoint.L2, metersToRotations(Meters.of(0)));
-    SETPOINTS.put(Elevator.Setpoint.L3, metersToRotations(Meters.of(0)));
-  }
-
   public static final double SETPOINT_TOLERANCE = 0.06;
 
   public static final double MAX_MANUAL_VOLTAGE = 6.0;
@@ -43,6 +32,17 @@ public final class ElevatorConstants {
 
   public static final double ELEVATOR_KP = 100;
   public static final double ELEVATOR_KD = 0;
+
+  public static final EnumMap<Elevator.Setpoint, Angle> SETPOINTS =
+      new EnumMap<>(Elevator.Setpoint.class);
+
+  static {
+    SETPOINTS.put(Elevator.Setpoint.STOWED, Rotations.of(0));
+    SETPOINTS.put(Elevator.Setpoint.RAMP, metersToRotations(Meters.of(0)));
+    SETPOINTS.put(Elevator.Setpoint.L1, metersToRotations(Meters.of(0.2)));
+    SETPOINTS.put(Elevator.Setpoint.L2, metersToRotations(Meters.of(0)));
+    SETPOINTS.put(Elevator.Setpoint.L3, metersToRotations(Meters.of(0)));
+  }
 
   public static final TalonFXConfiguration MOTOR_CONFIG =
       new TalonFXConfiguration()
