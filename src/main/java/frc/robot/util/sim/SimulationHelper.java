@@ -7,7 +7,6 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.gripper.Gripper;
 import frc.robot.subsystems.trader.Trader;
-import frc.robot.util.io.sensors.lasercan.LaserCanIO;
 import java.util.function.Supplier;
 import lombok.Getter;
 import org.ironmaple.simulation.IntakeSimulation;
@@ -80,46 +79,26 @@ public class SimulationHelper {
           new Pose3d(
               robotPose.getTranslation().plus(elevatorTranslation).plus(ELEVATOR_TO_CARROT),
               Rotation3d.kZero);
-      Logger.recordOutput("FieldSimulation/HeldCarrots/Gripper",  carrotInGripper);
-    }
-    else {
+      Logger.recordOutput("FieldSimulation/HeldCarrots/Gripper", carrotInGripper);
+    } else {
       Logger.recordOutput("FieldSimulation/HeldCarrots/Gripper", new Pose3d());
     }
     // trader carrot
     if (isTraderLoaded()) {
       carrotInTrader =
-          new Pose3d(
-              robotPose.getTranslation().plus(ROBOT_TO_TRADER),
-              Rotation3d.kZero);
+          new Pose3d(robotPose.getTranslation().plus(ROBOT_TO_TRADER), Rotation3d.kZero);
       Logger.recordOutput("FieldSimulation/HeldCarrots/Trader", carrotInTrader);
-    }
-    else {
+    } else {
       Logger.recordOutput("FieldSimulation/HeldCarrots/Trader", new Pose3d());
     }
   }
 
-  private boolean isGripperLoaded() {
+  public boolean isGripperLoaded() {
     return gripperIntake.getGamePiecesAmount() > 0;
   }
 
-  private boolean isTraderLoaded() {
+  public boolean isTraderLoaded() {
     return traderIntake.getGamePiecesAmount() > 0;
-  }
-
-  public LaserCanIO getGripperLaserCan(double threshold) {
-    return inputs -> {
-      inputs.connected = true;
-      inputs.measurementValid = true;
-      inputs.distanceMillimeters = isGripperLoaded() ? threshold - 1 : threshold + 1;
-    };
-  }
-
-  public LaserCanIO getTraderLaserCan(double threshold) {
-    return inputs -> {
-      inputs.connected = true;
-      inputs.measurementValid = true;
-      inputs.distanceMillimeters = isTraderLoaded() ? threshold - 1 : threshold + 1;
-    };
   }
 
   public void gripperScore() {

@@ -8,6 +8,7 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.subsystems.trader.TraderConstants;
 import frc.robot.util.io.motors.MotorIO;
 import frc.robot.util.io.motors.MotorIOTalonFX;
 import frc.robot.util.io.motors.roller.Roller;
@@ -62,8 +63,9 @@ public class Gripper extends SubsystemBase {
     beambreak =
         switch (Constants.currentMode) {
           case REAL -> new LaserCanIOReal(Constants.CANConstants.GRIPPER_LASERCAN);
-          case SIM -> SimulationHelper.getInstance()
-              .getGripperLaserCan(GripperConstants.BEAMBREAK_THRESHOLD);
+          case SIM -> LaserCanIO.beambreakSim(
+              () -> SimulationHelper.getInstance().isGripperLoaded(),
+              TraderConstants.BEAMBREAK_THRESHOLD);
           case REPLAY -> inputs -> {};
         };
   }
