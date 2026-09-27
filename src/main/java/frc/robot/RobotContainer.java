@@ -4,8 +4,10 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.*;
 import static frc.robot.Constants.currentMode;
 
+import com.therekrab.autopilot.APTarget;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -241,6 +243,8 @@ public class RobotContainer {
             .beforeStarting(() -> drive.setSpeedLimiter(true))
             .finallyDo(() -> drive.setSpeedLimiter(false));
 
+    Command alignCommand = drive.align(() -> new APTarget(AutoAlign.getTargetPose()));
+
     /* Elevator commands */
     DoubleSupplier elevatorJoystick =
         () ->
@@ -322,6 +326,7 @@ public class RobotContainer {
                               ? HarvestHavocCarrotOnFly.CarrotStations.RED_SIDE_DEPOT
                               : HarvestHavocCarrotOnFly.CarrotStations.BLUE_SIDE_DEPOT)));
       keyboard.button(10).whileTrue(lockToPantry);
+      keyboard.button(6).whileTrue(alignCommand);
     }
 
     driverController.x().whileTrue(lockWheels);
