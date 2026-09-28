@@ -304,12 +304,7 @@ public class DriveCommands {
                   new ChassisSpeeds(
                       output.vx().in(MetersPerSecond), output.vy().in(MetersPerSecond), omega);
               drive.runVelocity(
-                  ChassisSpeeds.fromFieldRelativeSpeeds(
-                      speeds,
-                      RobotUtil.isRedAlliance()
-                          ? drive.getRotation().plus(Rotation2d.kPi)
-                          : drive.getRotation()),
-                  true);
+                  ChassisSpeeds.fromFieldRelativeSpeeds(speeds, drive.getRotation()), true);
             },
             drive)
         .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()))
