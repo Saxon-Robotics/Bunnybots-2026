@@ -12,6 +12,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -222,7 +223,8 @@ public class RobotContainer {
     Command autoAlign = DriveCommands.alignToTarget(drive, AutoAlign::getLastAPTarget);
     // Auto align to pantry (locked angle and y)
     Command pantryAlign =
-        DriveCommands.alignToTarget(drive, AutoAlign::getLastAPTarget)
+        Commands.runOnce(() -> AutoAlign.getTargetPose(AutoAlign.Target.PANTRY, drive.getPose()))
+            .andThen(DriveCommands.alignToTarget(drive, AutoAlign::getLastAPTarget))
             .andThen(
                 DriveCommands.singleAxisJoystickDrive(
                         drive,
@@ -232,6 +234,15 @@ public class RobotContainer {
                         () -> AutoAlign.getLastTarget().getRotation())
                     .beforeStarting(() -> drive.setSpeedLimiter(true))
                     .finallyDo(() -> drive.setSpeedLimiter(false)));
+    // Set auto align targets
+    Command ovenAlign =
+        Commands.runOnce(() -> AutoAlign.getTargetPose(AutoAlign.Target.OVEN, drive.getPose()));
+    Command rampAlign =
+        Commands.runOnce(() -> AutoAlign.getTargetPose(AutoAlign.Target.RAMP, drive.getPose()));
+    Command depotAlign =
+        Commands.runOnce(() -> AutoAlign.getTargetPose(AutoAlign.Target.DEPOT, drive.getPose()));
+    Command tableAlign =
+        Commands.runOnce(() -> AutoAlign.getTargetPose(AutoAlign.Target.TABLE, drive.getPose()));
 
     /* Elevator commands */
     DoubleSupplier elevatorJoystick =
@@ -280,6 +291,46 @@ public class RobotContainer {
                     && !elevator.hasReachedSetpoint())
         .whileTrue(gripper.sterilize());
 
+    /* driver controls */
+    driverController.x().whileTrue(lockWheels);
+    driverController.y().onTrue(zeroGyro);
+    driverController.a().onTrue(tableAlign).whileTrue(autoAlign);
+    BooleanSupplier isPossessing = () -> gripper.isLoaded() || trader.isLoaded();
+    driverController
+        .leftBumper()
+        .onTrue(new ConditionalCommand(ovenAlign, rampAlign, isPossessing))
+        .whileTrue(autoAlign);
+    driverController.rightBumper().and(isPossessing).whileTrue(pantryAlign);
+    driverController
+        .rightBumper()
+        .and(new Trigger(isPossessing).negate())
+        .onTrue(depotAlign)
+        .whileTrue(autoAlign);
+
+    /* operator controls */
+    RobotUtil.RumbleRequest elevatorRumble = new RobotUtil.RumbleRequest(0.8, 0);
+    Command rumbleCommand =
+        Commands.startEnd(
+            () -> RobotUtil.requestOperatorRumble(elevatorRumble),
+            () -> RobotUtil.stopOperatorRumble(elevatorRumble));
+    // controller vibrates when elevator buttons are pressed
+    operatorController.povDown().onTrue(stowElevator).whileTrue(rumbleCommand);
+    operatorController.povRight().onTrue(rampElevator).whileTrue(rumbleCommand);
+    operatorController.povLeft().onTrue(l1Elevator).whileTrue(rumbleCommand);
+    operatorController.povUp().onTrue(l2Elevator).whileTrue(rumbleCommand);
+    operatorController.rightBumper().onTrue(elevatorHoming).whileTrue(rumbleCommand);
+    operatorController.leftTrigger(0.85).whileTrue(disableElevator);
+
+    operatorController.b().whileTrue(gripperIntake);
+    operatorController.y().whileTrue(gripperEject);
+
+    operatorController.a().whileTrue(traderIntake);
+    operatorController.x().whileTrue(traderEject);
+    // test mode (single controller)
+    BooleanSupplier testProfile = () -> controlScheme == ControlScheme.TEST;
+    /* todo implementation */
+
+    /* keyboard controls for sim */
     if (currentMode == Constants.Mode.SIM) {
       CommandGenericHID keyboard = new CommandGenericHID(3);
 
@@ -316,31 +367,6 @@ public class RobotContainer {
       keyboard.button(10).whileTrue(pantryAlign);
       keyboard.button(6).whileTrue(autoAlign);
     }
-
-    driverController.x().whileTrue(lockWheels);
-
-    /* operator controls */
-    // main profile
-    RobotUtil.RumbleRequest elevatorRumble = new RobotUtil.RumbleRequest(0.8, 0);
-    Command rumbleCommand =
-        Commands.startEnd(
-            () -> RobotUtil.requestOperatorRumble(elevatorRumble),
-            () -> RobotUtil.stopOperatorRumble(elevatorRumble));
-    // controller vibrates when elevator buttons are pressed
-    operatorController.povDown().onTrue(stowElevator).whileTrue(rumbleCommand);
-    operatorController.povRight().onTrue(rampElevator).whileTrue(rumbleCommand);
-    operatorController.povLeft().onTrue(l1Elevator).whileTrue(rumbleCommand);
-    operatorController.povUp().onTrue(l2Elevator).whileTrue(rumbleCommand);
-    operatorController.rightBumper().onTrue(elevatorHoming).whileTrue(rumbleCommand);
-    operatorController.leftTrigger(0.85).whileTrue(disableElevator);
-
-    operatorController.b().whileTrue(gripperIntake);
-    operatorController.y().whileTrue(gripperEject);
-
-    operatorController.a().whileTrue(traderIntake);
-    operatorController.x().whileTrue(traderEject);
-    // test mode (single controller)
-
   }
 
   private void configureAutoCommands() {}

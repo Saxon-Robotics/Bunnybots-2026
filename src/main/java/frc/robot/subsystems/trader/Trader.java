@@ -4,10 +4,12 @@
 
 package frc.robot.subsystems.trader;
 
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.subsystems.gripper.GripperConstants;
 import frc.robot.util.io.motors.MotorIO;
 import frc.robot.util.io.motors.MotorIOTalonFX;
 import frc.robot.util.io.motors.roller.Roller;
@@ -26,6 +28,8 @@ public class Trader extends SubsystemBase {
   private final Roller rightRoller;
   private final LaserCanIO beambreak;
   private final LaserCanIOInputsAutoLogged beambreakInputs = new LaserCanIOInputsAutoLogged();
+
+  private final Debouncer beambreakDebounce = new Debouncer(0.5, Debouncer.DebounceType.kBoth);
 
   @Getter
   @AutoLogOutput(key = "Trader/HasGamePiece")
@@ -82,8 +86,9 @@ public class Trader extends SubsystemBase {
     beambreak.updateInputs(beambreakInputs);
     Logger.processInputs("Trader/DistanceSensor", beambreakInputs);
     isLoaded =
-        beambreakInputs.measurementValid
-            && beambreakInputs.distanceMillimeters <= TraderConstants.BEAMBREAK_THRESHOLD;
+        beambreakDebounce.calculate(
+            beambreakInputs.measurementValid
+                && beambreakInputs.distanceMillimeters <= GripperConstants.BEAMBREAK_THRESHOLD);
   }
 
   private void runTogether(double rps) {

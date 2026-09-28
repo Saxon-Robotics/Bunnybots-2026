@@ -4,9 +4,12 @@ import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.gripper.Gripper;
 import frc.robot.subsystems.trader.Trader;
+import frc.robot.subsystems.trader.TraderConstants;
 import java.util.function.Supplier;
 import lombok.Getter;
 import org.ironmaple.simulation.IntakeSimulation;
@@ -59,6 +62,14 @@ public class SimulationHelper {
     traderIntake =
         IntakeSimulation.InTheFrameIntake(
             "Carrot", driveSimulation, Meters.of(0.7), IntakeSimulation.IntakeSide.BACK, 3);
+
+    // outtake activations
+    new Trigger(() -> gripper.getVelocityRPS() > 35).onTrue(Commands.runOnce(this::gripperScore));
+    new Trigger(() -> trader.getVelocityRPS() > 35)
+        .whileTrue(
+            Commands.repeatingSequence(
+                Commands.runOnce(this::traderScore),
+                Commands.waitSeconds(TraderConstants.CARROTS_PER_SEC)));
   }
 
   public void simulationPeriodic() {
@@ -72,6 +83,13 @@ public class SimulationHelper {
 
     Pose3d[] carrotPoses = SimulatedArena.getInstance().getGamePiecesArrayByType("Carrot");
     Logger.recordOutput("FieldSimulation/Carrots", carrotPoses);
+
+    // intake activation
+    if (gripper.getVelocityRPS() < -35) gripperIntake.startIntake();
+    else gripperIntake.stopIntake();
+    if (trader.getVelocityRPS() < -35) traderIntake.startIntake();
+    else traderIntake.stopIntake();
+
     // gripper carrot
     if (isGripperLoaded()) {
       Translation3d elevatorTranslation = new Translation3d(0, 0, elevator.getPositionMeters());
@@ -101,7 +119,7 @@ public class SimulationHelper {
     return traderIntake.getGamePiecesAmount() > 0;
   }
 
-  public void gripperScore() {
+  private void gripperScore() {
     if (!gripperIntake.obtainGamePieceFromIntake()) return;
 
     HarvestHavocCarrotOnFly carrotOnFly =
@@ -125,7 +143,7 @@ public class SimulationHelper {
     SimulatedArena.getInstance().addGamePieceProjectile(carrotOnFly);
   }
 
-  public void traderScore() {
+  private void traderScore() {
     if (!traderIntake.obtainGamePieceFromIntake()) return;
 
     HarvestHavocCarrotOnFly carrotOnFly =

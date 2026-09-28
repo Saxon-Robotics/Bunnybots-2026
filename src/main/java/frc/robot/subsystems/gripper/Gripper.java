@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems.gripper;
 
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -27,6 +28,8 @@ public class Gripper extends SubsystemBase {
   private final Roller rightRoller;
   private final LaserCanIO beambreak;
   private final LaserCanIOInputsAutoLogged beambreakInputs = new LaserCanIOInputsAutoLogged();
+
+  private final Debouncer beambreakDebounce = new Debouncer(0.5, Debouncer.DebounceType.kBoth);
 
   @Getter
   @AutoLogOutput(key = "Gripper/HasGamePiece")
@@ -83,8 +86,9 @@ public class Gripper extends SubsystemBase {
     beambreak.updateInputs(beambreakInputs);
     Logger.processInputs("Gripper/DistanceSensor", beambreakInputs);
     isLoaded =
-        beambreakInputs.measurementValid
-            && beambreakInputs.distanceMillimeters <= GripperConstants.BEAMBREAK_THRESHOLD;
+        beambreakDebounce.calculate(
+            beambreakInputs.measurementValid
+                && beambreakInputs.distanceMillimeters <= GripperConstants.BEAMBREAK_THRESHOLD);
   }
 
   private void runTogether(double rps) {
