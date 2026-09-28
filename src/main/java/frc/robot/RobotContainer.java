@@ -4,7 +4,6 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.*;
 import static frc.robot.Constants.currentMode;
 
 import edu.wpi.first.math.MathUtil;
