@@ -17,6 +17,8 @@ import frc.robot.util.io.sensors.lasercan.LaserCanIO;
 import frc.robot.util.io.sensors.lasercan.LaserCanIOInputsAutoLogged;
 import frc.robot.util.io.sensors.lasercan.LaserCanIOReal;
 import frc.robot.util.sim.SimulationHelper;
+import lombok.Getter;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Trader extends SubsystemBase {
@@ -24,6 +26,10 @@ public class Trader extends SubsystemBase {
   private final Roller rightRoller;
   private final LaserCanIO beambreak;
   private final LaserCanIOInputsAutoLogged beambreakInputs = new LaserCanIOInputsAutoLogged();
+
+  @Getter
+  @AutoLogOutput(key = "Trader/HasGamePiece")
+  private boolean isLoaded;
 
   public Trader() {
     RollerIO leftIO =
@@ -75,6 +81,9 @@ public class Trader extends SubsystemBase {
     rightRoller.periodic();
     beambreak.updateInputs(beambreakInputs);
     Logger.processInputs("Trader/DistanceSensor", beambreakInputs);
+    isLoaded =
+        beambreakInputs.measurementValid
+            && beambreakInputs.distanceMillimeters <= TraderConstants.BEAMBREAK_THRESHOLD;
   }
 
   private void runTogether(double rps) {
@@ -106,10 +115,5 @@ public class Trader extends SubsystemBase {
 
   public double getVelocityRPS() {
     return leftRoller.getVelocityRPS();
-  }
-
-  public boolean hasGamePiece() {
-    return beambreakInputs.measurementValid
-        && beambreakInputs.distanceMillimeters <= TraderConstants.BEAMBREAK_THRESHOLD;
   }
 }

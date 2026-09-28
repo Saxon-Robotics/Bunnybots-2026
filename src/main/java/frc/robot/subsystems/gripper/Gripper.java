@@ -18,6 +18,8 @@ import frc.robot.util.io.sensors.lasercan.LaserCanIO;
 import frc.robot.util.io.sensors.lasercan.LaserCanIOInputsAutoLogged;
 import frc.robot.util.io.sensors.lasercan.LaserCanIOReal;
 import frc.robot.util.sim.SimulationHelper;
+import lombok.Getter;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Gripper extends SubsystemBase {
@@ -25,6 +27,10 @@ public class Gripper extends SubsystemBase {
   private final Roller rightRoller;
   private final LaserCanIO beambreak;
   private final LaserCanIOInputsAutoLogged beambreakInputs = new LaserCanIOInputsAutoLogged();
+
+  @Getter
+  @AutoLogOutput(key = "Gripper/HasGamePiece")
+  private boolean isLoaded;
 
   public Gripper() {
     RollerIO leftIO =
@@ -76,6 +82,9 @@ public class Gripper extends SubsystemBase {
     rightRoller.periodic();
     beambreak.updateInputs(beambreakInputs);
     Logger.processInputs("Gripper/DistanceSensor", beambreakInputs);
+    isLoaded =
+        beambreakInputs.measurementValid
+            && beambreakInputs.distanceMillimeters <= GripperConstants.BEAMBREAK_THRESHOLD;
   }
 
   private void runTogether(double rps) {
@@ -107,10 +116,5 @@ public class Gripper extends SubsystemBase {
 
   public double getVelocityRPS() {
     return leftRoller.getVelocityRPS();
-  }
-
-  public boolean hasGamePiece() {
-    return beambreakInputs.measurementValid
-        && beambreakInputs.distanceMillimeters <= GripperConstants.BEAMBREAK_THRESHOLD;
   }
 }

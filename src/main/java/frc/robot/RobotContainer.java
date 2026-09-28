@@ -7,7 +7,6 @@ package frc.robot;
 import static edu.wpi.first.units.Units.*;
 import static frc.robot.Constants.currentMode;
 
-import com.therekrab.autopilot.APTarget;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -221,19 +220,19 @@ public class RobotContainer {
     Command lockWheels = Commands.startEnd(drive::stopWithX, () -> {}, drive);
     // Reset gyro to 0°
     Command zeroGyro = Commands.runOnce(() -> drive.zeroGyro(true), drive).ignoringDisable(true);
+    Command autoAlign = DriveCommands.alignToTarget(drive, AutoAlign::getLastAPTarget);
     // Auto align to pantry (locked angle and y)
-    Command lockToPantry =
-        DriveCommands.singleAxisJoystickDrive(
-                drive,
-                () -> -driverController.getLeftY(),
-                () -> AutoAlign.getTargetPose().getY(),
-                // avoid recomputing nearest pantry
-                () -> AutoAlign.getLastTarget().getRotation())
-            .beforeStarting(() -> drive.setSpeedLimiter(true))
-            .finallyDo(() -> drive.setSpeedLimiter(false));
-
-    APTarget target = new APTarget(AutoAlign.getTargetPose()); // temp
-    Command alignCommand = DriveCommands.alignToTarget(drive, () -> target);
+    Command pantryAlign =
+        DriveCommands.alignToTarget(drive, AutoAlign::getLastAPTarget)
+            .andThen(
+                DriveCommands.singleAxisJoystickDrive(
+                        drive,
+                        () -> -driverController.getLeftY(),
+                        () -> AutoAlign.getLastTarget().getY(),
+                        // avoid recomputing nearest pantry
+                        () -> AutoAlign.getLastTarget().getRotation())
+                    .beforeStarting(() -> drive.setSpeedLimiter(true))
+                    .finallyDo(() -> drive.setSpeedLimiter(false)));
 
     /* Elevator commands */
     DoubleSupplier elevatorJoystick =
@@ -277,7 +276,7 @@ public class RobotContainer {
     // sterilize held game piece
     new Trigger(
             () ->
-                gripper.hasGamePiece()
+                gripper.isLoaded()
                     && elevator.getSetpoint().isForScoring
                     && !elevator.hasReachedSetpoint())
         .whileTrue(gripper.sterilize());
@@ -315,8 +314,8 @@ public class RobotContainer {
                           RobotUtil.isRedAlliance()
                               ? HarvestHavocCarrotOnFly.CarrotStations.RED_SIDE_DEPOT
                               : HarvestHavocCarrotOnFly.CarrotStations.BLUE_SIDE_DEPOT)));
-      keyboard.button(10).whileTrue(lockToPantry);
-      keyboard.button(6).whileTrue(alignCommand);
+      keyboard.button(10).whileTrue(pantryAlign);
+      keyboard.button(6).whileTrue(autoAlign);
     }
 
     driverController.x().whileTrue(lockWheels);

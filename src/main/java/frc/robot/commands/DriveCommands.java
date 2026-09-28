@@ -312,7 +312,9 @@ public class DriveCommands {
                   true);
             },
             drive)
-        .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()));
+        .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()))
+        .until(() -> drive.autopilot.atTarget(drive.getPose(), target.get()))
+        .finallyDo(drive::stop);
   }
 
   /**
