@@ -48,9 +48,9 @@ public class AutoAlign {
           > robotPose
               .getTranslation()
               .getSquaredDistance(Target.REAR_DEPOT.getPose(isRedAlliance).getTranslation())) {
-        target = Target.SIDE_DEPOT;
-      } else {
         target = Target.REAR_DEPOT;
+      } else {
+        target = Target.SIDE_DEPOT;
       }
     }
 

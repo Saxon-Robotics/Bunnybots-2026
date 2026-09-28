@@ -13,7 +13,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.RobotBase;
-import frc.robot.util.FieldUtils;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
@@ -88,10 +87,14 @@ public final class Constants {
     public static final Pose2d RED_RAMP =
         new Pose2d(new Translation2d(6.013, -1.739).plus(ORIGIN), Rotation2d.kZero);
 
-    public static final Pose2d BLUE_REAR_DEPOT = new Pose2d();
-    public static final Pose2d BLUE_SIDE_DEPOT = new Pose2d();
-    public static final Pose2d RED_REAR_DEPOT = FieldUtils.allianceRelativeFlip(BLUE_REAR_DEPOT);
-    public static final Pose2d RED_SIDE_DEPOT = FieldUtils.allianceRelativeFlip(BLUE_SIDE_DEPOT);
+    public static final Pose2d BLUE_REAR_DEPOT =
+        new Pose2d(new Translation2d(7.8, -3.066).plus(ORIGIN), Rotation2d.kZero);
+    public static final Pose2d BLUE_SIDE_DEPOT =
+        new Pose2d(new Translation2d(4.267, -3.8).plus(ORIGIN), Rotation2d.kCW_90deg);
+    public static final Pose2d RED_REAR_DEPOT =
+        new Pose2d(new Translation2d(-7.8, -3.066).plus(ORIGIN), Rotation2d.k180deg);
+    public static final Pose2d RED_SIDE_DEPOT =
+        new Pose2d(new Translation2d(-4.267, -3.8).plus(ORIGIN), Rotation2d.kCW_90deg);
 
     public static final Pose2d BLUE_TABLE_ZONE = new Pose2d();
     public static final Pose2d RED_TABLE_ZONE = new Pose2d();

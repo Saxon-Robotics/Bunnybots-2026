@@ -142,6 +142,7 @@ public class Elevator extends ExtendedSubsystem {
             () -> {
               runSetpoint(Setpoint.NONE);
               Logger.recordOutput("Elevator/State", "HOMING");
+              homingDebouncer.calculate(false);
               elevator.runVoltage(-ElevatorConstants.HOMING_VOLTAGE);
             },
             () -> {

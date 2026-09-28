@@ -154,9 +154,9 @@ public class Drive extends ExtendedSubsystem implements Vision.VisionConsumer {
 
   public final Autopilot autopilot =
       new Autopilot(
-          new APProfile(new APConstraints(8.0, 16.0))
-              .withErrorXY(Centimeters.of(2))
-              .withErrorTheta(Degrees.of(0.5))
+          new APProfile(new APConstraints(5.0, 16.0))
+              .withErrorXY(Centimeters.of(3))
+              .withErrorTheta(Degrees.of(2))
               .withBeelineRadius(Centimeters.of(8)));
 
   /** The maximum linear speed in meters per sec. */
