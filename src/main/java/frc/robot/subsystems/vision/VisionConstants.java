@@ -21,10 +21,10 @@ public final class VisionConstants {
   }
 
   // Camera names, must match names configured on coprocessor
-  public static final String CAMERA_0_NAME = "fl";
-  public static final String CAMERA_1_NAME = "fr";
-  public static final String CAMERA_2_NAME = "bl";
-  public static final String CAMERA_3_NAME = "br";
+  public static final String CAMERA_0_NAME = "Front_Left";
+  public static final String CAMERA_1_NAME = "Front_Right";
+  public static final String CAMERA_2_NAME = "Back_Left";
+  public static final String CAMERA_3_NAME = "Back_Right";
 
   // Robot to camera transforms
   // (Not used by EagleEye, configure in web UI instead)

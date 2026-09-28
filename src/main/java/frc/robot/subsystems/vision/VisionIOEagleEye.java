@@ -1,16 +1,9 @@
-// Copyright (c) 2021-2026 Littleton Robotics
-// http://github.com/Mechanical-Advantage
-//
-// Use of this source code is governed by a BSD
-// license that can be found in the LICENSE file
-// at the root directory of this project.
-
 package frc.robot.subsystems.vision;
 
 import frc.robot.util.io.vision.EagleEyeCamera;
 import java.util.List;
 
-/** IO implementation for real PhotonVision hardware. */
+/** IO implementation for real EagleEye hardware. */
 public class VisionIOEagleEye implements VisionIO {
   private final EagleEyeCamera camera;
 

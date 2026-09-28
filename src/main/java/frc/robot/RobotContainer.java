@@ -83,10 +83,14 @@ public class RobotContainer {
         vision =
             new Vision(
                 drive,
-                new VisionIOEagleEye(VisionConstants.CAMERA_0_NAME),
-                new VisionIOEagleEye(VisionConstants.CAMERA_1_NAME),
-                new VisionIOEagleEye(VisionConstants.CAMERA_2_NAME),
-                new VisionIOEagleEye(VisionConstants.CAMERA_3_NAME));
+                new VisionIOPhotonVision(
+                    VisionConstants.CAMERA_0_NAME, VisionConstants.CAMERA_0_OFFSET),
+                new VisionIOPhotonVision(
+                    VisionConstants.CAMERA_1_NAME, VisionConstants.CAMERA_1_OFFSET),
+                new VisionIOPhotonVision(
+                    VisionConstants.CAMERA_2_NAME, VisionConstants.CAMERA_2_OFFSET),
+                new VisionIOPhotonVision(
+                    VisionConstants.CAMERA_3_NAME, VisionConstants.CAMERA_3_OFFSET));
         elevator = new Elevator();
         gripper = new Gripper();
         trader = new Trader();
