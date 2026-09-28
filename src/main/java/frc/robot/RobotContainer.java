@@ -283,14 +283,6 @@ public class RobotContainer {
     // elevator override
     new Trigger(() -> elevatorJoystick.getAsDouble() != 0.0).whileTrue(manualElevator);
 
-    // sterilize held game piece
-    new Trigger(
-            () ->
-                gripper.isLoaded()
-                    && elevator.getSetpoint().isForScoring
-                    && !elevator.hasReachedSetpoint())
-        .whileTrue(gripper.sterilize());
-
     /* driver controls */
     driverController.x().whileTrue(lockWheels);
     driverController.y().onTrue(zeroGyro);

@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems.trader;
 
+import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -24,8 +25,7 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Trader extends SubsystemBase {
-  private final Roller leftRoller;
-  private final Roller rightRoller;
+  private final Roller roller;
   private final LaserCanIO beambreak;
   private final LaserCanIOInputsAutoLogged beambreakInputs = new LaserCanIOInputsAutoLogged();
 
@@ -42,6 +42,7 @@ public class Trader extends SubsystemBase {
                   Constants.CANConstants.SUPERSTRUCTURE,
                   Constants.CANConstants.TRADER_LEFT,
                   TraderConstants.MOTOR_CONFIG)
+              .addFollower(Constants.CANConstants.TRADER_RIGHT, MotorAlignmentValue.Opposed)
               .build();
           case SIM -> new RollerIOSim(
               DCMotor.getKrakenX60(1),
@@ -51,23 +52,7 @@ public class Trader extends SubsystemBase {
               0);
           case REPLAY -> new RollerIO() {};
         };
-    RollerIO rightIO =
-        switch (Constants.currentMode) {
-          case REAL -> new MotorIOTalonFX.Builder(
-                  Constants.CANConstants.SUPERSTRUCTURE,
-                  Constants.CANConstants.TRADER_RIGHT,
-                  TraderConstants.MOTOR_CONFIG)
-              .build();
-          case SIM -> new RollerIOSim(
-              DCMotor.getKrakenX60(1),
-              new MotorIO.RotationalMechanismConstraints(1, TraderConstants.MOI, 0, 0, 0, 0),
-              TraderConstants.KP,
-              TraderConstants.KD,
-              0);
-          case REPLAY -> new RollerIO() {};
-        };
-    leftRoller = new Roller("Trader", leftIO);
-    rightRoller = new Roller("Trader", rightIO);
+    roller = new Roller("Trader", leftIO);
 
     beambreak =
         switch (Constants.currentMode) {
@@ -81,8 +66,7 @@ public class Trader extends SubsystemBase {
 
   @Override
   public void periodic() {
-    leftRoller.periodic();
-    rightRoller.periodic();
+    roller.periodic();
     beambreak.updateInputs(beambreakInputs);
     Logger.processInputs("Trader/DistanceSensor", beambreakInputs);
     isLoaded =
@@ -91,34 +75,15 @@ public class Trader extends SubsystemBase {
                 && beambreakInputs.distanceMillimeters <= GripperConstants.BEAMBREAK_THRESHOLD);
   }
 
-  private void runTogether(double rps) {
-    leftRoller.runVelocity(rps);
-    rightRoller.runVelocity(rps);
-  }
-
-  private void runOpposed(double rps) {
-    leftRoller.runVelocity(rps);
-    rightRoller.runVelocity(-rps);
-  }
-
-  private void stop() {
-    leftRoller.stop();
-    rightRoller.stop();
-  }
-
   public Command intake() {
-    return startEnd(() -> runTogether(-TraderConstants.RPS), this::stop);
-  }
-
-  public Command sterilize() {
-    return startEnd(() -> runOpposed(TraderConstants.STERILIZATION_RPS), this::stop);
+    return startEnd(() -> roller.runVelocity(-TraderConstants.RPS), roller::stop);
   }
 
   public Command eject() {
-    return startEnd(() -> runTogether(TraderConstants.RPS), this::stop);
+    return startEnd(() -> roller.runVelocity(TraderConstants.RPS), roller::stop);
   }
 
   public double getVelocityRPS() {
-    return leftRoller.getVelocityRPS();
+    return roller.getVelocityRPS();
   }
 }

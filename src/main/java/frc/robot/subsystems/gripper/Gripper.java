@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems.gripper;
 
+import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -24,8 +25,7 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Gripper extends SubsystemBase {
-  private final Roller leftRoller;
-  private final Roller rightRoller;
+  private final Roller roller;
   private final LaserCanIO beambreak;
   private final LaserCanIOInputsAutoLogged beambreakInputs = new LaserCanIOInputsAutoLogged();
 
@@ -36,12 +36,13 @@ public class Gripper extends SubsystemBase {
   private boolean isLoaded;
 
   public Gripper() {
-    RollerIO leftIO =
+    RollerIO io =
         switch (Constants.currentMode) {
           case REAL -> new MotorIOTalonFX.Builder(
                   Constants.CANConstants.SUPERSTRUCTURE,
                   Constants.CANConstants.GRIPPER_LEFT,
                   GripperConstants.MOTOR_CONFIG)
+              .addFollower(Constants.CANConstants.GRIPPER_RIGHT, MotorAlignmentValue.Opposed)
               .build();
           case SIM -> new RollerIOSim(
               DCMotor.getKrakenX44(1),
@@ -51,23 +52,7 @@ public class Gripper extends SubsystemBase {
               0);
           case REPLAY -> new RollerIO() {};
         };
-    RollerIO rightIO =
-        switch (Constants.currentMode) {
-          case REAL -> new MotorIOTalonFX.Builder(
-                  Constants.CANConstants.SUPERSTRUCTURE,
-                  Constants.CANConstants.GRIPPER_RIGHT,
-                  GripperConstants.MOTOR_CONFIG)
-              .build();
-          case SIM -> new RollerIOSim(
-              DCMotor.getKrakenX44(1),
-              new MotorIO.RotationalMechanismConstraints(1, GripperConstants.MOI, 0, 0, 0, 0),
-              GripperConstants.KP,
-              GripperConstants.KD,
-              0);
-          case REPLAY -> new RollerIO() {};
-        };
-    leftRoller = new Roller("Gripper/Left", leftIO);
-    rightRoller = new Roller("Gripper/Right", rightIO);
+    roller = new Roller("Gripper", io);
 
     beambreak =
         switch (Constants.currentMode) {
@@ -81,8 +66,7 @@ public class Gripper extends SubsystemBase {
 
   @Override
   public void periodic() {
-    leftRoller.periodic();
-    rightRoller.periodic();
+    roller.periodic();
     beambreak.updateInputs(beambreakInputs);
     Logger.processInputs("Gripper/DistanceSensor", beambreakInputs);
     isLoaded =
@@ -91,34 +75,15 @@ public class Gripper extends SubsystemBase {
                 && beambreakInputs.distanceMillimeters <= GripperConstants.BEAMBREAK_THRESHOLD);
   }
 
-  private void runTogether(double rps) {
-    leftRoller.runVelocity(rps);
-    rightRoller.runVelocity(rps);
-  }
-
-  private void runOpposed(double rps) {
-    leftRoller.runVelocity(rps);
-    rightRoller.runVelocity(-rps);
-  }
-
-  private void stop() {
-    leftRoller.stop();
-    rightRoller.stop();
-  }
-
   public Command intake() {
-    return startEnd(() -> runTogether(-GripperConstants.RPS), this::stop);
-  }
-
-  public Command sterilize() {
-    return startEnd(() -> runOpposed(GripperConstants.STERILIZATION_RPS), this::stop);
+    return startEnd(() -> roller.runVelocity(-GripperConstants.RPS), roller::stop);
   }
 
   public Command eject() {
-    return startEnd(() -> runTogether(GripperConstants.RPS), this::stop);
+    return startEnd(() -> roller.runVelocity(GripperConstants.RPS), roller::stop);
   }
 
   public double getVelocityRPS() {
-    return leftRoller.getVelocityRPS();
+    return roller.getVelocityRPS();
   }
 }
