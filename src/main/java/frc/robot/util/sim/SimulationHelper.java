@@ -25,7 +25,7 @@ public class SimulationHelper {
       new Translation3d[] {
         new Translation3d(0.3, 0.1, 0.31),
         new Translation3d(0.1, 0.1, 0.35),
-        new Translation3d(0.1, 0.1, 0.525)
+        new Translation3d(0.18, 0.1, 0.51)
       };
 
   @Getter private static SimulationHelper instance;
@@ -86,6 +86,10 @@ public class SimulationHelper {
     Logger.recordOutput(
         "FieldSimulation/RobotComponentPosition",
         new Pose3d(0, 0, elevator.getPositionMeters(), Rotation3d.kZero));
+    Logger.recordOutput(
+        "FieldSimulation/IntakeSimulation/GripperCount", gripperIntake.getGamePiecesAmount());
+    Logger.recordOutput(
+        "FieldSimulation/IntakeSimulation/TraderCount", traderIntake.getGamePiecesAmount());
 
     Pose3d[] carrotPoses = SimulatedArena.getInstance().getGamePiecesArrayByType("Carrot");
     Logger.recordOutput("FieldSimulation/Carrots", carrotPoses);
