@@ -75,10 +75,6 @@ public class Trader extends SubsystemBase {
                 && beambreakInputs.distanceMillimeters <= GripperConstants.BEAMBREAK_THRESHOLD);
   }
 
-  public Command intake() {
-    return startEnd(() -> roller.runVelocity(-TraderConstants.RPS), roller::stop);
-  }
-
   public Command eject() {
     return startEnd(() -> roller.runVelocity(TraderConstants.RPS), roller::stop);
   }

@@ -272,7 +272,6 @@ public class RobotContainer {
     Command gripperEject = gripper.eject();
 
     /* Trader commands */
-    Command traderIntake = trader.intake();
     Command traderEject = trader.eject();
 
     // Default command, normal field-relative drive
@@ -320,7 +319,6 @@ public class RobotContainer {
     operatorController.b().whileTrue(gripperIntake);
     operatorController.y().whileTrue(gripperEject);
 
-    operatorController.a().whileTrue(traderIntake);
     operatorController.x().whileTrue(traderEject);
     // test mode (single controller)
     BooleanSupplier testProfile = () -> controlScheme == ControlScheme.TEST;
@@ -397,7 +395,6 @@ public class RobotContainer {
       Command gripperEject = gripper.eject();
 
       /* Trader commands */
-      Command traderIntake = trader.intake();
       Command traderEject = trader.eject();
 
       // controls are only active during the correct mode
@@ -428,12 +425,6 @@ public class RobotContainer {
 
       guitarHeroController.green().and(guitarHeroControls).and(upStrumBar).whileTrue(gripperIntake);
       guitarHeroController.red().and(guitarHeroControls).and(upStrumBar).whileTrue(gripperEject);
-
-      guitarHeroController
-          .green()
-          .and(guitarHeroControls)
-          .and(downStrumBar)
-          .whileTrue(traderIntake);
       guitarHeroController.red().and(guitarHeroControls).and(downStrumBar).whileTrue(traderEject);
     }
   }

@@ -62,6 +62,7 @@ public class SimulationHelper {
     traderIntake =
         IntakeSimulation.InTheFrameIntake(
             "Carrot", driveSimulation, Meters.of(0.7), IntakeSimulation.IntakeSide.BACK, 3);
+    traderIntake.startIntake();
 
     // outtake activations
     new Trigger(() -> gripper.getVelocityRPS() > 35).onTrue(Commands.runOnce(this::gripperScore));
@@ -87,8 +88,6 @@ public class SimulationHelper {
     // intake activation
     if (gripper.getVelocityRPS() < -35) gripperIntake.startIntake();
     else gripperIntake.stopIntake();
-    if (trader.getVelocityRPS() < -35) traderIntake.startIntake();
-    else traderIntake.stopIntake();
 
     // gripper carrot
     if (isGripperLoaded()) {
