@@ -360,6 +360,7 @@ public class RobotContainer {
                               : HarvestHavocCarrotOnFly.CarrotStations.BLUE_SIDE_DEPOT)));
       keyboard.button(10).whileTrue(pantryAlign);
       keyboard.button(6).onTrue(depotAlign).whileTrue(autoAlign);
+      keyboard.button(5).whileTrue(traderEject);
     }
   }
 

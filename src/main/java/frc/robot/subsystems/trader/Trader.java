@@ -47,8 +47,8 @@ public class Trader extends SubsystemBase {
           case SIM -> new RollerIOSim(
               DCMotor.getKrakenX60(1),
               new MotorIO.RotationalMechanismConstraints(1, TraderConstants.MOI, 0, 0, 0, 0),
-              TraderConstants.KP,
-              TraderConstants.KD,
+              0.5,
+              0,
               0);
           case REPLAY -> new RollerIO() {};
         };

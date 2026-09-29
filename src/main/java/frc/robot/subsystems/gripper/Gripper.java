@@ -47,8 +47,8 @@ public class Gripper extends SubsystemBase {
           case SIM -> new RollerIOSim(
               DCMotor.getKrakenX44(1),
               new MotorIO.RotationalMechanismConstraints(1, GripperConstants.MOI, 0, 0, 0, 0),
-              GripperConstants.KP,
-              GripperConstants.KD,
+              0.5,
+              0,
               0);
           case REPLAY -> new RollerIO() {};
         };

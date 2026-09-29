@@ -30,9 +30,6 @@ public final class ElevatorConstants {
   public static final double MIN_HEIGHT_METERS = 0;
   public static final double MAX_HEIGHT_METERS = Units.inchesToMeters(48);
 
-  public static final double ELEVATOR_KP = 100;
-  public static final double ELEVATOR_KD = 0;
-
   public static final EnumMap<Elevator.Setpoint, Angle> SETPOINTS =
       new EnumMap<>(Elevator.Setpoint.class);
 
@@ -62,9 +59,9 @@ public final class ElevatorConstants {
                   .withSensorToMechanismRatio(GEAR_RATIO))
           .withSlot0(
               new Slot0Configs()
-                  .withKP(ELEVATOR_KP)
+                  .withKP(100)
                   .withKI(0)
-                  .withKD(ELEVATOR_KD)
+                  .withKD(0)
                   .withKS(0)
                   .withKV(0)
                   .withKA(0)

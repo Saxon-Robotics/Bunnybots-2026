@@ -12,8 +12,6 @@ public final class TraderConstants {
   public static final double STERILIZATION_RPS = 15;
 
   public static final double MOI = 0.002;
-  public static final double KP = 0.1;
-  public static final double KD = 0;
 
   public static final TalonFXConfiguration MOTOR_CONFIG =
       new TalonFXConfiguration()
@@ -28,7 +26,7 @@ public final class TraderConstants {
                   .withInverted(InvertedValue.Clockwise_Positive)
                   .withNeutralMode(NeutralModeValue.Brake))
           .withSlot0(
-              new Slot0Configs().withKP(KP).withKI(0).withKD(KD).withKS(0).withKV(0.12).withKA(0));
+              new Slot0Configs().withKP(0.1).withKI(0).withKD(0).withKS(0).withKV(0.12).withKA(0));
 
   public static final double BEAMBREAK_THRESHOLD = 75; // mm
 
