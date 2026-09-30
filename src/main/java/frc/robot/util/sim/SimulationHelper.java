@@ -18,6 +18,7 @@ import org.dyn4j.geometry.Rectangle;
 import org.ironmaple.simulation.IntakeSimulation;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
+import org.ironmaple.simulation.gamepieces.GamePieceOnFieldSimulation;
 import org.littletonrobotics.junction.Logger;
 
 public class SimulationHelper {
@@ -52,6 +53,8 @@ public class SimulationHelper {
   private Pose3d carrotInGripper;
   private Pose3d[] carrotsInTrader = new Pose3d[3];
 
+  private GamePieceOnFieldSimulation lastCarrot;
+
   private SimulationHelper(
       Elevator elevator,
       Trader trader,
@@ -68,6 +71,8 @@ public class SimulationHelper {
         IntakeSimulation.InTheFrameIntake(
             "Carrot", driveSimulation, Meters.of(0.5), IntakeSimulation.IntakeSide.FRONT, 1);
     traderIntake = new IntakeSimulation("Carrot", driveSimulation, new Rectangle(0.6, 0.6), 3);
+    // dedup to prevent double count
+    traderIntake.setCustomIntakeCondition(this::checkIntakeCarrot);
     traderIntake.startIntake();
 
     // outtake activations
@@ -124,6 +129,12 @@ public class SimulationHelper {
               carrotRotation);
     }
     Logger.recordOutput("FieldSimulation/HeldCarrots/Trader", carrotsInTrader);
+  }
+
+  private boolean checkIntakeCarrot(GamePieceOnFieldSimulation carrot) {
+    if (carrot == lastCarrot) return false;
+    lastCarrot = carrot;
+    return true;
   }
 
   public boolean isGripperLoaded() {
