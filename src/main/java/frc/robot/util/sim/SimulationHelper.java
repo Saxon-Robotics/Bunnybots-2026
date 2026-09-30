@@ -11,6 +11,7 @@ import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.gripper.Gripper;
 import frc.robot.subsystems.trader.Trader;
 import frc.robot.subsystems.trader.TraderConstants;
+import java.util.Arrays;
 import java.util.function.Supplier;
 import lombok.Getter;
 import org.dyn4j.geometry.Rectangle;
@@ -20,12 +21,12 @@ import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.Logger;
 
 public class SimulationHelper {
-  public static final Translation3d ELEVATOR_TO_CARROT = new Translation3d(-0.3, 0.08, 0.425);
+  public static final Translation3d ELEVATOR_TO_CARROT = new Translation3d(0.3, 0.08, 0.425);
   public static final Translation3d[] TRADER_SLOTS =
       new Translation3d[] {
-        new Translation3d(0.3, 0.1, 0.31),
-        new Translation3d(0.1, 0.1, 0.35),
-        new Translation3d(0.18, 0.1, 0.51)
+        new Translation3d(-0.3, 0.1, 0.31),
+        new Translation3d(-0.1, 0.1, 0.35),
+        new Translation3d(-0.18, 0.1, 0.51)
       };
 
   @Getter private static SimulationHelper instance;
@@ -115,9 +116,7 @@ public class SimulationHelper {
       Logger.recordOutput("FieldSimulation/HeldCarrots/Gripper", Pose3d.kZero);
     }
     // trader carrots
-    for (int i = 0; i < carrotsInTrader.length; i++) {
-      carrotsInTrader[i] = Pose3d.kZero;
-    }
+    Arrays.fill(carrotsInTrader, Pose3d.kZero);
     for (int i = 0; i < traderIntake.getGamePiecesAmount(); i++) {
       carrotsInTrader[i] =
           new Pose3d(
