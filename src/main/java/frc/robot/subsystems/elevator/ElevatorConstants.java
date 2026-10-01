@@ -13,7 +13,7 @@ import edu.wpi.first.units.measure.Distance;
 import java.util.EnumMap;
 
 public final class ElevatorConstants {
-  public static Angle metersToRotations(Distance meters) {
+  public static Angle distanceToAngle(Distance meters) {
     return Rotations.of(Units.radiansToRotations(meters.in(Meters) / DRUM_RADIUS));
   }
 
@@ -24,21 +24,21 @@ public final class ElevatorConstants {
   public static final double HOMING_VELOCITY_THRESHOLD = 0.1; // placeholder, find this
 
   // physical constraints
-  public static final double GEAR_RATIO = 1.68;
-  public static final double CARRIAGE_MASS = 2.0; // kg
-  public static final double DRUM_RADIUS = Units.inchesToMeters(2);
+  public static final double GEAR_RATIO = 3;
+  public static final double CARRIAGE_MASS = 6.5; // kg
+  public static final double DRUM_RADIUS = Units.inchesToMeters(0.8785);
   public static final double MIN_HEIGHT_METERS = 0;
-  public static final double MAX_HEIGHT_METERS = Units.inchesToMeters(48);
+  public static final double MAX_HEIGHT_METERS = Units.inchesToMeters(34.5);
 
   public static final EnumMap<Elevator.Setpoint, Angle> SETPOINTS =
       new EnumMap<>(Elevator.Setpoint.class);
 
   static {
     SETPOINTS.put(Elevator.Setpoint.STOWED, Rotations.of(0));
-    SETPOINTS.put(Elevator.Setpoint.RAMP, metersToRotations(Meters.of(0)));
-    SETPOINTS.put(Elevator.Setpoint.L1, metersToRotations(Meters.of(0.2)));
-    SETPOINTS.put(Elevator.Setpoint.L2, metersToRotations(Meters.of(0)));
-    SETPOINTS.put(Elevator.Setpoint.L3, metersToRotations(Meters.of(0)));
+    SETPOINTS.put(Elevator.Setpoint.RAMP, distanceToAngle(Meters.of(0)));
+    SETPOINTS.put(Elevator.Setpoint.L1, distanceToAngle(Inches.of(20)));
+    SETPOINTS.put(Elevator.Setpoint.L2, distanceToAngle(Inches.of(30)));
+    SETPOINTS.put(Elevator.Setpoint.L3, distanceToAngle(Meters.of(0)));
   }
 
   public static final TalonFXConfiguration MOTOR_CONFIG =

@@ -227,7 +227,7 @@ public class RobotContainer {
     Command autoAlign = DriveCommands.alignToTarget(drive, AutoAlign::getLastAPTarget);
     // Auto align to pantry (locked angle and y)
     Command pantryAlign =
-        Commands.runOnce(() -> AutoAlign.getTargetPose(AutoAlign.Target.PANTRY, drive.getPose()))
+        Commands.runOnce(() -> AutoAlign.setTargetPose(AutoAlign.Target.PANTRY, drive.getPose()))
             .andThen(DriveCommands.alignToTarget(drive, AutoAlign::getLastAPTarget))
             .andThen(
                 DriveCommands.singleAxisJoystickDrive(
@@ -240,13 +240,13 @@ public class RobotContainer {
                     .finallyDo(() -> drive.setSpeedLimiter(false)));
     // Set auto align targets
     Command ovenAlign =
-        Commands.runOnce(() -> AutoAlign.getTargetPose(AutoAlign.Target.OVEN, drive.getPose()));
+        Commands.runOnce(() -> AutoAlign.setTargetPose(AutoAlign.Target.OVEN, drive.getPose()));
     Command rampAlign =
-        Commands.runOnce(() -> AutoAlign.getTargetPose(AutoAlign.Target.RAMP, drive.getPose()));
+        Commands.runOnce(() -> AutoAlign.setTargetPose(AutoAlign.Target.RAMP, drive.getPose()));
     Command depotAlign =
-        Commands.runOnce(() -> AutoAlign.getTargetPose(AutoAlign.Target.DEPOT, drive.getPose()));
+        Commands.runOnce(() -> AutoAlign.setTargetPose(AutoAlign.Target.DEPOT, drive.getPose()));
     Command tableAlign =
-        Commands.runOnce(() -> AutoAlign.getTargetPose(AutoAlign.Target.TABLE, drive.getPose()));
+        Commands.runOnce(() -> AutoAlign.setTargetPose(AutoAlign.Target.TABLE, drive.getPose()));
 
     /* Elevator commands */
     DoubleSupplier elevatorJoystick =
@@ -329,10 +329,17 @@ public class RobotContainer {
       CommandGenericHID keyboard = new CommandGenericHID(3);
 
       // superstructure keybinds
+      keyboard.button(1).onTrue(l1Elevator);
+      keyboard.button(2).onTrue(l2Elevator);
+      keyboard.button(3).onTrue(rampElevator);
+      keyboard.button(4).onTrue(stowElevator);
+      keyboard.button(5).whileTrue(gripperIntake);
+      keyboard.button(6).whileTrue(gripperEject);
+      keyboard.button(7).whileTrue(traderEject);
 
       // drop carrots
       keyboard
-          .button(7)
+          .button(8)
           .onTrue(
               Commands.runOnce(
                   () ->
@@ -341,7 +348,7 @@ public class RobotContainer {
                               ? HarvestHavocCarrotOnFly.CarrotStations.RED_RAMP
                               : HarvestHavocCarrotOnFly.CarrotStations.BLUE_RAMP)));
       keyboard
-          .button(8)
+          .button(9)
           .onTrue(
               Commands.runOnce(
                   () ->
@@ -350,7 +357,7 @@ public class RobotContainer {
                               ? HarvestHavocCarrotOnFly.CarrotStations.RED_REAR_DEPOT
                               : HarvestHavocCarrotOnFly.CarrotStations.BLUE_REAR_DEPOT)));
       keyboard
-          .button(9)
+          .button(10)
           .onTrue(
               Commands.runOnce(
                   () ->
@@ -358,9 +365,6 @@ public class RobotContainer {
                           RobotUtil.isRedAlliance()
                               ? HarvestHavocCarrotOnFly.CarrotStations.RED_SIDE_DEPOT
                               : HarvestHavocCarrotOnFly.CarrotStations.BLUE_SIDE_DEPOT)));
-      keyboard.button(10).whileTrue(pantryAlign);
-      keyboard.button(6).onTrue(depotAlign).whileTrue(autoAlign);
-      keyboard.button(5).whileTrue(traderEject);
     }
   }
 
@@ -424,9 +428,17 @@ public class RobotContainer {
           .and(upStrumBar)
           .whileTrue(manualElevator);
 
-      guitarHeroController.green().and(guitarHeroControls).and(upStrumBar).whileTrue(gripperIntake);
-      guitarHeroController.red().and(guitarHeroControls).and(upStrumBar).whileTrue(gripperEject);
-      guitarHeroController.red().and(guitarHeroControls).and(downStrumBar).whileTrue(traderEject);
+      guitarHeroController
+          .green()
+          .and(guitarHeroControls)
+          .and(downStrumBar)
+          .whileTrue(gripperIntake);
+      guitarHeroController.red().and(guitarHeroControls).and(downStrumBar).whileTrue(gripperEject);
+      guitarHeroController
+          .orange()
+          .and(guitarHeroControls)
+          .and(downStrumBar)
+          .whileTrue(traderEject);
     }
   }
 

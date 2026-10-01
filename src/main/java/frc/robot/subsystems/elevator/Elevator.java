@@ -63,7 +63,7 @@ public class Elevator extends ExtendedSubsystem {
                   ElevatorConstants.DRUM_RADIUS,
                   ElevatorConstants.MIN_HEIGHT_METERS,
                   ElevatorConstants.MAX_HEIGHT_METERS),
-              30,
+              0.35,
               0,
               0);
           case REPLAY -> new LinearSystemIO() {};
