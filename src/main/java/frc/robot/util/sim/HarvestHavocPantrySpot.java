@@ -13,9 +13,9 @@ public class HarvestHavocPantrySpot extends Goal {
   private static final Angle ANGLE_TOLERANCE = Degrees.of(10);
 
   public static final Translation2d bluePantry =
-      new Translation2d(-7.928, 3.949).plus(Constants.FieldConstants.ORIGIN);
+      new Translation2d(-7.928, 4.03).plus(Constants.FieldConstants.ORIGIN);
   public static final Translation2d redPantry =
-      new Translation2d(5.54, 3.949).plus(Constants.FieldConstants.ORIGIN);
+      new Translation2d(5.54, 4.03).plus(Constants.FieldConstants.ORIGIN);
   public static final Translation3d[] heights =
       new Translation3d[] {
         new Translation3d(0, 0, 0.830), // L1

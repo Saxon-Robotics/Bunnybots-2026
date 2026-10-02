@@ -22,8 +22,8 @@ import org.ironmaple.simulation.gamepieces.GamePieceOnFieldSimulation;
 import org.littletonrobotics.junction.Logger;
 
 public class SimulationHelper {
-  public static final Translation3d ELEVATOR_TO_CARROT = new Translation3d(0.3, 0.08, 0.425);
-  public static final Translation3d[] TRADER_SLOTS =
+  private static final Translation3d ELEVATOR_TO_CARROT = new Translation3d(0.3, 0.08, 0.425);
+  private static final Translation3d[] TRADER_SLOTS =
       new Translation3d[] {
         new Translation3d(-0.3, 0.1, 0.31),
         new Translation3d(-0.1, 0.1, 0.35),
@@ -67,11 +67,15 @@ public class SimulationHelper {
     this.driveSimulation = driveSimulation;
     this.chassisSpeeds = chassisSpeeds;
 
-    gripperIntake =
-        IntakeSimulation.InTheFrameIntake(
-            "Carrot", driveSimulation, Meters.of(0.5), IntakeSimulation.IntakeSide.FRONT, 1);
-    traderIntake = new IntakeSimulation("Carrot", driveSimulation, new Rectangle(0.6, 0.6), 3);
+    Rectangle gripperShape = new Rectangle(0.45, 0.7);
+    Rectangle traderShape = new Rectangle(0.3, 0.7);
+    gripperShape.translate(gripperShape.getWidth() / 2, 0);
+    traderShape.translate(-traderShape.getWidth() / 2, 0);
+
+    gripperIntake = new IntakeSimulation("Carrot", driveSimulation, gripperShape, 1);
+    traderIntake = new IntakeSimulation("Carrot", driveSimulation, traderShape, 3);
     // dedup to prevent double count
+    gripperIntake.setCustomIntakeCondition(this::checkIntakeCarrot);
     traderIntake.setCustomIntakeCondition(this::checkIntakeCarrot);
     traderIntake.startIntake();
 
@@ -101,8 +105,11 @@ public class SimulationHelper {
     Logger.recordOutput("FieldSimulation/Carrots", carrotPoses);
 
     // intake activation
-    if (gripper.getVelocityRPS() < -35) gripperIntake.startIntake();
-    else gripperIntake.stopIntake();
+    if (gripper.getVelocityRPS() < -35) {
+      gripperIntake.startIntake();
+    } else {
+      gripperIntake.stopIntake();
+    }
 
     Rotation3d carrotRotation =
         robotPose.getRotation().rotateBy(new Rotation3d(0, 0, Units.degreesToRadians(90)));
@@ -148,15 +155,14 @@ public class SimulationHelper {
   private void gripperScore() {
     if (!gripperIntake.obtainGamePieceFromIntake()) return;
 
+    Pose2d robotPose = driveSimulation.getSimulatedDriveTrainPose();
     HarvestHavocCarrotOnFly carrotOnFly =
         new HarvestHavocCarrotOnFly(
-            driveSimulation.getSimulatedDriveTrainPose().getTranslation(),
-            new Translation2d(carrotInGripper.getX(), carrotInGripper.getY()),
-            chassisSpeeds.get(),
-            driveSimulation.getSimulatedDriveTrainPose().getRotation(),
-            Meters.of(carrotInGripper.getZ()),
-            MetersPerSecond.of(1),
-            Degrees.of(0 /* TODO put outtake angle here (static angle) */));
+            new Translation2d(carrotInGripper.getMeasureX(), carrotInGripper.getMeasureY()),
+            new Translation2d(1, robotPose.getRotation()),
+            carrotInGripper.getZ(),
+            1.0,
+            new Rotation3d(robotPose.getRotation().plus(Rotation2d.kCCW_90deg)));
 
     carrotOnFly.enableBecomesGamePieceOnFieldAfterTouchGround();
     carrotOnFly.withProjectileTrajectoryDisplayCallBack(
@@ -172,15 +178,14 @@ public class SimulationHelper {
   private void traderScore() {
     if (!traderIntake.obtainGamePieceFromIntake()) return;
 
+    Pose2d robotPose = driveSimulation.getSimulatedDriveTrainPose();
     HarvestHavocCarrotOnFly carrotOnFly =
         new HarvestHavocCarrotOnFly(
-            driveSimulation.getSimulatedDriveTrainPose().getTranslation(),
-            new Translation2d(TRADER_SLOTS[0].getX(), TRADER_SLOTS[0].getY()),
-            chassisSpeeds.get(),
-            driveSimulation.getSimulatedDriveTrainPose().getRotation(),
-            Meters.of(TRADER_SLOTS[0].getZ()),
-            MetersPerSecond.of(2.5),
-            Degrees.of(0 /* TODO put outtake angle here (static angle) */));
+            new Translation2d(carrotsInTrader[0].getX(), carrotsInTrader[0].getY()),
+            new Translation2d(-1.5, robotPose.getRotation()),
+            carrotsInTrader[0].getZ(),
+            1.0,
+            new Rotation3d(robotPose.getRotation().plus(Rotation2d.kCCW_90deg)));
 
     carrotOnFly.enableBecomesGamePieceOnFieldAfterTouchGround();
     carrotOnFly.withProjectileTrajectoryDisplayCallBack(
