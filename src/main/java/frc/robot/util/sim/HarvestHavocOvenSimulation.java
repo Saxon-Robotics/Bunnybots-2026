@@ -12,11 +12,9 @@ import org.ironmaple.simulation.Goal;
 
 public class HarvestHavocOvenSimulation extends Goal {
   protected static final Translation3d blueOvenPose =
-      new Translation3d(Constants.FieldConstants.BLUE_OVEN.getTranslation())
-          .plus(new Translation3d(0, 0, 0.4315));
+      new Translation3d(Constants.FieldConstants.BLUE_OVEN.getTranslation());
   protected static final Translation3d redOvenPose =
-      new Translation3d(Constants.FieldConstants.RED_OVEN.getTranslation())
-          .plus(new Translation3d(0, 0, 0.4315));
+      new Translation3d(Constants.FieldConstants.RED_OVEN.getTranslation());
 
   public HarvestHavocOvenSimulation(Arena2026Bunnybots arena, boolean isBlue) {
     super(
