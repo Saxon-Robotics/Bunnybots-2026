@@ -96,7 +96,9 @@ public final class Constants {
     public static final Pose2d RED_SIDE_DEPOT =
         new Pose2d(new Translation2d(-4.267, -3.988).plus(ORIGIN), Rotation2d.kCCW_90deg);
 
-    public static final Pose2d BLUE_TABLE_ZONE = new Pose2d();
-    public static final Pose2d RED_TABLE_ZONE = new Pose2d();
+    public static final Pose2d BLUE_TABLE_ZONE =
+        new Pose2d(new Translation2d(-0.844, 0.1).plus(ORIGIN), Rotation2d.k180deg);
+    public static final Pose2d RED_TABLE_ZONE =
+        new Pose2d(new Translation2d(0.844, 0.1).plus(ORIGIN), Rotation2d.kZero);
   }
 }

@@ -343,6 +343,7 @@ public class RobotContainer {
           .onTrue(depotAlign)
           .whileTrue(autoAlign);
 
+      keyboard.button(13).onTrue(tableAlign).whileTrue(autoAlign);
       // drop carrots
       keyboard
           .button(8)

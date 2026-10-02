@@ -18,32 +18,35 @@ public class AutoAlign {
     PANTRY(
         FieldConstants.BLUE_PANTRY,
         FieldConstants.RED_PANTRY,
-        new Translation2d(0, -ROBOT_OFFSET.getY())),
+        new Translation2d(-ROBOT_OFFSET.getX(), 0)),
     OVEN(
         FieldConstants.BLUE_OVEN,
         FieldConstants.RED_OVEN,
-        new Translation2d(0, ROBOT_OFFSET.getY())),
+        new Translation2d(ROBOT_OFFSET.getX(), 0)),
     RAMP(
         FieldConstants.BLUE_RAMP,
         FieldConstants.RED_RAMP,
-        new Translation2d(ROBOT_OFFSET.getX(), 0)),
+        new Translation2d(-ROBOT_OFFSET.getX(), 0)),
     DEPOT(Pose2d.kZero, Pose2d.kZero, Translation2d.kZero),
     SIDE_DEPOT(
         FieldConstants.BLUE_SIDE_DEPOT,
         FieldConstants.RED_SIDE_DEPOT,
-        new Translation2d(0, ROBOT_OFFSET.getY())),
+        new Translation2d(ROBOT_OFFSET.getX(), 0)),
     REAR_DEPOT(
         FieldConstants.BLUE_REAR_DEPOT,
         FieldConstants.RED_REAR_DEPOT,
-        new Translation2d(-ROBOT_OFFSET.getX(), 0)),
-    TABLE(FieldConstants.BLUE_TABLE_ZONE, FieldConstants.RED_TABLE_ZONE, ROBOT_OFFSET);
+        new Translation2d(ROBOT_OFFSET.getX(), 0)),
+    TABLE(
+        FieldConstants.BLUE_TABLE_ZONE,
+        FieldConstants.RED_TABLE_ZONE,
+        new Translation2d(ROBOT_OFFSET.getX(), 0));
 
     public final Pose2d bluePose;
     public final Pose2d redPose;
 
     Target(Pose2d bluePose, Pose2d redPose, Translation2d offset) {
       this.bluePose = bluePose.plus(new Transform2d(offset, Rotation2d.kZero));
-      this.redPose = redPose.plus(new Transform2d(offset.times(-1), Rotation2d.kZero));
+      this.redPose = redPose.plus(new Transform2d(offset, Rotation2d.kZero));
     }
 
     public Pose2d getPose(boolean isRedAlliance) {
