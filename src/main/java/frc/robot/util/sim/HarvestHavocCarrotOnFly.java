@@ -64,13 +64,21 @@ public class HarvestHavocCarrotOnFly extends GamePieceProjectile {
         Centimeters.of(57.659358),
         new Translation2d(-1.816, 0)),
     BLUE_REAR_DEPOT(
-        FieldConstants.BLUE_REAR_DEPOT, Centimeters.of(57.383772), new Translation2d(1.816, 0)),
+        new Pose2d(FieldConstants.BLUE_REAR_DEPOT.getTranslation(), Rotation2d.kCW_90deg),
+        Centimeters.of(58.420),
+        new Translation2d(-1.816, 0)),
     BLUE_SIDE_DEPOT(
-        FieldConstants.BLUE_SIDE_DEPOT, Centimeters.of(57.383772), new Translation2d(0, 1.816)),
+        new Pose2d(FieldConstants.BLUE_SIDE_DEPOT.getTranslation(), Rotation2d.kZero),
+        Centimeters.of(58.420),
+        new Translation2d(0, 1.816)),
     RED_REAR_DEPOT(
-        FieldConstants.RED_REAR_DEPOT, Centimeters.of(57.383772), new Translation2d(-1.816, 0)),
+        new Pose2d(FieldConstants.RED_REAR_DEPOT.getTranslation(), Rotation2d.kCW_90deg),
+        Centimeters.of(58.420),
+        new Translation2d(1.816, 0)),
     RED_SIDE_DEPOT(
-        FieldConstants.RED_SIDE_DEPOT, Centimeters.of(57.383772), new Translation2d(0, -1.816));
+        new Pose2d(FieldConstants.RED_SIDE_DEPOT.getTranslation(), Rotation2d.kZero),
+        Centimeters.of(58.420),
+        new Translation2d(0, 1.816));
 
     private final Pose2d startingPose;
     private final Distance height;

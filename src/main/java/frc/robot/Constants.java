@@ -73,14 +73,14 @@ public final class Constants {
         new Translation2d(FIELD_LENGTH.div(2.0), FIELD_WIDTH.div(2.0));
 
     public static final Pose2d BLUE_PANTRY =
-        new Pose2d(new Translation2d(-6.734, 3.557).plus(ORIGIN), Rotation2d.kCCW_90deg);
+        new Pose2d(new Translation2d(-6.734, 3.937).plus(ORIGIN), Rotation2d.kCCW_90deg);
     public static final Pose2d RED_PANTRY =
-        new Pose2d(new Translation2d(6.734, 3.557).plus(ORIGIN), Rotation2d.kCCW_90deg);
+        new Pose2d(new Translation2d(6.734, 3.937).plus(ORIGIN), Rotation2d.kCCW_90deg);
 
     public static final Pose2d BLUE_OVEN =
-        new Pose2d(new Translation2d(-7.8135, -1.422).plus(ORIGIN), Rotation2d.k180deg);
+        new Pose2d(new Translation2d(-7.8135, -1.422).plus(ORIGIN), Rotation2d.kCCW_90deg);
     public static final Pose2d RED_OVEN =
-        new Pose2d(new Translation2d(7.8135, -1.422).plus(ORIGIN), Rotation2d.k180deg);
+        new Pose2d(new Translation2d(7.8135, -1.422).plus(ORIGIN), Rotation2d.kCCW_90deg);
 
     public static final Pose2d BLUE_RAMP =
         new Pose2d(new Translation2d(-6.013, -1.739).plus(ORIGIN), Rotation2d.k180deg);
@@ -88,13 +88,13 @@ public final class Constants {
         new Pose2d(new Translation2d(6.013, -1.739).plus(ORIGIN), Rotation2d.kZero);
 
     public static final Pose2d BLUE_REAR_DEPOT =
-        new Pose2d(new Translation2d(7.8, -3.066).plus(ORIGIN), Rotation2d.kZero);
+        new Pose2d(new Translation2d(8.105, -3.067).plus(ORIGIN), Rotation2d.k180deg);
     public static final Pose2d BLUE_SIDE_DEPOT =
-        new Pose2d(new Translation2d(4.267, -3.8).plus(ORIGIN), Rotation2d.kCW_90deg);
+        new Pose2d(new Translation2d(4.267, -3.988).plus(ORIGIN), Rotation2d.kCCW_90deg);
     public static final Pose2d RED_REAR_DEPOT =
-        new Pose2d(new Translation2d(-7.8, -3.066).plus(ORIGIN), Rotation2d.k180deg);
+        new Pose2d(new Translation2d(-8.105, -3.067).plus(ORIGIN), Rotation2d.kZero);
     public static final Pose2d RED_SIDE_DEPOT =
-        new Pose2d(new Translation2d(-4.267, -3.8).plus(ORIGIN), Rotation2d.kCW_90deg);
+        new Pose2d(new Translation2d(-4.267, -3.988).plus(ORIGIN), Rotation2d.kCCW_90deg);
 
     public static final Pose2d BLUE_TABLE_ZONE = new Pose2d();
     public static final Pose2d RED_TABLE_ZONE = new Pose2d();

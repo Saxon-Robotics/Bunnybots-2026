@@ -291,10 +291,8 @@ public class RobotContainer {
     driverController.y().onTrue(zeroGyro);
     driverController.a().onTrue(tableAlign).whileTrue(autoAlign);
     BooleanSupplier isPossessing = () -> gripper.isLoaded() || trader.isLoaded();
-    driverController
-        .leftBumper()
-        .onTrue(new ConditionalCommand(ovenAlign, rampAlign, isPossessing))
-        .whileTrue(autoAlign);
+    Command ovenOrRampAlign = new ConditionalCommand(ovenAlign, rampAlign, isPossessing);
+    driverController.leftBumper().onTrue(ovenOrRampAlign).whileTrue(autoAlign);
     driverController.rightBumper().and(isPossessing).whileTrue(pantryAlign);
     driverController
         .rightBumper()
@@ -336,6 +334,14 @@ public class RobotContainer {
       keyboard.button(5).whileTrue(gripperIntake);
       keyboard.button(6).whileTrue(gripperEject);
       keyboard.button(7).whileTrue(traderEject);
+
+      keyboard.button(11).onTrue(ovenOrRampAlign).whileTrue(autoAlign);
+      keyboard.button(12).and(isPossessing).whileTrue(pantryAlign);
+      keyboard
+          .button(12)
+          .and(new Trigger(isPossessing).negate())
+          .onTrue(depotAlign)
+          .whileTrue(autoAlign);
 
       // drop carrots
       keyboard
