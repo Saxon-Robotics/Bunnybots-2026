@@ -203,7 +203,6 @@ public class RobotContainer {
 
     Logger.recordOutput("Field/BlueOven", Constants.FieldConstants.BLUE_OVEN);
     Logger.recordOutput("Field/RedOven", Constants.FieldConstants.RED_OVEN);
-    Logger.recordOutput("Field/BluePantry", Constants.FieldConstants.BLUE_PANTRY);
   }
 
   /**
