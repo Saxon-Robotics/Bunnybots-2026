@@ -154,7 +154,7 @@ public class Drive extends ExtendedSubsystem implements Vision.VisionConsumer {
 
   public final Autopilot autopilot =
       new Autopilot(
-          new APProfile(new APConstraints(5.0, 16.0))
+          new APProfile(new APConstraints(15, 2.5))
               .withErrorXY(Centimeters.of(3))
               .withErrorTheta(Degrees.of(2))
               .withBeelineRadius(Centimeters.of(8)));
