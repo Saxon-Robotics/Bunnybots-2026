@@ -11,6 +11,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import java.util.EnumMap;
+import java.util.Map;
 
 public final class ElevatorConstants {
   public static Angle distanceToAngle(Distance meters) {
@@ -24,13 +25,13 @@ public final class ElevatorConstants {
   public static final double HOMING_VELOCITY_THRESHOLD = 0.1; // placeholder, find this
 
   // physical constraints
-  public static final double GEAR_RATIO = 3;
-  public static final double CARRIAGE_MASS = 6.5; // kg
+  public static final double GEAR_RATIO = 4;
+  public static final double CARRIAGE_MASS = Units.lbsToKilograms(13.0);
   public static final double DRUM_RADIUS = Units.inchesToMeters(0.8785);
   public static final double MIN_HEIGHT_METERS = 0;
   public static final double MAX_HEIGHT_METERS = Units.inchesToMeters(34.5);
 
-  public static final EnumMap<Elevator.Setpoint, Angle> SETPOINTS =
+  public static final Map<Elevator.Setpoint, Angle> SETPOINTS =
       new EnumMap<>(Elevator.Setpoint.class);
 
   static {
@@ -45,7 +46,7 @@ public final class ElevatorConstants {
       new TalonFXConfiguration()
           .withCurrentLimits(
               new CurrentLimitsConfigs()
-                  .withStatorCurrentLimit(80)
+                  .withStatorCurrentLimit(70)
                   .withSupplyCurrentLimit(60)
                   .withStatorCurrentLimitEnable(true)
                   .withSupplyCurrentLimitEnable(true))
@@ -59,16 +60,17 @@ public final class ElevatorConstants {
                   .withSensorToMechanismRatio(GEAR_RATIO))
           .withSlot0(
               new Slot0Configs()
-                  .withKP(100)
+                  // recalc values
+                  .withKP(2.071)
                   .withKI(0)
-                  .withKD(0)
+                  .withKD(0.026)
                   .withKS(0)
-                  .withKV(0)
-                  .withKA(0)
-                  .withKG(0)
+                  .withKV(0.118)
+                  .withKA(0.001)
+                  .withKG(0.311)
                   .withGravityType(GravityTypeValue.Elevator_Static))
           .withMotionMagic(
               new MotionMagicConfigs()
-                  .withMotionMagicCruiseVelocity(3)
-                  .withMotionMagicAcceleration(80));
+                  .withMotionMagicCruiseVelocity(89.311)
+                  .withMotionMagicAcceleration(1404.071));
 }
