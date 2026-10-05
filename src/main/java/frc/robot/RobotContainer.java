@@ -183,13 +183,6 @@ public class RobotContainer {
     // Set up BLine and pull in autos
     BLineAutoBuilder.addPathsToChooser(autoChooser);
 
-    // Visualize BLine Paths
-    autoChooser.onChange(
-        command -> {
-          Path path = BLineAutoBuilder.getPathFromCommand(command);
-          BLineField.drawPath(drive.field, path != null ? path : new Path());
-        });
-
     // Set up SysId routines when not in competition
     if (!DriverStation.isFMSAttached()) {
       autoChooser.addOption(
@@ -208,9 +201,16 @@ public class RobotContainer {
           "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
     }
 
-    // Set up custom autos (non-PathPlanner)
+    // Set up custom autos
     //    autoChooser.addOption("Full System Check", Autos.systemCheck(drive, shooter, feeder,
     // intake));
+
+    // Visualize BLine Paths
+    autoChooser.onChange(
+        command -> {
+          Path path = BLineAutoBuilder.getPathFromCommand(command);
+          BLineField.drawPath(drive.field, path != null ? path : new Path());
+        });
 
     DriverStation.silenceJoystickConnectionWarning(true);
 

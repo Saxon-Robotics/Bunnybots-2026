@@ -27,21 +27,27 @@ public class BLineAutoBuilder {
 
     for (String name : getAllPathNames()) {
       if (name.startsWith(BetterAutoChooser.FLIP_PREFIX)) {
+        // grab path from name
         Path leftPath = new Path(name);
         Path rightPath = leftPath.copy();
+        // flip the correct path
         if (BetterAutoChooser.RIGHT_IS_FLIPPED) {
           rightPath.mirror();
         } else {
           leftPath.mirror();
         }
+        // build autos
         Command leftPathCommand = builder.build(leftPath);
         Command rightPathCommand = builder.build(rightPath);
+        // add autos to chooser
         String remainder = name.substring(BetterAutoChooser.FLIP_PREFIX.length());
         autoChooser.addOption("Left " + remainder + " (Generated)", leftPathCommand);
         autoChooser.addOption("Right " + remainder + " (Generated)", rightPathCommand);
+        // map autos to paths for Field2d visualization
         commandToPath.put(leftPathCommand, rightPath);
         commandToPath.put(rightPathCommand, leftPath);
       } else {
+        // no flip needed
         Path path = new Path(name);
         Command pathCommand = builder.build(path);
         autoChooser.addOption(name, pathCommand);
