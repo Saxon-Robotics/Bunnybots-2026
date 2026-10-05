@@ -6,6 +6,7 @@ package frc.robot;
 
 import static frc.robot.Constants.currentMode;
 
+import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -21,6 +22,9 @@ import frc.robot.Constants.ControlScheme;
 import frc.robot.Constants.ControllerConstants;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
+import frc.robot.lib.BLine.BLineField;
+import frc.robot.lib.BLine.FollowPath;
+import frc.robot.lib.BLine.Path;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.gripper.Gripper;
@@ -166,16 +170,25 @@ public class RobotContainer {
         new LoggedDashboardChooser<>("Control Profile");
     controlProfiles.addDefaultOption("Main", ControlScheme.MAIN);
     controlProfiles.addOption("Guitar Hero Operator", ControlScheme.GUITAR_HERO);
-    //    controlProfiles.addOption("Guitar Hero Full Control", ControlScheme.GUITAR_HERO_FULL);
     controlProfiles.addOption("Testing", ControlScheme.TEST);
     controlProfiles.onChange(this::setControlScheme);
 
-    // Set up commands for PathPlanner
+    // Set up commands for PathPlanner & BLine
     configureAutoCommands();
 
     // Have the autoChooser pull in all PathPlanner autos as options
     autoChooser =
         new LoggedDashboardChooser<>("Auto Chooser", BetterAutoChooser.buildAutoChooser());
+
+    // Set up BLine and pull in autos
+    BLineAutoBuilder.addPathsToChooser(autoChooser);
+
+    // Visualize BLine Paths
+    autoChooser.onChange(
+        command -> {
+          Path path = BLineAutoBuilder.getPathFromCommand(command);
+          BLineField.drawPath(drive.field, path != null ? path : new Path());
+        });
 
     // Set up SysId routines when not in competition
     if (!DriverStation.isFMSAttached()) {
@@ -374,7 +387,19 @@ public class RobotContainer {
     }
   }
 
-  private void configureAutoCommands() {}
+  private void configureAutoCommands() {
+    Command traderEject = trader.eject();
+    //    Command gripperIntake = gripper.intake();
+    //    Command gripperEject = gripper.eject();
+    //
+    //    Command stowElevator = elevator.stow();
+    //    Command rampElevator = elevator.ramp();
+    //    Command l1Elevator = elevator.l1();
+    //    Command l2Elevator = elevator.l2();
+
+    NamedCommands.registerCommand("TraderEject", traderEject);
+    FollowPath.registerEventTrigger("TraderEject", traderEject);
+  }
 
   public void setControlScheme(ControlScheme newScheme) {
     if (newScheme == ControlScheme.GUITAR_HERO) {

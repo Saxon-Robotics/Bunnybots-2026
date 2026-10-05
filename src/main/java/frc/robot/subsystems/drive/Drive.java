@@ -30,6 +30,7 @@ import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -54,10 +55,9 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.generated.TunerConstants;
-import frc.robot.lib.BLine.BLineCommands;
-import frc.robot.lib.BLine.BLineField;
 import frc.robot.lib.BLine.FollowPath;
 import frc.robot.subsystems.vision.Vision;
+import frc.robot.util.BLineAutoBuilder;
 import frc.robot.util.LocalADStarAK;
 import frc.robot.util.RobotUtil;
 import frc.robot.util.subsystems.ExtendedSubsystem;
@@ -151,7 +151,7 @@ public class Drive extends ExtendedSubsystem implements Vision.VisionConsumer {
   private final SwerveDrivePoseEstimator poseEstimator =
       new SwerveDrivePoseEstimator(
           kinematics, rawGyroRotation, lastModulePositions, new Pose2d(3, 3, new Rotation2d()));
-  private final Field2d field = new Field2d();
+  public final Field2d field = new Field2d();
 
   private final Consumer<Pose2d> resetSimulationPoseCallBack;
 
@@ -206,6 +206,19 @@ public class Drive extends ExtendedSubsystem implements Vision.VisionConsumer {
     PathPlannerLogging.setLogTargetPoseCallback(
         targetPose -> Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose));
     SmartDashboard.putData(field);
+
+    BLineAutoBuilder.configure(
+        new FollowPath.Builder(
+                this,
+                this::getPose,
+                this::getChassisSpeeds,
+                this::runVelocity,
+                new PIDController(2.0, 0.0, 0.0),
+                new PIDController(1.0, 0.0, 0.0),
+                new PIDController(0.2, 0.0, 0.0))
+            .withDefaultShouldFlip()
+            .withTRatioBasedTranslationHandoffs(true)
+            .withPoseReset(this::setPose));
 
     // Configure SysId
     sysId =
@@ -302,6 +315,10 @@ public class Drive extends ExtendedSubsystem implements Vision.VisionConsumer {
 
     // Log optimized setpoints (runSetpoint mutates each state)
     Logger.recordOutput("SwerveStates/SetpointsOptimized", setpointStates);
+  }
+
+  public void runVelocity(ChassisSpeeds speeds) {
+    runVelocity(speeds, true);
   }
 
   /** Runs the drive in a straight line with the specified drive output. */

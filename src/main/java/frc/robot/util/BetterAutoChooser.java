@@ -12,9 +12,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class BetterAutoChooser {
-  private static final boolean RIGHT_IS_FLIPPED = true;
-  private static final String DEFAULT_NAME = "None";
-  private static final String FLIP_PREFIX = "FLIP_";
+  public static final boolean RIGHT_IS_FLIPPED = true;
+  public static final String DEFAULT_NAME = "None";
+  public static final String FLIP_PREFIX = "FLIP_";
 
   private static final double TRANSLATION_ERROR = 0.5; // meters
   private static final double ROTATION_ERROR = 0.1; // rotations
