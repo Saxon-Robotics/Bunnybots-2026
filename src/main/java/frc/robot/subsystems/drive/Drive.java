@@ -54,6 +54,9 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.generated.TunerConstants;
+import frc.robot.lib.BLine.BLineCommands;
+import frc.robot.lib.BLine.BLineField;
+import frc.robot.lib.BLine.FollowPath;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.util.LocalADStarAK;
 import frc.robot.util.RobotUtil;
@@ -294,7 +297,7 @@ public class Drive extends ExtendedSubsystem implements Vision.VisionConsumer {
 
     // Send setpoints to modules
     for (int i = 0; i < 4; i++) {
-      modules[i].runSetpoint(setpointStates[i], true);
+      modules[i].runSetpoint(setpointStates[i], enableAntiJitter);
     }
 
     // Log optimized setpoints (runSetpoint mutates each state)
