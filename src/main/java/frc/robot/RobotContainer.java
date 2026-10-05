@@ -6,14 +6,7 @@ package frc.robot;
 
 import static frc.robot.Constants.*;
 
-import java.util.function.BooleanSupplier;
-import java.util.function.DoubleSupplier;
-
-import org.ironmaple.simulation.SimulatedArena;
-import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
-import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
-
+import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -27,12 +20,10 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.ControlScheme;
 import frc.robot.Constants.ControllerConstants;
+import frc.robot.commands.BLineAutos;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
 import frc.robot.lib.BLine.BLineCommands;
-import frc.robot.lib.BLine.BLineField;
-import frc.robot.lib.BLine.FollowPath;
-import frc.robot.lib.BLine.Path;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -49,13 +40,18 @@ import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.util.AutoAlign;
-import frc.robot.util.BLineAutoBuilder;
 import frc.robot.util.BetterAutoChooser;
 import frc.robot.util.RobotUtil;
 import frc.robot.util.io.GuitarHeroController;
 import frc.robot.util.sim.Arena2026Bunnybots;
 import frc.robot.util.sim.HarvestHavocCarrotOnFly;
 import frc.robot.util.sim.SimulationHelper;
+import java.util.function.BooleanSupplier;
+import java.util.function.DoubleSupplier;
+import org.ironmaple.simulation.SimulatedArena;
+import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -195,8 +191,8 @@ public class RobotContainer {
     autoChooser =
         new LoggedDashboardChooser<>("Auto Chooser", BetterAutoChooser.buildAutoChooser());
 
-    // Set up BLine and pull in autos
-    BLineAutoBuilder.addPathsToChooser(autoChooser);
+    // Set up BLine autos
+    addBLineAutos();
 
     // Set up SysId routines when not in competition
     if (!DriverStation.isFMSAttached()) {
@@ -221,11 +217,11 @@ public class RobotContainer {
     // intake));
 
     // Visualize BLine Paths
-    autoChooser.onChange(
-        command -> {
-          Path path = BLineAutoBuilder.getPathFromCommand(command);
-          BLineField.drawPath(drive.field, "path", path != null ? path : new Path());
-        });
+    //    autoChooser.onChange(
+    //        command -> {
+    //          Path path = BLineAutoBuilder.getPathFromCommand(command);
+    //          BLineField.drawPath(drive.field, "path", path != null ? path : new Path());
+    //        });
 
     DriverStation.silenceJoystickConnectionWarning(true);
 
@@ -407,27 +403,22 @@ public class RobotContainer {
         Commands.runOnce(() -> AutoAlign.setTargetPose(AutoAlign.Target.PANTRY, drive.getPose()))
             .andThen(DriveCommands.alignToTarget(drive, AutoAlign::getLastAPTarget));
 
-    Command traderEject =
-        trader.eject().until(() -> !trader.isLoaded());
+    Command traderEject = trader.eject().until(() -> !trader.isLoaded());
     Command rampIntake =
-            BLineCommands.sequence(elevator.ramp(), gripper.intake().until(gripper::isLoaded));
+        BLineCommands.sequence(elevator.ramp(), gripper.intake().until(gripper::isLoaded));
     Command scoreL2 =
-            BLineCommands.sequence(
-                pantryAlign, elevator.l2(), gripper.eject().until(() -> !gripper.isLoaded()));
+        BLineCommands.sequence(
+            pantryAlign, elevator.l2(), gripper.eject().until(() -> !gripper.isLoaded()));
 
-    Path ovenToRamp = new Path("OvenToRamp");
-    Path rampToPantry = new Path("RampToPantry");
-    Path pantryToWait = new Path("PantryToWait");
+    NamedCommands.registerCommand("TraderEject", traderEject);
+    NamedCommands.registerCommand("RampIntake", rampIntake);
+    NamedCommands.registerCommand("ScoreL2", scoreL2);
+  }
 
-    Command auto = Commands.sequence(
-    traderEject,
-    followPath(ovenToRamp),    // drive to the eject spot
-    rampIntake,              // robot sits still until the piece is out
-    followPath(rampToPantry),    // keep going
-    scoreL2,
-    FollowPath(pantryToWait)
+  private void addBLineAutos() {
+    BLineAutos.configure(drive, elevator, trader, gripper);
 
-);
+    autoChooser.addOption("BLine Carrot Cake", BLineAutos.carrotCake());
   }
 
   public void setControlScheme(ControlScheme newScheme) {

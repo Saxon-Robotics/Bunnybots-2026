@@ -30,7 +30,6 @@ import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -56,9 +55,7 @@ import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.generated.TunerConstants;
 import frc.robot.lib.BLine.FlippingUtil;
-import frc.robot.lib.BLine.FollowPath;
 import frc.robot.subsystems.vision.Vision;
-import frc.robot.util.BLineAutoBuilder;
 import frc.robot.util.LocalADStarAK;
 import frc.robot.util.RobotUtil;
 import frc.robot.util.subsystems.ExtendedSubsystem;
@@ -208,20 +205,6 @@ public class Drive extends ExtendedSubsystem implements Vision.VisionConsumer {
         targetPose -> Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose));
     SmartDashboard.putData(field);
 
-    BLineAutoBuilder.configure(
-        new FollowPath.Builder(
-                this,
-                this::getPose,
-                this::getChassisSpeeds,
-                this::runVelocity,
-                new PIDController(2.0, 0.0, 0.0),
-                new PIDController(1.0, 0.0, 0.0),
-                new PIDController(0.2, 0.0, 0.0))
-            .withDefaultShouldFlip()
-            // in this field, alliance sides are mirrored from each other
-            .withShouldMirror(RobotUtil::isRedAlliance)
-            .withTRatioBasedTranslationHandoffs(true)
-            .withPoseReset(this::setPose));
     FlippingUtil.fieldSizeX = Constants.FieldConstants.FIELD_LENGTH.in(Meters);
     FlippingUtil.fieldSizeY = Constants.FieldConstants.FIELD_WIDTH.in(Meters);
     com.pathplanner.lib.util.FlippingUtil.fieldSizeX =

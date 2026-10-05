@@ -37,8 +37,8 @@ public final class ElevatorConstants {
   static {
     SETPOINTS.put(Elevator.Setpoint.STOWED, Rotations.of(0));
     SETPOINTS.put(Elevator.Setpoint.RAMP, distanceToAngle(Meters.of(0)));
-    SETPOINTS.put(Elevator.Setpoint.L1, distanceToAngle(Inches.of(20)));
-    SETPOINTS.put(Elevator.Setpoint.L2, distanceToAngle(Inches.of(30)));
+    SETPOINTS.put(Elevator.Setpoint.L1, distanceToAngle(Inches.of(23)));
+    SETPOINTS.put(Elevator.Setpoint.L2, distanceToAngle(Inches.of(34)));
     SETPOINTS.put(Elevator.Setpoint.L3, distanceToAngle(Meters.of(0)));
   }
 
