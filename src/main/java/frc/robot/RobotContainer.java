@@ -21,6 +21,7 @@ import frc.robot.Constants.ControlScheme;
 import frc.robot.Constants.ControllerConstants;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
+import frc.robot.lib.BLine.BLineCommands;
 import frc.robot.lib.BLine.BLineField;
 import frc.robot.lib.BLine.FollowPath;
 import frc.robot.lib.BLine.Path;
@@ -388,15 +389,14 @@ public class RobotContainer {
 
   private void configureAutoCommands() {
     Command traderEject = trader.eject().until(() -> !trader.isLoaded());
-    Command rampIntake = elevator.ramp().andThen(gripper.intake().until(gripper::isLoaded));
+    Command rampIntake =
+        BLineCommands.sequence(elevator.ramp(), gripper.intake().until(gripper::isLoaded));
     Command pantryAlign =
         Commands.runOnce(() -> AutoAlign.setTargetPose(AutoAlign.Target.PANTRY, drive.getPose()))
             .andThen(DriveCommands.alignToTarget(drive, AutoAlign::getLastAPTarget));
     Command scoreL2 =
-        pantryAlign
-            .andThen(elevator.l2())
-            .andThen(gripper.eject())
-            .until(() -> !gripper.isLoaded());
+        BLineCommands.sequence(
+            pantryAlign, elevator.l2(), gripper.eject().until(() -> !gripper.isLoaded()));
 
     FollowPath.registerEventTrigger("TraderEject", traderEject);
     FollowPath.registerEventTrigger("RampIntake", rampIntake);
@@ -485,14 +485,20 @@ public class RobotContainer {
   }
 
   public void resetSimulationField() {
-    if (Constants.currentMode == Constants.Mode.REAL) return;
+    if (Constants.currentMode != Constants.Mode.SIM) return;
 
     driveSimulation.setSimulationWorldPose(new Pose2d(3, 3, new Rotation2d()));
     SimulatedArena.getInstance().resetFieldForAuto();
   }
 
+  public void initSimulationAuto() {
+    if (Constants.currentMode != Constants.Mode.SIM) return;
+
+    sim.preloadTrader();
+  }
+
   public void updateSimulation() {
-    if (Constants.currentMode == Constants.Mode.REAL) return;
+    if (Constants.currentMode != Constants.Mode.SIM) return;
 
     sim.simulationPeriodic();
   }

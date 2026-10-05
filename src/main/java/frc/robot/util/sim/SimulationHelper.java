@@ -152,6 +152,10 @@ public class SimulationHelper {
     return traderIntake.getGamePiecesAmount() > 0;
   }
 
+  public void preloadTrader() {
+    traderIntake.setGamePiecesCount(2);
+  }
+
   private void gripperScore() {
     if (!gripperIntake.obtainGamePieceFromIntake()) return;
 
