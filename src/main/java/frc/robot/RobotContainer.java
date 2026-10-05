@@ -388,15 +388,21 @@ public class RobotContainer {
   }
 
   private void configureAutoCommands() {
-    Command traderEject = trader.eject().until(() -> !trader.isLoaded());
-    Command rampIntake =
-        BLineCommands.sequence(elevator.ramp(), gripper.intake().until(gripper::isLoaded));
     Command pantryAlign =
         Commands.runOnce(() -> AutoAlign.setTargetPose(AutoAlign.Target.PANTRY, drive.getPose()))
             .andThen(DriveCommands.alignToTarget(drive, AutoAlign::getLastAPTarget));
+
+    Command traderEject =
+        BLineCommands.race(trader.eject().until(() -> !trader.isLoaded()), drive.idle());
+    Command rampIntake =
+        BLineCommands.race(
+            BLineCommands.sequence(elevator.ramp(), gripper.intake().until(gripper::isLoaded)),
+            drive.idle());
     Command scoreL2 =
-        BLineCommands.sequence(
-            pantryAlign, elevator.l2(), gripper.eject().until(() -> !gripper.isLoaded()));
+        BLineCommands.race(
+            BLineCommands.sequence(
+                pantryAlign, elevator.l2(), gripper.eject().until(() -> !gripper.isLoaded())),
+            drive.idle());
 
     FollowPath.registerEventTrigger("TraderEject", traderEject);
     FollowPath.registerEventTrigger("RampIntake", rampIntake);
