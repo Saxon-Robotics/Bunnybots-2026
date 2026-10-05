@@ -55,6 +55,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.generated.TunerConstants;
+import frc.robot.lib.BLine.FlippingUtil;
 import frc.robot.lib.BLine.FollowPath;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.util.BLineAutoBuilder;
@@ -217,8 +218,16 @@ public class Drive extends ExtendedSubsystem implements Vision.VisionConsumer {
                 new PIDController(1.0, 0.0, 0.0),
                 new PIDController(0.2, 0.0, 0.0))
             .withDefaultShouldFlip()
+            // in this field, alliance sides are mirrored from each other
+            .withShouldMirror(RobotUtil::isRedAlliance)
             .withTRatioBasedTranslationHandoffs(true)
             .withPoseReset(this::setPose));
+    FlippingUtil.fieldSizeX = Constants.FieldConstants.FIELD_LENGTH.in(Meters);
+    FlippingUtil.fieldSizeY = Constants.FieldConstants.FIELD_WIDTH.in(Meters);
+    com.pathplanner.lib.util.FlippingUtil.fieldSizeX =
+        Constants.FieldConstants.FIELD_LENGTH.in(Meters);
+    com.pathplanner.lib.util.FlippingUtil.fieldSizeY =
+        Constants.FieldConstants.FIELD_WIDTH.in(Meters);
 
     // Configure SysId
     sysId =

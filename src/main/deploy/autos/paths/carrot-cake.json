@@ -15,7 +15,7 @@
     {
       "type": "event_trigger",
       "t_ratio": 0.0,
-      "lib_key": "trade"
+      "lib_key": "TraderEject"
     },
     {
       "type": "waypoint",
@@ -44,7 +44,7 @@
     {
       "type": "event_trigger",
       "t_ratio": 0.0,
-      "lib_key": "rampIntake"
+      "lib_key": "RampIntake"
     },
     {
       "type": "rotation",
@@ -55,7 +55,7 @@
     {
       "type": "event_trigger",
       "t_ratio": 1.0,
-      "lib_key": "scoreL2"
+      "lib_key": "ScoreL2"
     },
     {
       "type": "waypoint",

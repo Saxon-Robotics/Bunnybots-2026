@@ -6,7 +6,6 @@ package frc.robot;
 
 import static frc.robot.Constants.currentMode;
 
-import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -209,7 +208,7 @@ public class RobotContainer {
     autoChooser.onChange(
         command -> {
           Path path = BLineAutoBuilder.getPathFromCommand(command);
-          BLineField.drawPath(drive.field, path != null ? path : new Path());
+          BLineField.drawPath(drive.field, "path", path != null ? path : new Path());
         });
 
     DriverStation.silenceJoystickConnectionWarning(true);
@@ -388,17 +387,20 @@ public class RobotContainer {
   }
 
   private void configureAutoCommands() {
-    Command traderEject = trader.eject();
-    //    Command gripperIntake = gripper.intake();
-    //    Command gripperEject = gripper.eject();
-    //
-    //    Command stowElevator = elevator.stow();
-    //    Command rampElevator = elevator.ramp();
-    //    Command l1Elevator = elevator.l1();
-    //    Command l2Elevator = elevator.l2();
+    Command traderEject = trader.eject().until(() -> !trader.isLoaded());
+    Command rampIntake = elevator.ramp().andThen(gripper.intake().until(gripper::isLoaded));
+    Command pantryAlign =
+        Commands.runOnce(() -> AutoAlign.setTargetPose(AutoAlign.Target.PANTRY, drive.getPose()))
+            .andThen(DriveCommands.alignToTarget(drive, AutoAlign::getLastAPTarget));
+    Command scoreL2 =
+        pantryAlign
+            .andThen(elevator.l2())
+            .andThen(gripper.eject())
+            .until(() -> !gripper.isLoaded());
 
-    NamedCommands.registerCommand("TraderEject", traderEject);
     FollowPath.registerEventTrigger("TraderEject", traderEject);
+    FollowPath.registerEventTrigger("RampIntake", rampIntake);
+    FollowPath.registerEventTrigger("ScoreL2", scoreL2);
   }
 
   public void setControlScheme(ControlScheme newScheme) {

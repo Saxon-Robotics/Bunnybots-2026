@@ -2,13 +2,11 @@ package frc.robot.util;
 
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.lib.BLine.FollowPath;
 import frc.robot.lib.BLine.Path;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Stream;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -37,8 +35,8 @@ public class BLineAutoBuilder {
           leftPath.mirror();
         }
         // build autos
-        Command leftPathCommand = builder.build(leftPath);
-        Command rightPathCommand = builder.build(rightPath);
+        Command leftPathCommand = Commands.deferredProxy(() -> builder.build(leftPath));
+        Command rightPathCommand = Commands.deferredProxy(() -> builder.build(rightPath));
         // add autos to chooser
         String remainder = name.substring(BetterAutoChooser.FLIP_PREFIX.length());
         autoChooser.addOption("Left " + remainder + " (Generated)", leftPathCommand);
@@ -49,7 +47,7 @@ public class BLineAutoBuilder {
       } else {
         // no flip needed
         Path path = new Path(name);
-        Command pathCommand = builder.build(path);
+        Command pathCommand = Commands.deferredProxy(() -> builder.build(path));
         autoChooser.addOption(name, pathCommand);
         commandToPath.put(pathCommand, path);
       }
