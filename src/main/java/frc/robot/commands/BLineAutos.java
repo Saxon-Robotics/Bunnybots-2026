@@ -14,6 +14,7 @@ import frc.robot.util.AutoAlign;
 import frc.robot.util.RobotUtil;
 import frc.robot.util.sim.HarvestHavocCarrotOnFly;
 import frc.robot.util.sim.SimulationHelper;
+import java.util.Set;
 
 public class BLineAutos {
   private static FollowPath.Builder builder;
@@ -71,12 +72,15 @@ public class BLineAutos {
 
   public static Command carrotCake() {
     Command ovenToRamp =
-        Commands.deferredProxy(
-            () -> builder.withPoseReset(drive::setPose).build(new Path("OvenToRamp")));
+        Commands.defer(
+            () -> builder.withPoseReset(drive::setPose).build(new Path("OvenToRamp")),
+            Set.of(drive));
     Command rampToPantry =
-        Commands.deferredProxy(
-            () -> builder.withPoseReset(ignored -> {}).build(new Path("RampToPantry")));
-    Command pantryToWait = Commands.deferredProxy(() -> builder.build(new Path("PantryToWait")));
+        Commands.defer(
+            () -> builder.withPoseReset(ignored -> {}).build(new Path("RampToPantry")),
+            Set.of(drive));
+    Command pantryToWait =
+        Commands.defer(() -> builder.build(new Path("PantryToWait")), Set.of(drive));
 
     return Commands.sequence(
         traderEject, ovenToRamp, rampIntake, rampToPantry, scoreL2, pantryToWait);
