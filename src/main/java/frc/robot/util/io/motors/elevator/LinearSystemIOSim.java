@@ -68,7 +68,6 @@ public class LinearSystemIOSim extends MotorIOSim implements LinearSystemIO {
 
   @Override
   public void updateInputs(LinearSystemIOInputs inputs) {
-    inputs.connected = true;
     if (isClosedLoop) {
       double currentMotorRad = carriageMetersToRad(sim.getPositionMeters());
       if (profiledPID != null) {

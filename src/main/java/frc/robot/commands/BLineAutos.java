@@ -49,12 +49,21 @@ public class BLineAutos {
             .withShouldMirror(RobotUtil::isRedAlliance)
             .withTRatioBasedTranslationHandoffs(true);
 
+    //    FollowPath.setPoseLoggingConsumer(
+    //        value -> Logger.recordOutput(value.getFirst(), value.getSecond()));
+    //    FollowPath.setTranslationListLoggingConsumer(
+    //        value -> Logger.recordOutput(value.getFirst(), value.getSecond()));
+
+    Command ovenAlign =
+        Commands.runOnce(() -> AutoAlign.setTargetPose(AutoAlign.Target.OVEN, drive.getPose()));
+    Command rampAlign =
+        Commands.runOnce(() -> AutoAlign.setTargetPose(AutoAlign.Target.RAMP, drive.getPose()));
     Command pantryAlign =
         Commands.runOnce(() -> AutoAlign.setTargetPose(AutoAlign.Target.PANTRY, drive.getPose()))
             .andThen(DriveCommands.alignToTarget(drive, AutoAlign::getLastAPTarget));
 
-    traderEject = trader.eject().until(() -> !trader.isLoaded());
-    rampIntake = Commands.sequence(elevator.ramp(), gripper.intake().until(gripper::isLoaded));
+    traderEject = Commands.sequence(ovenAlign, trader.eject().until(() -> !trader.isLoaded()));
+    rampIntake = Commands.sequence(rampAlign, gripper.intake().until(gripper::isLoaded));
     if (Constants.currentMode == Constants.Mode.SIM) {
       rampIntake =
           rampIntake.alongWith(
@@ -70,16 +79,17 @@ public class BLineAutos {
   }
 
   public static Command carrotCake() {
+    Path ovenToRampPath = new Path("OvenToRamp");
+    Path rampToPantryPath = new Path("RampToPantry");
+    Path pantryToWaitPath = new Path("PantryToWait");
+
     Command ovenToRamp =
         Commands.defer(
-            () -> builder.withPoseReset(drive::setPose).build(new Path("OvenToRamp")),
-            Set.of(drive));
+            () -> builder.withPoseReset(drive::setPose).build(ovenToRampPath), Set.of(drive));
     Command rampToPantry =
         Commands.defer(
-            () -> builder.withPoseReset(ignored -> {}).build(new Path("RampToPantry")),
-            Set.of(drive));
-    Command pantryToWait =
-        Commands.defer(() -> builder.build(new Path("PantryToWait")), Set.of(drive));
+            () -> builder.withPoseReset(ignored -> {}).build(rampToPantryPath), Set.of(drive));
+    Command pantryToWait = Commands.defer(() -> builder.build(pantryToWaitPath), Set.of(drive));
 
     return BLineCommands.sequence(
         traderEject, ovenToRamp, rampIntake, rampToPantry, scoreL2, pantryToWait);

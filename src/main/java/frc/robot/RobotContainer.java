@@ -414,8 +414,9 @@ public class RobotContainer {
     NamedCommands.registerCommand("RampIntake", rampIntake);
     NamedCommands.registerCommand("ScoreL2", scoreL2);
 
-    FollowPath.registerEventTrigger("ElevatorL2", elevator.l2());
     FollowPath.registerEventTrigger("ElevatorStow", elevator.stow());
+    FollowPath.registerEventTrigger("ElevatorRamp", elevator.ramp());
+    FollowPath.registerEventTrigger("ElevatorL2", elevator.l2());
   }
 
   private void addBLineAutos() {

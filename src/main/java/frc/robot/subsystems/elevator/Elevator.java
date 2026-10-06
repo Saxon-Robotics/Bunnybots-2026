@@ -67,7 +67,7 @@ public class Elevator extends ExtendedSubsystem {
                       ElevatorConstants.MAX_HEIGHT_METERS),
                   0.3296,
                   0.0041,
-                  0)
+                  1)
               .withProfiledPID(
                   Units.rotationsToRadians(ElevatorConstants.MAX_VELOCITY),
                   Units.rotationsToRadians(ElevatorConstants.MAX_ACCELERATION))
