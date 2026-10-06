@@ -2,6 +2,7 @@ package frc.robot.subsystems.elevator;
 
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Rotations;
+import static frc.robot.subsystems.elevator.ElevatorConstants.MOTOR_CONFIG;
 import static frc.robot.subsystems.elevator.ElevatorConstants.SETPOINTS;
 
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
@@ -9,6 +10,7 @@ import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -56,16 +58,20 @@ public class Elevator extends ExtendedSubsystem {
               .addFollower(Constants.CANConstants.ELEVATOR_RIGHT, MotorAlignmentValue.Aligned)
               .build();
           case SIM -> new LinearSystemIOSim(
-              DCMotor.getKrakenX60(1),
-              new MotorIO.LinearMechanismConstraints(
-                  ElevatorConstants.GEAR_RATIO,
-                  ElevatorConstants.CARRIAGE_MASS,
-                  ElevatorConstants.DRUM_RADIUS,
-                  ElevatorConstants.MIN_HEIGHT_METERS,
-                  ElevatorConstants.MAX_HEIGHT_METERS),
-              0.35,
-              0,
-              0);
+                  DCMotor.getKrakenX60(1),
+                  new MotorIO.LinearMechanismConstraints(
+                      ElevatorConstants.GEAR_RATIO,
+                      ElevatorConstants.CARRIAGE_MASS,
+                      ElevatorConstants.DRUM_RADIUS,
+                      ElevatorConstants.MIN_HEIGHT_METERS,
+                      ElevatorConstants.MAX_HEIGHT_METERS),
+                  0.3296,
+                  0.0041,
+                  0)
+              .withProfiledPID(
+                  Units.rotationsToRadians(ElevatorConstants.MAX_VELOCITY),
+                  Units.rotationsToRadians(ElevatorConstants.MAX_ACCELERATION))
+              .withFeedforward(0, MOTOR_CONFIG.Slot0.kG, 0.005, 0.00016);
           case REPLAY -> new LinearSystemIO() {};
         };
     elevator =

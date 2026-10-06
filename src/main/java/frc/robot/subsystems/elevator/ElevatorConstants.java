@@ -14,11 +14,11 @@ import java.util.EnumMap;
 import java.util.Map;
 
 public final class ElevatorConstants {
-  public static Angle distanceToAngle(Distance meters) {
-    return Rotations.of(Units.radiansToRotations(meters.in(Meters) / DRUM_RADIUS));
+  public static Angle distanceToAngle(Distance distance) {
+    return Rotations.of(Units.radiansToRotations(distance.in(Meters) / DRUM_RADIUS));
   }
 
-  public static final double SETPOINT_TOLERANCE = 0.06;
+  public static final double SETPOINT_TOLERANCE = 3.8; // rad
 
   public static final double MAX_MANUAL_VOLTAGE = 6.0;
   public static final double HOMING_VOLTAGE = 2.0;
@@ -31,13 +31,16 @@ public final class ElevatorConstants {
   public static final double MIN_HEIGHT_METERS = 0;
   public static final double MAX_HEIGHT_METERS = Units.inchesToMeters(34.5);
 
+  public static final double MAX_VELOCITY = 89.311;
+  public static final double MAX_ACCELERATION = 1404.071;
+
   public static final Map<Elevator.Setpoint, Angle> SETPOINTS =
       new EnumMap<>(Elevator.Setpoint.class);
 
   static {
     SETPOINTS.put(Elevator.Setpoint.STOWED, Rotations.of(0));
-    SETPOINTS.put(Elevator.Setpoint.RAMP, distanceToAngle(Meters.of(0)));
-    SETPOINTS.put(Elevator.Setpoint.L1, distanceToAngle(Inches.of(23)));
+    SETPOINTS.put(Elevator.Setpoint.RAMP, distanceToAngle(Inches.of(10)));
+    SETPOINTS.put(Elevator.Setpoint.L1, distanceToAngle(Inches.of(22)));
     SETPOINTS.put(Elevator.Setpoint.L2, distanceToAngle(Inches.of(34)));
     SETPOINTS.put(Elevator.Setpoint.L3, distanceToAngle(Meters.of(0)));
   }
@@ -71,6 +74,6 @@ public final class ElevatorConstants {
                   .withGravityType(GravityTypeValue.Elevator_Static))
           .withMotionMagic(
               new MotionMagicConfigs()
-                  .withMotionMagicCruiseVelocity(89.311)
-                  .withMotionMagicAcceleration(1404.071));
+                  .withMotionMagicCruiseVelocity(MAX_VELOCITY)
+                  .withMotionMagicAcceleration(MAX_ACCELERATION));
 }

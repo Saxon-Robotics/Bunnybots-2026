@@ -4,6 +4,7 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants;
+import frc.robot.lib.BLine.BLineCommands;
 import frc.robot.lib.BLine.FollowPath;
 import frc.robot.lib.BLine.Path;
 import frc.robot.subsystems.drive.Drive;
@@ -41,7 +42,7 @@ public class BLineAutos {
                 drive::getChassisSpeeds,
                 drive::runVelocity,
                 new PIDController(2.0, 0.0, 0.0),
-                new PIDController(1.0, 0.0, 0.0),
+                new PIDController(5.0, 0.0, 0.4),
                 new PIDController(0.2, 0.0, 0.0))
             .withDefaultShouldFlip()
             // in this field, alliance sides are mirrored from each other
@@ -65,9 +66,7 @@ public class BLineAutos {
                                   ? HarvestHavocCarrotOnFly.CarrotStations.RED_RAMP
                                   : HarvestHavocCarrotOnFly.CarrotStations.BLUE_RAMP)));
     }
-    scoreL2 =
-        Commands.sequence(
-            pantryAlign, elevator.l2(), gripper.eject().until(() -> !gripper.isLoaded()));
+    scoreL2 = Commands.sequence(pantryAlign, gripper.eject().until(() -> !gripper.isLoaded()));
   }
 
   public static Command carrotCake() {
@@ -82,7 +81,7 @@ public class BLineAutos {
     Command pantryToWait =
         Commands.defer(() -> builder.build(new Path("PantryToWait")), Set.of(drive));
 
-    return Commands.sequence(
+    return BLineCommands.sequence(
         traderEject, ovenToRamp, rampIntake, rampToPantry, scoreL2, pantryToWait);
   }
 }

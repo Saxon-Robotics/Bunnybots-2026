@@ -23,7 +23,7 @@ import frc.robot.Constants.ControllerConstants;
 import frc.robot.commands.BLineAutos;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
-import frc.robot.lib.BLine.BLineCommands;
+import frc.robot.lib.BLine.FollowPath;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -405,14 +405,17 @@ public class RobotContainer {
 
     Command traderEject = trader.eject().until(() -> !trader.isLoaded());
     Command rampIntake =
-        BLineCommands.sequence(elevator.ramp(), gripper.intake().until(gripper::isLoaded));
+        Commands.sequence(elevator.ramp(), gripper.intake().until(gripper::isLoaded));
     Command scoreL2 =
-        BLineCommands.sequence(
+        Commands.sequence(
             pantryAlign, elevator.l2(), gripper.eject().until(() -> !gripper.isLoaded()));
 
     NamedCommands.registerCommand("TraderEject", traderEject);
     NamedCommands.registerCommand("RampIntake", rampIntake);
     NamedCommands.registerCommand("ScoreL2", scoreL2);
+
+    FollowPath.registerEventTrigger("ElevatorL2", elevator.l2());
+    FollowPath.registerEventTrigger("ElevatorStow", elevator.stow());
   }
 
   private void addBLineAutos() {
