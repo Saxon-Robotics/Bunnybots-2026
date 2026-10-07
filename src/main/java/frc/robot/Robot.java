@@ -120,6 +120,7 @@ public class Robot extends LoggedRobot {
   @Override
   public void disabledExit() {
     RobotStateHandler.getInstance().enable();
+    m_robotContainer.simulationInit();
   }
 
   @Override
@@ -128,8 +129,6 @@ public class Robot extends LoggedRobot {
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
-    m_robotContainer.initSimulationAuto();
-
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
     // schedule the autonomous command (example)

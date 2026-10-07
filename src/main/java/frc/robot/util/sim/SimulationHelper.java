@@ -1,7 +1,5 @@
 package frc.robot.util.sim;
 
-import static edu.wpi.first.units.Units.*;
-
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
@@ -54,6 +52,8 @@ public class SimulationHelper {
   private Pose3d[] carrotsInTrader = new Pose3d[3];
 
   private GamePieceOnFieldSimulation lastCarrot;
+
+  private int traderCountBeforePreload;
 
   private SimulationHelper(
       Elevator elevator,
@@ -153,7 +153,12 @@ public class SimulationHelper {
   }
 
   public void preloadTrader() {
+    traderCountBeforePreload = traderIntake.getGamePiecesAmount();
     traderIntake.setGamePiecesCount(2);
+  }
+
+  public void undoTraderPreload() {
+    traderIntake.setGamePiecesCount(traderCountBeforePreload);
   }
 
   private void gripperScore() {

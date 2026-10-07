@@ -114,7 +114,6 @@ public class RobotContainer {
       case SIM -> {
         Arena2026Bunnybots arena = new Arena2026Bunnybots();
         SimulatedArena.overrideInstance(arena);
-        SimulatedArena.getInstance().resetFieldForAuto();
         driveSimulation =
             new SwerveDriveSimulation(
                 Drive.getMapleSimConfig(), new Pose2d(3, 3, new Rotation2d()));
@@ -152,6 +151,7 @@ public class RobotContainer {
         sim =
             SimulationHelper.createInstance(
                 elevator, trader, gripper, driveSimulation, drive::getChassisSpeeds);
+        resetSimulationField();
       }
       default -> {
         /* REPLAY */
@@ -512,12 +512,15 @@ public class RobotContainer {
 
     driveSimulation.setSimulationWorldPose(new Pose2d(3, 3, new Rotation2d()));
     SimulatedArena.getInstance().resetFieldForAuto();
+    sim.preloadTrader();
   }
 
-  public void initSimulationAuto() {
+  public void simulationInit() {
     if (Constants.currentMode != Constants.Mode.SIM) return;
 
-    sim.preloadTrader();
+    if (!DriverStation.isAutonomous()) {
+      sim.undoTraderPreload();
+    }
   }
 
   public void updateSimulation() {
