@@ -16,6 +16,7 @@ import frc.robot.util.RobotUtil;
 import frc.robot.util.sim.HarvestHavocCarrotOnFly;
 import frc.robot.util.sim.SimulationHelper;
 import java.util.Set;
+import org.littletonrobotics.junction.Logger;
 
 public class BLineAutos {
   private static FollowPath.Builder builder;
@@ -49,8 +50,8 @@ public class BLineAutos {
             .withShouldMirror(RobotUtil::isRedAlliance)
             .withTRatioBasedTranslationHandoffs(true);
 
-    //    FollowPath.setPoseLoggingConsumer(
-    //        value -> Logger.recordOutput(value.getFirst(), value.getSecond()));
+    FollowPath.setPoseLoggingConsumer(
+        value -> Logger.recordOutput(value.getFirst(), value.getSecond()));
     //    FollowPath.setTranslationListLoggingConsumer(
     //        value -> Logger.recordOutput(value.getFirst(), value.getSecond()));
 
@@ -93,5 +94,14 @@ public class BLineAutos {
 
     return BLineCommands.sequence(
         traderEject, ovenToRamp, rampIntake, rampToPantry, scoreL2, pantryToWait);
+  }
+
+  public static Command ovenDump() {
+    Command ovenToWait =
+        Commands.defer(
+            () -> builder.withPoseReset(drive::setPose).build(new Path("OvenToWait")),
+            Set.of(drive));
+
+    return BLineCommands.sequence(traderEject, ovenToWait);
   }
 }

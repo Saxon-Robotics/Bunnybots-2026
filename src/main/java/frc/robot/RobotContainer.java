@@ -422,7 +422,8 @@ public class RobotContainer {
   private void addBLineAutos() {
     BLineAutos.configure(drive, elevator, trader, gripper);
 
-    autoChooser.addOption("BLine Carrot Cake", BLineAutos.carrotCake());
+    autoChooser.addOption("Oven Dump [BLine]", BLineAutos.ovenDump());
+    //    autoChooser.addOption("BLine Carrot Cake", BLineAutos.carrotCake());
   }
 
   public void setControlScheme(ControlScheme newScheme) {

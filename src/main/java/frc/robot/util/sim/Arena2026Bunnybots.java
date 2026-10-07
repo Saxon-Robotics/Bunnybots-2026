@@ -34,7 +34,7 @@ public class Arena2026Bunnybots extends SimulatedArena {
       super.addRectangularObstacle(
           2.343,
           0.632,
-          new Pose2d(new Translation2d(7.101, -1.739).plus(ORIGIN), Rotation2d.kZero));
+          new Pose2d(new Translation2d(-7.101, -1.739).plus(ORIGIN), Rotation2d.kZero));
 
       // blue pantry
       super.addRectangularObstacle(
@@ -51,7 +51,7 @@ public class Arena2026Bunnybots extends SimulatedArena {
       super.addRectangularObstacle(
           2.343,
           0.632,
-          new Pose2d(new Translation2d(-7.101, -1.739).plus(ORIGIN), Rotation2d.kZero));
+          new Pose2d(new Translation2d(7.101, -1.739).plus(ORIGIN), Rotation2d.kZero));
 
       // red pantry
       super.addRectangularObstacle(
