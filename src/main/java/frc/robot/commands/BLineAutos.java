@@ -1,10 +1,12 @@
 package frc.robot.commands;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants;
 import frc.robot.lib.BLine.BLineCommands;
+import frc.robot.lib.BLine.FlippingUtil;
 import frc.robot.lib.BLine.FollowPath;
 import frc.robot.lib.BLine.Path;
 import frc.robot.subsystems.drive.Drive;
@@ -56,9 +58,11 @@ public class BLineAutos {
     //        value -> Logger.recordOutput(value.getFirst(), value.getSecond()));
 
     Command ovenAlign =
-        Commands.runOnce(() -> AutoAlign.setTargetPose(AutoAlign.Target.OVEN, drive.getPose()));
+        Commands.runOnce(() -> AutoAlign.setTargetPose(AutoAlign.Target.OVEN, drive.getPose()))
+            .andThen(DriveCommands.alignToTarget(drive, AutoAlign::getLastAPTarget));
     Command rampAlign =
-        Commands.runOnce(() -> AutoAlign.setTargetPose(AutoAlign.Target.RAMP, drive.getPose()));
+        Commands.runOnce(() -> AutoAlign.setTargetPose(AutoAlign.Target.RAMP, drive.getPose()))
+            .andThen(DriveCommands.alignToTarget(drive, AutoAlign::getLastAPTarget));
     Command pantryAlign =
         Commands.runOnce(() -> AutoAlign.setTargetPose(AutoAlign.Target.PANTRY, drive.getPose()))
             .andThen(DriveCommands.alignToTarget(drive, AutoAlign::getLastAPTarget));
@@ -84,24 +88,37 @@ public class BLineAutos {
     Path rampToPantryPath = new Path("RampToPantry");
     Path pantryToWaitPath = new Path("PantryToWait");
 
-    Command ovenToRamp =
-        Commands.defer(
-            () -> builder.withPoseReset(drive::setPose).build(ovenToRampPath), Set.of(drive));
-    Command rampToPantry =
-        Commands.defer(
-            () -> builder.withPoseReset(ignored -> {}).build(rampToPantryPath), Set.of(drive));
+    Command ovenToRamp = Commands.defer(() -> builder.build(ovenToRampPath), Set.of(drive));
+    Command rampToPantry = Commands.defer(() -> builder.build(rampToPantryPath), Set.of(drive));
     Command pantryToWait = Commands.defer(() -> builder.build(pantryToWaitPath), Set.of(drive));
 
     return BLineCommands.sequence(
-        traderEject, ovenToRamp, rampIntake, rampToPantry, scoreL2, pantryToWait);
+        resetPose(ovenToRampPath),
+        traderEject,
+        ovenToRamp,
+        rampIntake,
+        rampToPantry,
+        scoreL2,
+        pantryToWait);
   }
 
   public static Command ovenDump() {
-    Command ovenToWait =
-        Commands.defer(
-            () -> builder.withPoseReset(drive::setPose).build(new Path("OvenToWait")),
-            Set.of(drive));
+    Path ovenToWaitPath = new Path("OvenToWait");
 
-    return BLineCommands.sequence(traderEject, ovenToWait);
+    Command ovenToWait = Commands.defer(() -> builder.build(ovenToWaitPath), Set.of(drive));
+
+    return BLineCommands.sequence(resetPose(ovenToWaitPath), traderEject, ovenToWait);
+  }
+
+  private static Command resetPose(Path path) {
+    return Commands.runOnce(
+        () -> {
+          Pose2d startPose = path.getStartPose();
+          if (RobotUtil.isRedAlliance()) {
+            startPose = FlippingUtil.flipFieldPose(startPose);
+            startPose = FlippingUtil.mirrorFieldPose(startPose);
+          }
+          drive.setPose(startPose);
+        });
   }
 }
