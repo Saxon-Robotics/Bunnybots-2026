@@ -42,7 +42,6 @@ public final class ElevatorConstants {
     SETPOINTS.put(Elevator.Setpoint.RAMP, distanceToAngle(Inches.of(10)));
     SETPOINTS.put(Elevator.Setpoint.L1, distanceToAngle(Inches.of(22)));
     SETPOINTS.put(Elevator.Setpoint.L2, distanceToAngle(Inches.of(34)));
-    SETPOINTS.put(Elevator.Setpoint.L3, distanceToAngle(Meters.of(0)));
   }
 
   public static final TalonFXConfiguration MOTOR_CONFIG =

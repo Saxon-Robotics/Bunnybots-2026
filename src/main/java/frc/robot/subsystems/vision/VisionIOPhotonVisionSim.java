@@ -12,6 +12,7 @@ import static frc.robot.subsystems.vision.VisionConstants.APRIL_TAG_LAYOUT;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import java.util.function.Supplier;
+import org.littletonrobotics.junction.Logger;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
@@ -19,6 +20,7 @@ import org.photonvision.simulation.VisionSystemSim;
 /** IO implementation for physics sim using PhotonVision simulator. */
 public class VisionIOPhotonVisionSim extends VisionIOPhotonVision {
   private static VisionSystemSim visionSim;
+  private static long lastUpdateTimestamp = -1;
 
   private final Supplier<Pose2d> poseSupplier;
   private final PhotonCameraSim cameraSim;
@@ -43,12 +45,23 @@ public class VisionIOPhotonVisionSim extends VisionIOPhotonVision {
     // Add sim camera
     var cameraProperties = new SimCameraProperties();
     cameraSim = new PhotonCameraSim(camera, cameraProperties, APRIL_TAG_LAYOUT);
+    cameraSim.enableRawStream(false);
+    cameraSim.enableProcessedStream(false);
+    cameraSim.enableDrawWireframe(false);
     visionSim.addCamera(cameraSim, robotToCamera);
   }
 
   @Override
   public void updateInputs(VisionIOInputs inputs) {
-    visionSim.update(poseSupplier.get());
+    updateVisionSim(poseSupplier);
     super.updateInputs(inputs);
+  }
+
+  private static void updateVisionSim(Supplier<Pose2d> poseSupplier) {
+    long timestamp = Logger.getTimestamp();
+    if (timestamp != lastUpdateTimestamp) {
+      visionSim.update(poseSupplier.get());
+      lastUpdateTimestamp = timestamp;
+    }
   }
 }

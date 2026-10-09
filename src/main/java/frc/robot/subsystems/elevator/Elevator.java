@@ -32,8 +32,7 @@ public class Elevator extends ExtendedSubsystem {
     STOWED(false),
     RAMP(true),
     L1(true),
-    L2(true),
-    L3(true);
+    L2(true);
 
     public final boolean isForScoring;
 
@@ -119,10 +118,6 @@ public class Elevator extends ExtendedSubsystem {
 
   public Command l2() {
     return startEnd(() -> runSetpoint(Setpoint.L2), () -> {}).until(this::hasReachedSetpoint);
-  }
-
-  public Command l3() {
-    return startEnd(() -> runSetpoint(Setpoint.L3), () -> {}).until(this::hasReachedSetpoint);
   }
 
   public Command manualControl(DoubleSupplier joystick) {

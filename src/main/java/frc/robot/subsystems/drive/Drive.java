@@ -21,7 +21,6 @@ import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.path.PathConstraints;
-import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.therekrab.autopilot.APConstraints;
 import com.therekrab.autopilot.APProfile;
@@ -56,7 +55,6 @@ import frc.robot.Constants.Mode;
 import frc.robot.generated.TunerConstants;
 import frc.robot.lib.BLine.FlippingUtil;
 import frc.robot.subsystems.vision.Vision;
-import frc.robot.util.LocalADStarAK;
 import frc.robot.util.RobotUtil;
 import frc.robot.util.subsystems.ExtendedSubsystem;
 import java.util.concurrent.locks.Lock;
@@ -195,7 +193,7 @@ public class Drive extends ExtendedSubsystem implements Vision.VisionConsumer {
         PP_CONFIG,
         () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
         this);
-    Pathfinding.setPathfinder(new LocalADStarAK());
+    //    Pathfinding.setPathfinder(new LocalADStarAK());
     PathPlannerLogging.setLogActivePathCallback(
         activePath -> {
           Logger.recordOutput("Odometry/Trajectory", activePath.toArray(new Pose2d[0]));
@@ -336,15 +334,6 @@ public class Drive extends ExtendedSubsystem implements Vision.VisionConsumer {
     }
     kinematics.resetHeadings(headings);
     stop();
-  }
-
-  /** Returns a command to drive to a specific pose. */
-  public Command pathfindToPose(Pose2d targetPose) {
-    return defer(
-        () -> {
-          Logger.recordOutput("Drive/TargetPose", targetPose);
-          return AutoBuilder.pathfindToPose(targetPose, CONSTRAINTS, 0.0);
-        });
   }
 
   /** Returns a command to run a quasistatic test in the specified direction. */
