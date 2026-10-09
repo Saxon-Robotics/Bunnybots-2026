@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems.trader;
 
+import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -39,10 +40,11 @@ public class Trader extends SubsystemBase {
     RollerIO leftIO =
         switch (Constants.currentMode) {
           case REAL -> new MotorIOTalonFX.Builder(
-                  Constants.CANConstants.SUPERSTRUCTURE,
+                  CANBus.roboRIO(),
                   Constants.CANConstants.TRADER_LEFT,
                   TraderConstants.MOTOR_CONFIG)
               .addFollower(Constants.CANConstants.TRADER_RIGHT, MotorAlignmentValue.Opposed)
+              .setSignalUpdateFrequency(50.0, 50.0)
               .build();
           case SIM -> new RollerIOSim(
               DCMotor.getKrakenX60(1),
