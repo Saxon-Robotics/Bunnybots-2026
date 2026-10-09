@@ -57,10 +57,10 @@ public final class Constants {
     public static final CANBus SUPERSTRUCTURE = new CANBus("Superstructure");
     public static final int ELEVATOR_LEFT = 1;
     public static final int ELEVATOR_RIGHT = 2;
-    public static final int GRIPPER_LEFT = 3;
-    public static final int GRIPPER_RIGHT = 4;
-    public static final int TRADER_LEFT = 5;
-    public static final int TRADER_RIGHT = 6;
+    public static final int GRIPPER_TOP = 3;
+    public static final int GRIPPER_BOTTOM = 4;
+    public static final int TRADER_BELTS = 5;
+    public static final int TRADER_ROLLER = 6;
     // rio canbus
     public static final int GRIPPER_LASERCAN = 20;
     public static final int TRADER_LASERCAN = 21;

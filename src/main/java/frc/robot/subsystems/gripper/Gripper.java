@@ -18,7 +18,6 @@ import frc.robot.util.io.motors.roller.RollerIO;
 import frc.robot.util.io.motors.roller.RollerIOSim;
 import frc.robot.util.io.sensors.lasercan.LaserCanIO;
 import frc.robot.util.io.sensors.lasercan.LaserCanIOInputsAutoLogged;
-import frc.robot.util.io.sensors.lasercan.LaserCanIOReal;
 import frc.robot.util.sim.SimulationHelper;
 import lombok.Getter;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -40,9 +39,9 @@ public class Gripper extends SubsystemBase {
         switch (Constants.currentMode) {
           case REAL -> new MotorIOTalonFX.Builder(
                   Constants.CANConstants.SUPERSTRUCTURE,
-                  Constants.CANConstants.GRIPPER_LEFT,
+                  Constants.CANConstants.GRIPPER_TOP,
                   GripperConstants.MOTOR_CONFIG)
-              .addFollower(Constants.CANConstants.GRIPPER_RIGHT, MotorAlignmentValue.Opposed)
+              .addFollower(Constants.CANConstants.GRIPPER_BOTTOM, MotorAlignmentValue.Opposed)
               .build();
           case SIM -> new RollerIOSim(
               DCMotor.getKrakenX44(1),
@@ -56,7 +55,7 @@ public class Gripper extends SubsystemBase {
 
     beambreak =
         switch (Constants.currentMode) {
-          case REAL -> new LaserCanIOReal(Constants.CANConstants.GRIPPER_LASERCAN);
+          case REAL -> ignored -> {};
           case SIM -> LaserCanIO.beambreakSim(
               () -> SimulationHelper.getInstance().isGripperLoaded(),
               TraderConstants.BEAMBREAK_THRESHOLD);

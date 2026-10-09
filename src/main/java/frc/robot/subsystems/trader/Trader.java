@@ -41,9 +41,9 @@ public class Trader extends SubsystemBase {
         switch (Constants.currentMode) {
           case REAL -> new MotorIOTalonFX.Builder(
                   CANBus.roboRIO(),
-                  Constants.CANConstants.TRADER_LEFT,
+                  Constants.CANConstants.TRADER_BELTS,
                   TraderConstants.MOTOR_CONFIG)
-              .addFollower(Constants.CANConstants.TRADER_RIGHT, MotorAlignmentValue.Opposed)
+              .addFollower(Constants.CANConstants.TRADER_ROLLER, MotorAlignmentValue.Aligned)
               .setSignalUpdateFrequency(50.0, 50.0)
               .build();
           case SIM -> new RollerIOSim(

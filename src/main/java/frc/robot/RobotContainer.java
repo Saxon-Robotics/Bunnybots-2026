@@ -37,7 +37,6 @@ import frc.robot.subsystems.trader.Trader;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.subsystems.vision.VisionIO;
-import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.util.AutoAlign;
 import frc.robot.util.BetterAutoChooser;
@@ -95,17 +94,15 @@ public class RobotContainer {
                 new ModuleIOTalonFXReal(TunerConstants.BackLeft, false),
                 new ModuleIOTalonFXReal(TunerConstants.BackRight, false),
                 pose -> {});
-        vision =
-            new Vision(
-                drive,
-                new VisionIOPhotonVision(
-                    VisionConstants.CAMERA_0_NAME, VisionConstants.CAMERA_0_OFFSET),
-                new VisionIOPhotonVision(
-                    VisionConstants.CAMERA_1_NAME, VisionConstants.CAMERA_1_OFFSET),
-                new VisionIOPhotonVision(
-                    VisionConstants.CAMERA_2_NAME, VisionConstants.CAMERA_2_OFFSET),
-                new VisionIOPhotonVision(
-                    VisionConstants.CAMERA_3_NAME, VisionConstants.CAMERA_3_OFFSET));
+        vision = new Vision(drive, new VisionIO() {});
+        //                new VisionIOPhotonVision(
+        //                    VisionConstants.CAMERA_0_NAME, VisionConstants.CAMERA_0_OFFSET),
+        //                new VisionIOPhotonVision(
+        //                    VisionConstants.CAMERA_1_NAME, VisionConstants.CAMERA_1_OFFSET),
+        //                new VisionIOPhotonVision(
+        //                    VisionConstants.CAMERA_2_NAME, VisionConstants.CAMERA_2_OFFSET),
+        //                new VisionIOPhotonVision(
+        //                    VisionConstants.CAMERA_3_NAME, VisionConstants.CAMERA_3_OFFSET));
         elevator = new Elevator();
         gripper = new Gripper();
         trader = new Trader();
