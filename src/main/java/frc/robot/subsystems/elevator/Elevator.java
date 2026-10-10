@@ -54,7 +54,7 @@ public class Elevator extends ExtendedSubsystem {
                   Constants.CANConstants.SUPERSTRUCTURE,
                   Constants.CANConstants.ELEVATOR_LEFT,
                   ElevatorConstants.MOTOR_CONFIG)
-              .addFollower(Constants.CANConstants.ELEVATOR_RIGHT, MotorAlignmentValue.Aligned)
+              .addFollower(Constants.CANConstants.ELEVATOR_RIGHT, MotorAlignmentValue.Opposed)
               .build();
           case SIM -> new LinearSystemIOSim(
                   DCMotor.getKrakenX60(1),

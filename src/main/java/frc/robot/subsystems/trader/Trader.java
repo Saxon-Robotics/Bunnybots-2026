@@ -43,7 +43,7 @@ public class Trader extends SubsystemBase {
                   CANBus.roboRIO(),
                   Constants.CANConstants.TRADER_BELTS,
                   TraderConstants.MOTOR_CONFIG)
-              .addFollower(Constants.CANConstants.TRADER_ROLLER, MotorAlignmentValue.Aligned)
+              .addFollower(Constants.CANConstants.TRADER_ROLLER, MotorAlignmentValue.Opposed)
               .setSignalUpdateFrequency(50.0, 50.0)
               .build();
           case SIM -> new RollerIOSim(
