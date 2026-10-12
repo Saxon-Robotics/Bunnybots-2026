@@ -16,7 +16,7 @@ import frc.robot.subsystems.trader.Trader;
 import frc.robot.util.AutoAlign;
 import frc.robot.util.RobotUtil;
 import frc.robot.util.sim.HarvestHavocCarrotOnFly;
-import frc.robot.util.sim.SimulationHelper;
+import frc.robot.util.sim.SimulationManager;
 import java.util.Set;
 import org.littletonrobotics.junction.Logger;
 
@@ -74,7 +74,7 @@ public class BLineAutos {
           rampIntake.alongWith(
               Commands.runOnce(
                   () ->
-                      SimulationHelper.getInstance()
+                      SimulationManager.getInstance()
                           .dropCarrot(
                               RobotUtil.isRedAlliance()
                                   ? HarvestHavocCarrotOnFly.CarrotStations.RED_RAMP

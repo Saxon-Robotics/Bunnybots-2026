@@ -18,7 +18,7 @@ import frc.robot.util.io.motors.roller.RollerIO;
 import frc.robot.util.io.motors.roller.RollerIOSim;
 import frc.robot.util.io.sensors.lasercan.LaserCanIO;
 import frc.robot.util.io.sensors.lasercan.LaserCanIOInputsAutoLogged;
-import frc.robot.util.sim.SimulationHelper;
+import frc.robot.util.sim.SimulationManager;
 import lombok.Getter;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -57,7 +57,7 @@ public class Gripper extends SubsystemBase {
         switch (Constants.currentMode) {
           case REAL -> ignored -> {};
           case SIM -> LaserCanIO.beambreakSim(
-              () -> SimulationHelper.getInstance().isGripperLoaded(),
+              () -> SimulationManager.getInstance().isGripperLoaded(),
               TraderConstants.BEAMBREAK_THRESHOLD);
           case REPLAY -> inputs -> {};
         };

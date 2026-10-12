@@ -20,7 +20,7 @@ import frc.robot.util.io.motors.roller.RollerIOSim;
 import frc.robot.util.io.sensors.lasercan.LaserCanIO;
 import frc.robot.util.io.sensors.lasercan.LaserCanIOInputsAutoLogged;
 import frc.robot.util.io.sensors.lasercan.LaserCanIOReal;
-import frc.robot.util.sim.SimulationHelper;
+import frc.robot.util.sim.SimulationManager;
 import lombok.Getter;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -60,7 +60,7 @@ public class Trader extends SubsystemBase {
         switch (Constants.currentMode) {
           case REAL -> new LaserCanIOReal(Constants.CANConstants.TRADER_LASERCAN);
           case SIM -> LaserCanIO.beambreakSim(
-              () -> SimulationHelper.getInstance().isTraderLoaded(),
+              () -> SimulationManager.getInstance().isTraderLoaded(),
               TraderConstants.BEAMBREAK_THRESHOLD);
           case REPLAY -> inputs -> {};
         };

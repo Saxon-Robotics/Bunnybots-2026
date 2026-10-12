@@ -191,8 +191,6 @@ public class Elevator extends ExtendedSubsystem {
   @Override
   public void simulationPeriodic() {
     Logger.recordOutput(
-        "Elevator/RobotComponents",
-        // elevator
-        new Pose3d(0.0, 0.0, getPositionMeters(), Rotation3d.kZero));
+        "Elevator/RobotComponent", new Pose3d(0, 0, getPositionMeters(), Rotation3d.kZero));
   }
 }

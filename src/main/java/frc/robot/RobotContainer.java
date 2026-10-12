@@ -44,7 +44,7 @@ import frc.robot.util.RobotUtil;
 import frc.robot.util.io.GuitarHeroController;
 import frc.robot.util.sim.Arena2026Bunnybots;
 import frc.robot.util.sim.HarvestHavocCarrotOnFly;
-import frc.robot.util.sim.SimulationHelper;
+import frc.robot.util.sim.SimulationManager;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import org.ironmaple.simulation.SimulatedArena;
@@ -79,7 +79,7 @@ public class RobotContainer {
 
   // Simulated things
   private final SwerveDriveSimulation driveSimulation;
-  private final SimulationHelper sim;
+  private final SimulationManager sim;
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -146,7 +146,7 @@ public class RobotContainer {
         gripper = new Gripper();
         trader = new Trader();
         sim =
-            SimulationHelper.createInstance(
+            SimulationManager.createInstance(
                 elevator, trader, gripper, driveSimulation, drive::getChassisSpeeds);
         resetSimulationField();
       }

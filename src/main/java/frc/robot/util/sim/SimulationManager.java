@@ -19,7 +19,7 @@ import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.ironmaple.simulation.gamepieces.GamePieceOnFieldSimulation;
 import org.littletonrobotics.junction.Logger;
 
-public class SimulationHelper {
+public class SimulationManager {
   private static final Translation3d ELEVATOR_TO_CARROT = new Translation3d(0.3, 0.08, 0.425);
   private static final Translation3d[] TRADER_SLOTS =
       new Translation3d[] {
@@ -28,15 +28,15 @@ public class SimulationHelper {
         new Translation3d(-0.18, 0.1, 0.51)
       };
 
-  @Getter private static SimulationHelper instance;
+  @Getter private static SimulationManager instance;
 
-  public static SimulationHelper createInstance(
+  public static SimulationManager createInstance(
       Elevator elevator,
       Trader trader,
       Gripper gripper,
       SwerveDriveSimulation driveSimulation,
       Supplier<ChassisSpeeds> chassisSpeeds) {
-    instance = new SimulationHelper(elevator, trader, gripper, driveSimulation, chassisSpeeds);
+    instance = new SimulationManager(elevator, trader, gripper, driveSimulation, chassisSpeeds);
     return instance;
   }
 
@@ -55,7 +55,7 @@ public class SimulationHelper {
 
   private int traderCountBeforePreload;
 
-  private SimulationHelper(
+  private SimulationManager(
       Elevator elevator,
       Trader trader,
       Gripper gripper,
@@ -93,9 +93,6 @@ public class SimulationHelper {
 
     Pose3d robotPose = new Pose3d(driveSimulation.getSimulatedDriveTrainPose());
     Logger.recordOutput("FieldSimulation/RobotPosition", robotPose.toPose2d());
-    Logger.recordOutput(
-        "FieldSimulation/RobotComponentPosition",
-        new Pose3d(0, 0, elevator.getPositionMeters(), Rotation3d.kZero));
     Logger.recordOutput(
         "FieldSimulation/IntakeSimulation/GripperCount", gripperIntake.getGamePiecesAmount());
     Logger.recordOutput(
