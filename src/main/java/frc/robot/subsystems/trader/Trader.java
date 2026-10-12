@@ -51,7 +51,7 @@ public class Trader extends SubsystemBase {
               new MotorIO.RotationalMechanismConstraints(1, TraderConstants.MOI, 0, 0, 0, 0),
               0.5,
               0,
-              0);
+              1);
           case REPLAY -> new RollerIO() {};
         };
     roller = new Roller("Trader", leftIO, () -> true);

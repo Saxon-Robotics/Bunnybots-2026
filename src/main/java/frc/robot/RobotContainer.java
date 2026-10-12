@@ -293,6 +293,7 @@ public class RobotContainer {
 
     /* Trader commands */
     Command traderEject = trader.eject();
+    Command traderReverse = trader.reverse();
 
     // Default command, normal field-relative drive
     Command defaultDriveCommand =
@@ -413,6 +414,7 @@ public class RobotContainer {
 
     FollowPath.registerEventTrigger("ElevatorStow", elevator.stow());
     FollowPath.registerEventTrigger("ElevatorRamp", elevator.ramp());
+    FollowPath.registerEventTrigger("ElevatorL1", elevator.l1());
     FollowPath.registerEventTrigger("ElevatorL2", elevator.l2());
   }
 

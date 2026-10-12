@@ -47,7 +47,7 @@ public class Gripper extends SubsystemBase {
               new MotorIO.RotationalMechanismConstraints(1, GripperConstants.MOI, 0, 0, 0, 0),
               0.5,
               0,
-              0);
+              1);
           case REPLAY -> new RollerIO() {};
         };
     roller = new Roller("Gripper", io, () -> true);
