@@ -51,20 +51,32 @@ public final class PhoenixUtil {
 
   private static BaseStatusSignal[] superstructureSignals = new BaseStatusSignal[0];
 
+  private static BaseStatusSignal[] rioSignals = new BaseStatusSignal[0];
+
   /** Registers a set of signals for synchronized refresh. */
   public static void registerSignals(CANBus canbus, BaseStatusSignal... signals) {
-    if (canbus.getName().equals("Drivebase")) {
-      BaseStatusSignal[] newSignals =
-          new BaseStatusSignal[drivebaseSignals.length + signals.length];
-      System.arraycopy(drivebaseSignals, 0, newSignals, 0, drivebaseSignals.length);
-      System.arraycopy(signals, 0, newSignals, drivebaseSignals.length, signals.length);
-      drivebaseSignals = newSignals;
-    } else {
-      BaseStatusSignal[] newSignals =
-          new BaseStatusSignal[superstructureSignals.length + signals.length];
-      System.arraycopy(superstructureSignals, 0, newSignals, 0, superstructureSignals.length);
-      System.arraycopy(signals, 0, newSignals, superstructureSignals.length, signals.length);
-      superstructureSignals = newSignals;
+    switch (canbus.getName()) {
+      case "Drivebase" -> {
+        BaseStatusSignal[] newSignals =
+            new BaseStatusSignal[drivebaseSignals.length + signals.length];
+        System.arraycopy(drivebaseSignals, 0, newSignals, 0, drivebaseSignals.length);
+        System.arraycopy(signals, 0, newSignals, drivebaseSignals.length, signals.length);
+        drivebaseSignals = newSignals;
+      }
+      case "Superstructure" -> {
+        BaseStatusSignal[] newSignals =
+            new BaseStatusSignal[superstructureSignals.length + signals.length];
+        System.arraycopy(superstructureSignals, 0, newSignals, 0, superstructureSignals.length);
+        System.arraycopy(signals, 0, newSignals, superstructureSignals.length, signals.length);
+        superstructureSignals = newSignals;
+      }
+      case "rio" -> {
+        BaseStatusSignal[] newSignals = new BaseStatusSignal[rioSignals.length + signals.length];
+        System.arraycopy(rioSignals, 0, newSignals, 0, rioSignals.length);
+        System.arraycopy(signals, 0, newSignals, rioSignals.length, signals.length);
+        rioSignals = newSignals;
+      }
+      default -> {}
     }
   }
 
@@ -75,6 +87,9 @@ public final class PhoenixUtil {
     }
     if (superstructureSignals.length > 0) {
       BaseStatusSignal.refreshAll(superstructureSignals);
+    }
+    if (rioSignals.length > 0) {
+      BaseStatusSignal.refreshAll(rioSignals);
     }
   }
 

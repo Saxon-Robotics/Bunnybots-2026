@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems.trader;
 
+import au.grapplerobotics.interfaces.LaserCanInterface;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import edu.wpi.first.math.filter.Debouncer;
@@ -11,7 +12,6 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.subsystems.gripper.GripperConstants;
 import frc.robot.util.io.motors.MotorIO;
 import frc.robot.util.io.motors.MotorIOTalonFX;
 import frc.robot.util.io.motors.roller.Roller;
@@ -54,11 +54,15 @@ public class Trader extends SubsystemBase {
               0);
           case REPLAY -> new RollerIO() {};
         };
-    roller = new Roller("Trader", leftIO);
+    roller = new Roller("Trader", leftIO, () -> true);
 
     beambreak =
         switch (Constants.currentMode) {
-          case REAL -> new LaserCanIOReal(Constants.CANConstants.TRADER_LASERCAN);
+          case REAL -> new LaserCanIOReal(
+              Constants.CANConstants.TRADER_LASERCAN,
+              LaserCanInterface.RangingMode.SHORT,
+              LaserCanInterface.TimingBudget.TIMING_BUDGET_20MS,
+              new LaserCanInterface.RegionOfInterest(8, 8, 4, 4));
           case SIM -> LaserCanIO.beambreakSim(
               () -> SimulationManager.getInstance().isTraderLoaded(),
               TraderConstants.BEAMBREAK_THRESHOLD);
@@ -74,11 +78,15 @@ public class Trader extends SubsystemBase {
     isLoaded =
         beambreakDebounce.calculate(
             beambreakInputs.measurementValid
-                && beambreakInputs.distanceMillimeters <= GripperConstants.BEAMBREAK_THRESHOLD);
+                && beambreakInputs.distanceMillimeters <= TraderConstants.BEAMBREAK_THRESHOLD);
   }
 
   public Command eject() {
     return startEnd(() -> roller.runVelocity(TraderConstants.RPS), roller::stop);
+  }
+
+  public Command reverse() {
+    return startEnd(() -> roller.runVelocity(-TraderConstants.RPS), roller::stop);
   }
 
   public double getVelocityRPS() {

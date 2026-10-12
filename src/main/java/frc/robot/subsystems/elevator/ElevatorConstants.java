@@ -20,8 +20,8 @@ public final class ElevatorConstants {
 
   public static final double SETPOINT_TOLERANCE = 3.8; // rad
 
-  public static final double MAX_MANUAL_VOLTAGE = 6.0;
-  public static final double HOMING_VOLTAGE = 2.0;
+  public static final double MAX_MANUAL_VOLTAGE = 2.5;
+  public static final double HOMING_VOLTAGE = 1.0;
   public static final double HOMING_VELOCITY_THRESHOLD = 0.1; // placeholder, find this
 
   // physical constraints

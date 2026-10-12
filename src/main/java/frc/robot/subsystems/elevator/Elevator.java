@@ -5,6 +5,7 @@ import static edu.wpi.first.units.Units.Rotations;
 import static frc.robot.subsystems.elevator.ElevatorConstants.MOTOR_CONFIG;
 import static frc.robot.subsystems.elevator.ElevatorConstants.SETPOINTS;
 
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -54,7 +55,9 @@ public class Elevator extends ExtendedSubsystem {
                   Constants.CANConstants.SUPERSTRUCTURE,
                   Constants.CANConstants.ELEVATOR_LEFT,
                   ElevatorConstants.MOTOR_CONFIG)
+              .addControlRequest(new MotionMagicVoltage(0))
               .addFollower(Constants.CANConstants.ELEVATOR_RIGHT, MotorAlignmentValue.Opposed)
+              .setSignalUpdateFrequency(500.0, 50.0)
               .build();
           case SIM -> new LinearSystemIOSim(
                   DCMotor.getKrakenX60(1),

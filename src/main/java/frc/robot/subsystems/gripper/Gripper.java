@@ -10,7 +10,6 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.subsystems.trader.TraderConstants;
 import frc.robot.util.io.motors.MotorIO;
 import frc.robot.util.io.motors.MotorIOTalonFX;
 import frc.robot.util.io.motors.roller.Roller;
@@ -41,7 +40,7 @@ public class Gripper extends SubsystemBase {
                   Constants.CANConstants.SUPERSTRUCTURE,
                   Constants.CANConstants.GRIPPER_TOP,
                   GripperConstants.MOTOR_CONFIG)
-              .addFollower(Constants.CANConstants.GRIPPER_BOTTOM, MotorAlignmentValue.Opposed)
+              .addFollower(Constants.CANConstants.GRIPPER_BOTTOM, MotorAlignmentValue.Aligned)
               .build();
           case SIM -> new RollerIOSim(
               DCMotor.getKrakenX44(1),
@@ -51,14 +50,14 @@ public class Gripper extends SubsystemBase {
               0);
           case REPLAY -> new RollerIO() {};
         };
-    roller = new Roller("Gripper", io);
+    roller = new Roller("Gripper", io, () -> true);
 
     beambreak =
         switch (Constants.currentMode) {
           case REAL -> ignored -> {};
           case SIM -> LaserCanIO.beambreakSim(
               () -> SimulationManager.getInstance().isGripperLoaded(),
-              TraderConstants.BEAMBREAK_THRESHOLD);
+              GripperConstants.BEAMBREAK_THRESHOLD);
           case REPLAY -> inputs -> {};
         };
   }

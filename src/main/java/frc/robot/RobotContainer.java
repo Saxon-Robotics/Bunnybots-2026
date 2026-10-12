@@ -447,12 +447,15 @@ public class RobotContainer {
       Command rampElevator = elevator.ramp();
       Command l1Elevator = elevator.l1();
       Command l2Elevator = elevator.l2();
+      Command disableElevator =
+          elevator.release().withInterruptBehavior(Command.InterruptionBehavior.kCancelIncoming);
 
       /* End effector commands */
       Command gripperIntake = gripper.intake();
       Command gripperEject = gripper.eject();
 
       /* Trader commands */
+      Command traderReverse = trader.reverse();
       Command traderEject = trader.eject();
 
       // controls are only active during the correct mode
@@ -470,16 +473,18 @@ public class RobotContainer {
       guitarHeroController.red().and(guitarHeroControls).and(neutralStrumBar).onTrue(rampElevator);
       guitarHeroController.yellow().and(guitarHeroControls).and(neutralStrumBar).onTrue(l1Elevator);
       guitarHeroController.blue().and(guitarHeroControls).and(neutralStrumBar).onTrue(l2Elevator);
-      guitarHeroController
-          .orange()
-          .and(guitarHeroControls)
-          .and(neutralStrumBar)
-          .onTrue(elevatorHoming);
+      guitarHeroController.blue().and(guitarHeroControls).and(upStrumBar).onTrue(elevatorHoming);
       guitarHeroController
           .orange()
           .and(guitarHeroControls)
           .and(upStrumBar)
-          .whileTrue(manualElevator);
+          .whileTrue(disableElevator);
+      // todo rework
+      //      guitarHeroController
+      //          .orange()
+      //          .and(guitarHeroControls)
+      //          .and(upStrumBar)
+      //          .whileTrue(manualElevator);
 
       guitarHeroController
           .green()
@@ -487,6 +492,11 @@ public class RobotContainer {
           .and(downStrumBar)
           .whileTrue(gripperIntake);
       guitarHeroController.red().and(guitarHeroControls).and(downStrumBar).whileTrue(gripperEject);
+      guitarHeroController
+          .blue()
+          .and(guitarHeroControls)
+          .and(downStrumBar)
+          .whileTrue(traderReverse);
       guitarHeroController
           .orange()
           .and(guitarHeroControls)

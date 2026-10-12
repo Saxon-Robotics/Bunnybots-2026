@@ -28,7 +28,7 @@ public final class TraderConstants {
           .withSlot0(
               new Slot0Configs().withKP(0.1).withKI(0).withKD(0).withKS(0).withKV(0.12).withKA(0));
 
-  public static final double BEAMBREAK_THRESHOLD = 75; // mm
+  public static final double BEAMBREAK_THRESHOLD = 260; // mm
 
   public static final double CARROTS_PER_SEC = 1.0; // sim only
 }
