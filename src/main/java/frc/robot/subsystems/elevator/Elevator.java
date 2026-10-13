@@ -7,6 +7,7 @@ import static frc.robot.subsystems.elevator.ElevatorConstants.SETPOINTS;
 
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -105,6 +106,7 @@ public class Elevator extends ExtendedSubsystem {
     this.setpoint = setpoint;
     this.setpointRad = newSetpoint.in(Radians);
     Logger.recordOutput("Elevator/State", this.setpoint.toString());
+    Logger.recordOutput("Elevator/GoalHeight", ElevatorConstants.angleToDistance(newSetpoint));
   }
 
   public Command stow() {
@@ -130,7 +132,7 @@ public class Elevator extends ExtendedSubsystem {
               Logger.recordOutput("Elevator/State", "MANUAL");
             },
             () -> {
-              double magnitude = joystick.getAsDouble();
+              double magnitude = MathUtil.clamp(joystick.getAsDouble(), -1.0, 1.0);
               elevator.runVoltage(
                   Math.copySign(magnitude * magnitude, magnitude)
                       * ElevatorConstants.MAX_MANUAL_VOLTAGE);

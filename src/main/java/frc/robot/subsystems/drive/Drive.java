@@ -24,6 +24,7 @@ import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.therekrab.autopilot.APConstraints;
 import com.therekrab.autopilot.APProfile;
+import com.therekrab.autopilot.APTarget;
 import com.therekrab.autopilot.Autopilot;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
@@ -438,6 +439,13 @@ public class Drive extends ExtendedSubsystem implements Vision.VisionConsumer {
   public void setSpeedLimiter(boolean enable) {
     maxLinearSpeedMetersPerSec =
         enable ? SLOW_SPEED_LIMIT : TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
+  }
+
+  /** Check if the robot is within tolerance of the given APTarget */
+  public boolean atAPTarget(APTarget target) {
+    boolean atTarget = autopilot.atTarget(getPose(), target);
+    Logger.recordOutput("AutoAlign/AtGoal", atTarget);
+    return atTarget;
   }
 
   /** Returns the maximum angular speed in radians per sec. */

@@ -18,6 +18,10 @@ public final class ElevatorConstants {
     return Rotations.of(Units.radiansToRotations(distance.in(Meters) / DRUM_RADIUS));
   }
 
+  public static Distance angleToDistance(Angle angle) {
+    return Meters.of(angle.in(Radians) * DRUM_RADIUS);
+  }
+
   public static final double SETPOINT_TOLERANCE = 3.8; // rad
 
   public static final double MAX_MANUAL_VOLTAGE = 2.5;

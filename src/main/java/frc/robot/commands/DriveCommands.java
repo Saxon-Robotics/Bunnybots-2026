@@ -308,7 +308,7 @@ public class DriveCommands {
             },
             drive)
         .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()))
-        .until(() -> drive.autopilot.atTarget(drive.getPose(), target.get()))
+        .until(() -> drive.atAPTarget(target.get()))
         .finallyDo(drive::stop);
   }
 

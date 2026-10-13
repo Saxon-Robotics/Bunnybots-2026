@@ -11,7 +11,9 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
@@ -224,6 +226,8 @@ public class RobotContainer {
 
     Logger.recordOutput("Field/BlueOven", Constants.FieldConstants.BLUE_OVEN);
     Logger.recordOutput("Field/RedOven", Constants.FieldConstants.RED_OVEN);
+
+    SmartDashboard.putData(CommandScheduler.getInstance());
   }
 
   /**
@@ -240,11 +244,20 @@ public class RobotContainer {
     RobotUtil.setOperatorController(operatorController);
 
     /* Drive commands */
+    // Default command, normal field-relative drive
+    Command defaultDriveCommand =
+        DriveCommands.joystickDrive(
+                drive,
+                () -> -driverController.getLeftY(),
+                () -> -driverController.getLeftX(),
+                () -> -driverController.getRightX())
+            .withName("Default Drive");
     // Lock wheels to X pattern
     Command lockWheels = Commands.startEnd(drive::stopWithX, () -> {}, drive);
     // Reset gyro to 0°
     Command zeroGyro = Commands.runOnce(() -> drive.zeroGyro(true), drive).ignoringDisable(true);
-    Command autoAlign = DriveCommands.alignToTarget(drive, AutoAlign::getLastAPTarget);
+    Command autoAlign =
+        DriveCommands.alignToTarget(drive, AutoAlign::getLastAPTarget).withName("Auto Align");
     // Auto align to pantry (locked angle and y)
     Command pantryAlign =
         Commands.runOnce(() -> AutoAlign.setTargetPose(AutoAlign.Target.PANTRY, drive.getPose()))
@@ -257,7 +270,8 @@ public class RobotContainer {
                         // avoid recomputing nearest pantry
                         () -> AutoAlign.getLastTarget().getRotation())
                     .beforeStarting(() -> drive.setSpeedLimiter(true))
-                    .finallyDo(() -> drive.setSpeedLimiter(false)));
+                    .finallyDo(() -> drive.setSpeedLimiter(false)))
+            .withName("Pantry Align");
     // Set auto align targets
     Command ovenAlign =
         Commands.runOnce(() -> AutoAlign.setTargetPose(AutoAlign.Target.OVEN, drive.getPose()));
@@ -277,31 +291,27 @@ public class RobotContainer {
                         operatorController.getLeftY(), ControllerConstants.OPERATOR_DEADBAND),
                     2),
                 -operatorController.getLeftY());
-    Command manualElevator = elevator.manualControl(elevatorJoystick);
-    Command elevatorHoming = elevator.homingSequence();
-    Command stowElevator = elevator.stow();
-    Command rampElevator = elevator.ramp();
-    Command l1Elevator = elevator.l1();
-    Command l2Elevator = elevator.l2();
+    Command manualElevator = elevator.manualControl(elevatorJoystick).withName("Manual Elevator");
+    Command elevatorHoming = elevator.homingSequence().withName("Elevator Homing");
+    Command stowElevator = elevator.stow().withName("Stow Elevator");
+    Command rampElevator = elevator.ramp().withName("Ramp Elevator");
+    Command l1Elevator = elevator.l1().withName("L1 Elevator");
+    Command l2Elevator = elevator.l2().withName("L2 Elevator");
     // emergency disable while true
     Command disableElevator =
-        elevator.release().withInterruptBehavior(Command.InterruptionBehavior.kCancelIncoming);
+        elevator
+            .release()
+            .withInterruptBehavior(Command.InterruptionBehavior.kCancelIncoming)
+            .withName("Disable Elevator");
 
     /* End effector commands */
-    Command gripperIntake = gripper.intake();
-    Command gripperEject = gripper.eject();
+    Command gripperIntake = gripper.intake().withName("Gripper Intake");
+    Command gripperEject = gripper.eject().withName("Gripper Eject");
 
     /* Trader commands */
-    Command traderEject = trader.eject();
-    Command traderReverse = trader.reverse();
+    Command traderEject = trader.eject().withName("Trader Eject");
+    Command traderReverse = trader.reverse().withName("Trader Reverse");
 
-    // Default command, normal field-relative drive
-    Command defaultDriveCommand =
-        DriveCommands.joystickDrive(
-            drive,
-            () -> -driverController.getLeftY(),
-            () -> -driverController.getLeftX(),
-            () -> -driverController.getRightX());
     drive.setDefaultCommand(defaultDriveCommand);
 
     // elevator override
@@ -440,25 +450,26 @@ public class RobotContainer {
 
       // configure triggers only once
       /* Elevator commands */
-      DoubleSupplier elevatorJoystick =
-          // scale tilt axis to [-1, 1]
-          () -> Math.fma(200.0 / 81.0, guitarHeroController.getTiltAxis(), -119.0 / 81.0);
-      Command manualElevator = elevator.manualControl(elevatorJoystick);
-      Command elevatorHoming = elevator.homingSequence();
-      Command stowElevator = elevator.stow();
-      Command rampElevator = elevator.ramp();
-      Command l1Elevator = elevator.l1();
-      Command l2Elevator = elevator.l2();
+      Command manualElevatorUp = elevator.manualControl(() -> 0.8).withName("Manual Elevator");
+      Command manualElevatorDown = elevator.manualControl(() -> -0.7).withName("Manual Elevator");
+      Command elevatorHoming = elevator.homingSequence().withName("Elevator Homing");
+      Command stowElevator = elevator.stow().withName("Stow Elevator");
+      Command rampElevator = elevator.ramp().withName("Ramp Elevator");
+      Command l1Elevator = elevator.l1().withName("L1 Elevator");
+      Command l2Elevator = elevator.l2().withName("L2 Elevator");
       Command disableElevator =
-          elevator.release().withInterruptBehavior(Command.InterruptionBehavior.kCancelIncoming);
+          elevator
+              .release()
+              .withInterruptBehavior(Command.InterruptionBehavior.kCancelIncoming)
+              .withName("Disable Elevator");
 
       /* End effector commands */
-      Command gripperIntake = gripper.intake();
-      Command gripperEject = gripper.eject();
+      Command gripperIntake = gripper.intake().withName("Gripper Intake");
+      Command gripperEject = gripper.eject().withName("Gripper Eject");
 
       /* Trader commands */
-      Command traderReverse = trader.reverse();
-      Command traderEject = trader.eject();
+      Command traderReverse = trader.reverse().withName("Trader Reverse");
+      Command traderEject = trader.eject().withName("Trader Eject");
 
       // controls are only active during the correct mode
       BooleanSupplier guitarHeroControls = () -> controlScheme == ControlScheme.GUITAR_HERO;
@@ -475,18 +486,22 @@ public class RobotContainer {
       guitarHeroController.red().and(guitarHeroControls).and(neutralStrumBar).onTrue(rampElevator);
       guitarHeroController.yellow().and(guitarHeroControls).and(neutralStrumBar).onTrue(l1Elevator);
       guitarHeroController.blue().and(guitarHeroControls).and(neutralStrumBar).onTrue(l2Elevator);
+      guitarHeroController
+          .green()
+          .and(guitarHeroControls)
+          .and(upStrumBar)
+          .whileTrue(manualElevatorUp);
+      guitarHeroController
+          .red()
+          .and(guitarHeroControls)
+          .and(upStrumBar)
+          .whileTrue(manualElevatorDown);
       guitarHeroController.blue().and(guitarHeroControls).and(upStrumBar).onTrue(elevatorHoming);
       guitarHeroController
           .orange()
           .and(guitarHeroControls)
           .and(upStrumBar)
           .whileTrue(disableElevator);
-      // todo rework
-      //      guitarHeroController
-      //          .orange()
-      //          .and(guitarHeroControls)
-      //          .and(upStrumBar)
-      //          .whileTrue(manualElevator);
 
       guitarHeroController
           .green()
