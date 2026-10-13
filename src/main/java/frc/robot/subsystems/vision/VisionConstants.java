@@ -14,7 +14,7 @@ public final class VisionConstants {
     try {
       APRIL_TAG_LAYOUT =
           new AprilTagFieldLayout(
-              Filesystem.getDeployDirectory().toPath().resolve("bb-apriltag-layout.json"));
+              Filesystem.getDeployDirectory().toPath().resolve("vision/bb-apriltag-layout.json"));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
