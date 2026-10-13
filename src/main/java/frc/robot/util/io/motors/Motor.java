@@ -54,7 +54,7 @@ public abstract class Motor<IOType extends MotorIO, InputsType extends MotorIO.M
    */
   public void periodic() {
     encoderIO.updateInputs(encoderInputs);
-    Logger.processInputs(name, encoderInputs);
+    Logger.processInputs(name + "/Encoder", encoderInputs);
 
     double highestTemp = inputs.tempCelsius;
     for (double temp : inputs.followerTempCelsius) {
