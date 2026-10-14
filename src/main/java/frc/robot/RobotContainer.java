@@ -297,6 +297,7 @@ public class RobotContainer {
     Command rampElevator = elevator.ramp().withName("Ramp Elevator");
     Command l1Elevator = elevator.l1().withName("L1 Elevator");
     Command l2Elevator = elevator.l2().withName("L2 Elevator");
+    Command l3Elevator = elevator.l3().withName("L3 Elevator");
     // emergency disable while true
     Command disableElevator =
         elevator
@@ -339,9 +340,10 @@ public class RobotContainer {
             () -> RobotUtil.stopOperatorRumble(elevatorRumble));
     // controller vibrates when elevator buttons are pressed
     operatorController.povDown().onTrue(stowElevator).whileTrue(rumbleCommand);
-    operatorController.povRight().onTrue(rampElevator).whileTrue(rumbleCommand);
+    operatorController.leftBumper().onTrue(rampElevator).whileTrue(rumbleCommand);
     operatorController.povLeft().onTrue(l1Elevator).whileTrue(rumbleCommand);
-    operatorController.povUp().onTrue(l2Elevator).whileTrue(rumbleCommand);
+    operatorController.povRight().onTrue(l2Elevator).whileTrue(rumbleCommand);
+    //    operatorController.povUp().onTrue(l3Elevator).whileTrue(rumbleCommand);
     operatorController.rightBumper().onTrue(elevatorHoming).whileTrue(rumbleCommand);
     operatorController.leftTrigger(0.85).whileTrue(disableElevator);
 
@@ -458,6 +460,7 @@ public class RobotContainer {
       Command rampElevator = elevator.ramp().withName("Ramp Elevator");
       Command l1Elevator = elevator.l1().withName("L1 Elevator");
       Command l2Elevator = elevator.l2().withName("L2 Elevator");
+      Command l3Elevator = elevator.l3().withName("L3 Elevator");
       Command disableElevator =
           elevator
               .release()
@@ -487,6 +490,7 @@ public class RobotContainer {
       guitarHeroController.red().and(guitarHeroControls).and(neutralStrumBar).onTrue(rampElevator);
       guitarHeroController.yellow().and(guitarHeroControls).and(neutralStrumBar).onTrue(l1Elevator);
       guitarHeroController.blue().and(guitarHeroControls).and(neutralStrumBar).onTrue(l2Elevator);
+      // guitarHeroController.orange().and(guitarHeroControls).and(neutralStrumBar).onTrue(l3Elevator);
       guitarHeroController
           .green()
           .and(guitarHeroControls)
