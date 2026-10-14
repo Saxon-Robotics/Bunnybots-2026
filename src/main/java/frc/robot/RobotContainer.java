@@ -348,7 +348,8 @@ public class RobotContainer {
     operatorController.b().whileTrue(gripperIntake);
     operatorController.y().whileTrue(gripperEject);
 
-    operatorController.x().whileTrue(traderEject);
+    operatorController.a().whileTrue(traderEject);
+    operatorController.x().whileTrue(traderReverse);
     // test mode (single controller)
     BooleanSupplier testProfile = () -> controlScheme == ControlScheme.TEST;
     /* todo implementation */

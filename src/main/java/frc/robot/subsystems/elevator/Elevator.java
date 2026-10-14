@@ -9,8 +9,6 @@ import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.Debouncer;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
@@ -34,7 +32,8 @@ public class Elevator extends ExtendedSubsystem {
     STOWED(false),
     RAMP(true),
     L1(true),
-    L2(true);
+    L2(true),
+    L3(true);
 
     public final boolean isForScoring;
 
@@ -81,6 +80,7 @@ public class Elevator extends ExtendedSubsystem {
         new LinearSystem.Builder("Elevator", io)
             .setDrumRadius(ElevatorConstants.DRUM_RADIUS)
             .setBrakeMode(() -> !coastOverride)
+            .enableVisualization(1)
             .build();
 
     Logger.recordOutput("Elevator/State", this.setpoint.toString());
@@ -123,6 +123,10 @@ public class Elevator extends ExtendedSubsystem {
 
   public Command l2() {
     return startEnd(() -> runSetpoint(Setpoint.L2), () -> {}).until(this::hasReachedSetpoint);
+  }
+
+  public Command l3() {
+    return startEnd(() -> runSetpoint(Setpoint.L3), () -> {}).until(this::hasReachedSetpoint);
   }
 
   public Command manualControl(DoubleSupplier joystick) {
@@ -191,11 +195,5 @@ public class Elevator extends ExtendedSubsystem {
 
   public boolean hasReachedSetpoint() {
     return Math.abs(setpointRad - getPositionRad()) < ElevatorConstants.SETPOINT_TOLERANCE;
-  }
-
-  @Override
-  public void simulationPeriodic() {
-    Logger.recordOutput(
-        "Elevator/RobotComponent", new Pose3d(0, 0, getPositionMeters(), Rotation3d.kZero));
   }
 }
