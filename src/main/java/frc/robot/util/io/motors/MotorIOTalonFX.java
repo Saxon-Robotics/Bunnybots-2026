@@ -20,6 +20,7 @@ import frc.robot.util.io.motors.pivot.PivotIO;
 import frc.robot.util.io.motors.roller.RollerIO;
 import frc.robot.util.io.sensors.encoder.EncoderIOCANcoder;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class MotorIOTalonFX implements AutoCloseable, RollerIO, PivotIO, LinearSystemIO {
   private final TalonFX leader;
@@ -38,7 +39,7 @@ public class MotorIOTalonFX implements AutoCloseable, RollerIO, PivotIO, LinearS
   private final StatusSignal<Temperature> temp;
   private final BaseStatusSignal[] followerTemps;
 
-  private volatile Angle angleResetVal = Rotations.zero();
+  private final AtomicReference<Angle> angleResetVal = new AtomicReference<>();
   private Notifier resetPosition;
 
   @FunctionalInterface
@@ -257,7 +258,7 @@ public class MotorIOTalonFX implements AutoCloseable, RollerIO, PivotIO, LinearS
 
   @Override
   public void resetPosition(Angle angle) {
-    angleResetVal = angle;
+    angleResetVal.set(angle);
     resetPosition.startSingle(0);
   }
 
@@ -287,7 +288,7 @@ public class MotorIOTalonFX implements AutoCloseable, RollerIO, PivotIO, LinearS
             (leader, angle) -> leader.setControl(defaultRequest.withPosition(angle))
           };
     }
-    resetPosition = new Notifier(() -> leader.setPosition(angleResetVal));
+    resetPosition = new Notifier(() -> leader.setPosition(angleResetVal.get()));
   }
 
   private void configureVelocityControl() {
