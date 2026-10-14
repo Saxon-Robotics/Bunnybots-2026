@@ -85,7 +85,7 @@ public class MotorIOTalonFX implements AutoCloseable, RollerIO, PivotIO, LinearS
     BaseStatusSignal.setUpdateFrequencyForAll(secondarySignalUpdateFreq, followerTemps);
     leader.optimizeBusUtilization();
     ParentDevice.optimizeBusUtilizationForAll(followers);
-    PhoenixUtil.registerSignals(canbus, velocity, voltage, statorCurrent, temp);
+    PhoenixUtil.registerSignals(canbus, position, velocity, voltage, statorCurrent, temp);
     PhoenixUtil.registerSignals(canbus, followerTemps);
     tryUntilOk(5, () -> leader.setPosition(0));
     // Set follower behavior
@@ -293,8 +293,6 @@ public class MotorIOTalonFX implements AutoCloseable, RollerIO, PivotIO, LinearS
   private void configureVelocityControl() {
     if (velocityRequest != null) return;
     velocityRequest = new VelocityVoltage(0);
-    velocity.setUpdateFrequency(100.0);
-    PhoenixUtil.registerSignals(leader.getNetwork(), velocity);
   }
 
   public static class Builder {
