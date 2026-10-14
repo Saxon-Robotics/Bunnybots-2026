@@ -30,5 +30,5 @@ public final class TraderConstants {
 
   public static final double BEAMBREAK_THRESHOLD = 260; // mm
 
-  public static final double CARROTS_PER_SEC = 1.0; // sim only
+  public static final double CARROTS_PER_SEC = 6.0; // sim only
 }

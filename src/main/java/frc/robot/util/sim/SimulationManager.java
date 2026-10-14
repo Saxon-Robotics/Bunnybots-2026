@@ -85,7 +85,7 @@ public class SimulationManager {
         .whileTrue(
             Commands.repeatingSequence(
                 Commands.runOnce(this::traderScore),
-                Commands.waitSeconds(TraderConstants.CARROTS_PER_SEC)));
+                Commands.waitSeconds(1 / TraderConstants.CARROTS_PER_SEC)));
   }
 
   public void simulationPeriodic() {

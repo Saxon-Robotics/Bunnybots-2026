@@ -186,12 +186,12 @@ public class RobotContainer {
     // Set up commands for PathPlanner & BLine
     configureAutoCommands();
 
+    // Set up BLine paths
+    addBLinePaths();
+
     // Have the autoChooser pull in all PathPlanner autos as options
     autoChooser =
         new LoggedDashboardChooser<>("Auto Chooser", BetterAutoChooser.buildAutoChooser());
-
-    // Set up BLine autos
-    addBLineAutos();
 
     // Set up SysId routines when not in competition
     if (!DriverStation.isFMSAttached()) {
@@ -413,29 +413,46 @@ public class RobotContainer {
     Command pantryAlign =
         Commands.runOnce(() -> AutoAlign.setTargetPose(AutoAlign.Target.PANTRY, drive.getPose()))
             .andThen(DriveCommands.alignToTarget(drive, AutoAlign::getLastAPTarget));
+    Command ovenAlign =
+        Commands.runOnce(() -> AutoAlign.setTargetPose(AutoAlign.Target.OVEN, drive.getPose()))
+            .andThen(DriveCommands.alignToTarget(drive, AutoAlign::getLastAPTarget));
+    Command rampAlign =
+        Commands.runOnce(() -> AutoAlign.setTargetPose(AutoAlign.Target.RAMP, drive.getPose()))
+            .andThen(DriveCommands.alignToTarget(drive, AutoAlign::getLastAPTarget));
 
-    Command traderEject = trader.eject().until(() -> !trader.isLoaded());
-    Command rampIntake =
-        Commands.sequence(elevator.ramp(), gripper.intake().until(gripper::isLoaded));
-    Command scoreL2 =
-        Commands.sequence(
-            pantryAlign, elevator.l2(), gripper.eject().until(() -> !gripper.isLoaded()));
+    Command scorePantry =
+        Commands.sequence(pantryAlign, gripper.eject().until(() -> !gripper.isLoaded()));
+    Command scoreOven =
+        Commands.sequence(ovenAlign, trader.eject().until(() -> !trader.isLoaded()));
+    Command intakeFromRamp =
+        Commands.sequence(rampAlign, gripper.intake().until(gripper::isLoaded));
+    if (Constants.currentMode == Constants.Mode.SIM) {
+      intakeFromRamp =
+          intakeFromRamp.alongWith(
+              Commands.runOnce(
+                  () ->
+                      SimulationManager.getInstance()
+                          .dropCarrot(
+                              RobotUtil.isRedAlliance()
+                                  ? HarvestHavocCarrotOnFly.CarrotStations.RED_RAMP
+                                  : HarvestHavocCarrotOnFly.CarrotStations.BLUE_RAMP)));
+    }
 
-    NamedCommands.registerCommand("TraderEject", traderEject);
-    NamedCommands.registerCommand("RampIntake", rampIntake);
-    NamedCommands.registerCommand("ScoreL2", scoreL2);
+    NamedCommands.registerCommand("ScorePantry", scorePantry);
+    NamedCommands.registerCommand("ScoreOven", scoreOven);
+    NamedCommands.registerCommand("IntakeRamp", intakeFromRamp);
 
     FollowPath.registerEventTrigger("ElevatorStow", elevator.stow());
     FollowPath.registerEventTrigger("ElevatorRamp", elevator.ramp());
     FollowPath.registerEventTrigger("ElevatorL1", elevator.l1());
     FollowPath.registerEventTrigger("ElevatorL2", elevator.l2());
+    FollowPath.registerEventTrigger("ElevatorL3", elevator.l3());
   }
 
-  private void addBLineAutos() {
+  private void addBLinePaths() {
     BLineAutos.configure(drive, elevator, trader, gripper);
 
-    autoChooser.addOption("Oven Dump [BLine]", BLineAutos.ovenDump());
-    //    autoChooser.addOption("Carrot Cake [BLine]", BLineAutos.carrotCake());
+    NamedCommands.registerCommands(BLineAutos.getAllPathCommands());
   }
 
   public void setControlScheme(ControlScheme newScheme) {

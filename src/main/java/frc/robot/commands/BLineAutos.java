@@ -1,11 +1,11 @@
 package frc.robot.commands;
 
+import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.Constants;
-import frc.robot.lib.BLine.BLineCommands;
 import frc.robot.lib.BLine.FlippingUtil;
 import frc.robot.lib.BLine.FollowPath;
 import frc.robot.lib.BLine.Path;
@@ -13,24 +13,23 @@ import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.gripper.Gripper;
 import frc.robot.subsystems.trader.Trader;
-import frc.robot.util.AutoAlign;
 import frc.robot.util.RobotUtil;
-import frc.robot.util.sim.HarvestHavocCarrotOnFly;
-import frc.robot.util.sim.SimulationManager;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 import org.littletonrobotics.junction.Logger;
 
 public class BLineAutos {
+  private static final String STARTING_PATH_PREFIX = "s_";
+
   private static FollowPath.Builder builder;
 
   private static Drive drive;
   private static Elevator elevator;
   private static Trader trader;
   private static Gripper gripper;
-
-  private static Command traderEject;
-  private static Command rampIntake;
-  private static Command scoreL2;
 
   public static void configure(Drive drive, Elevator elevator, Trader trader, Gripper gripper) {
     BLineAutos.drive = drive;
@@ -56,58 +55,20 @@ public class BLineAutos {
         value -> Logger.recordOutput(value.getFirst(), value.getSecond()));
     //    FollowPath.setTranslationListLoggingConsumer(
     //        value -> Logger.recordOutput(value.getFirst(), value.getSecond()));
+  }
 
-    Command ovenAlign =
-        Commands.runOnce(() -> AutoAlign.setTargetPose(AutoAlign.Target.OVEN, drive.getPose()))
-            .andThen(DriveCommands.alignToTarget(drive, AutoAlign::getLastAPTarget));
-    Command rampAlign =
-        Commands.runOnce(() -> AutoAlign.setTargetPose(AutoAlign.Target.RAMP, drive.getPose()))
-            .andThen(DriveCommands.alignToTarget(drive, AutoAlign::getLastAPTarget));
-    Command pantryAlign =
-        Commands.runOnce(() -> AutoAlign.setTargetPose(AutoAlign.Target.PANTRY, drive.getPose()))
-            .andThen(DriveCommands.alignToTarget(drive, AutoAlign::getLastAPTarget));
-
-    traderEject = Commands.sequence(ovenAlign, trader.eject().until(() -> !trader.isLoaded()));
-    rampIntake = Commands.sequence(rampAlign, gripper.intake().until(gripper::isLoaded));
-    if (Constants.currentMode == Constants.Mode.SIM) {
-      rampIntake =
-          rampIntake.alongWith(
-              Commands.runOnce(
-                  () ->
-                      SimulationManager.getInstance()
-                          .dropCarrot(
-                              RobotUtil.isRedAlliance()
-                                  ? HarvestHavocCarrotOnFly.CarrotStations.RED_RAMP
-                                  : HarvestHavocCarrotOnFly.CarrotStations.BLUE_RAMP)));
+  public static List<Pair<String, Command>> getAllPathCommands() {
+    List<String> pathNames = getAllPathNames();
+    List<Pair<String, Command>> commands = new ArrayList<>();
+    for (String pathName : pathNames) {
+      Path path = new Path(pathName);
+      if (pathName.startsWith(STARTING_PATH_PREFIX)) {
+        pathName = pathName.substring(STARTING_PATH_PREFIX.length());
+        commands.add(Pair.of(pathName + "ResetPose", resetPose(path)));
+      }
+      commands.add(Pair.of(pathName, Commands.defer(() -> builder.build(path), Set.of(drive))));
     }
-    scoreL2 = Commands.sequence(pantryAlign, gripper.eject().until(() -> !gripper.isLoaded()));
-  }
-
-  public static Command carrotCake() {
-    Path ovenToRampPath = new Path("OvenToRamp");
-    Path rampToPantryPath = new Path("RampToPantry");
-    Path pantryToWaitPath = new Path("PantryToWait");
-
-    Command ovenToRamp = Commands.defer(() -> builder.build(ovenToRampPath), Set.of(drive));
-    Command rampToPantry = Commands.defer(() -> builder.build(rampToPantryPath), Set.of(drive));
-    Command pantryToWait = Commands.defer(() -> builder.build(pantryToWaitPath), Set.of(drive));
-
-    return BLineCommands.sequence(
-        resetPose(ovenToRampPath),
-        traderEject,
-        ovenToRamp,
-        rampIntake,
-        rampToPantry,
-        scoreL2,
-        pantryToWait);
-  }
-
-  public static Command ovenDump() {
-    Path ovenToWaitPath = new Path("OvenToWait");
-
-    Command ovenToWait = Commands.defer(() -> builder.build(ovenToWaitPath), Set.of(drive));
-
-    return BLineCommands.sequence(resetPose(ovenToWaitPath), traderEject, ovenToWait);
+    return commands;
   }
 
   private static Command resetPose(Path path) {
@@ -120,5 +81,18 @@ public class BLineAutos {
           }
           drive.setPose(startPose);
         });
+  }
+
+  private static List<String> getAllPathNames() {
+    File[] autoFiles = new File(Filesystem.getDeployDirectory(), "autos/paths").listFiles();
+    if (autoFiles == null) {
+      return new ArrayList<>();
+    }
+    return Stream.of(autoFiles)
+        .filter(file -> !file.isDirectory())
+        .map(File::getName)
+        .filter(name -> name.endsWith(".json"))
+        .map(name -> name.substring(0, name.lastIndexOf(".")))
+        .toList();
   }
 }
