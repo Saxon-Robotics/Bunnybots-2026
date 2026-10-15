@@ -16,8 +16,11 @@ import org.ironmaple.simulation.gamepieces.GamePieceOnFieldSimulation;
 import org.ironmaple.simulation.gamepieces.GamePieceProjectile;
 
 public class HarvestHavocCarrotOnFly extends GamePieceProjectile {
+
+  private final boolean isCake;
+
   public HarvestHavocCarrotOnFly(
-    boolean isCake,
+      boolean isCake,
       Translation2d robotPosition,
       Translation2d shooterPositionOnRobot,
       ChassisSpeeds chassisSpeeds,
@@ -26,8 +29,9 @@ public class HarvestHavocCarrotOnFly extends GamePieceProjectile {
       LinearVelocity launchingSpeed,
       Angle shooterAngle) {
     super(
-        isCake ? HarvestHavocCarrotOnField.HARVEST_HAVOC_CAKE_INFO :
-        HarvestHavocCarrotOnField.HARVEST_HAVOC_CARROT_INFO,
+        isCake
+            ? HarvestHavocCarrotOnField.HARVEST_HAVOC_CAKE_INFO
+            : HarvestHavocCarrotOnField.HARVEST_HAVOC_CARROT_INFO,
         robotPosition,
         shooterPositionOnRobot,
         chassisSpeeds,
@@ -35,25 +39,28 @@ public class HarvestHavocCarrotOnFly extends GamePieceProjectile {
         initialHeight,
         launchingSpeed,
         shooterAngle);
+    this.isCake = isCake;
     super.enableBecomesGamePieceOnFieldAfterTouchGround();
     super.withTouchGroundHeight(0.2);
   }
 
   public HarvestHavocCarrotOnFly(
-    boolean isCake, 
+      boolean isCake,
       Translation2d initialPosition,
       Translation2d initialLaunchingVelocityMPS,
       double initialHeight,
       double initialVerticalSpeedMPS,
       Rotation3d gamePieceRotation) {
     super(
-        isCake ? HarvestHavocCarrotOnField.HARVEST_HAVOC_CAKE_INFO :
-        HarvestHavocCarrotOnField.HARVEST_HAVOC_CARROT_INFO,
+        isCake
+            ? HarvestHavocCarrotOnField.HARVEST_HAVOC_CAKE_INFO
+            : HarvestHavocCarrotOnField.HARVEST_HAVOC_CARROT_INFO,
         initialPosition,
         initialLaunchingVelocityMPS,
         initialHeight,
         initialVerticalSpeedMPS,
         gamePieceRotation);
+    this.isCake = isCake;
     super.enableBecomesGamePieceOnFieldAfterTouchGround();
     super.withTouchGroundHeight(0.2);
   }
@@ -62,34 +69,41 @@ public class HarvestHavocCarrotOnFly extends GamePieceProjectile {
     BLUE_RAMP(
         new Pose2d(FieldConstants.BLUE_RAMP.getTranslation(), Rotation2d.kCW_90deg),
         Centimeters.of(57.659358),
-        new Translation2d(1.816, 0), true),
+        new Translation2d(1.816, 0),
+        true),
     RED_RAMP(
         new Pose2d(FieldConstants.RED_RAMP.getTranslation(), Rotation2d.kCCW_90deg),
         Centimeters.of(57.659358),
-        new Translation2d(-1.816, 0), true),
+        new Translation2d(-1.816, 0),
+        true),
     BLUE_REAR_DEPOT(
         new Pose2d(FieldConstants.BLUE_REAR_DEPOT.getTranslation(), Rotation2d.kCW_90deg),
         Centimeters.of(58.420),
-        new Translation2d(-1.816, 0), false),
+        new Translation2d(-1.816, 0),
+        false),
     BLUE_SIDE_DEPOT(
         new Pose2d(FieldConstants.BLUE_SIDE_DEPOT.getTranslation(), Rotation2d.kZero),
         Centimeters.of(58.420),
-        new Translation2d(0, 1.816), false),
+        new Translation2d(0, 1.816),
+        false),
     RED_REAR_DEPOT(
         new Pose2d(FieldConstants.RED_REAR_DEPOT.getTranslation(), Rotation2d.kCW_90deg),
         Centimeters.of(58.420),
-        new Translation2d(1.816, 0), false),
+        new Translation2d(1.816, 0),
+        false),
     RED_SIDE_DEPOT(
         new Pose2d(FieldConstants.RED_SIDE_DEPOT.getTranslation(), Rotation2d.kZero),
         Centimeters.of(58.420),
-        new Translation2d(0, 1.816), false);
+        new Translation2d(0, 1.816),
+        false);
 
     private final Pose2d startingPose;
     private final Distance height;
     private final Translation2d droppingVelocity;
     private final boolean dropsCakes;
 
-    CarrotStations(Pose2d startingPose, Distance height, Translation2d droppingVelocity, boolean dropsCakes) {
+    CarrotStations(
+        Pose2d startingPose, Distance height, Translation2d droppingVelocity, boolean dropsCakes) {
       this.startingPose = startingPose;
       this.height = height;
       this.droppingVelocity = droppingVelocity;
@@ -112,7 +126,9 @@ public class HarvestHavocCarrotOnFly extends GamePieceProjectile {
     if (!super.becomesGamePieceOnGroundAfterTouchGround) return;
     simulatedArena.addGamePiece(
         new GamePieceOnFieldSimulation(
-            HarvestHavocCarrotOnField.HARVEST_HAVOC_CARROT_INFO,
+            isCake
+                ? HarvestHavocCarrotOnField.HARVEST_HAVOC_CAKE_INFO
+                : HarvestHavocCarrotOnField.HARVEST_HAVOC_CARROT_INFO,
             () ->
                 Math.max(
                     HarvestHavocCarrotOnField.HARVEST_HAVOC_CARROT_INFO.gamePieceHeight().in(Meters)

@@ -48,8 +48,6 @@ public class HarvestHavocPantryLevel extends Goal {
   private final double minZMeters;
   private final double maxZMeters;
 
-  
-
   /**
    *
    *
@@ -59,7 +57,8 @@ public class HarvestHavocPantryLevel extends Goal {
    * @param isBlue Whether the position is on the blue pantry or the red pantry.
    * @param level The level of the pantry (0 indexed). Range of 0-2.
    */
-  public HarvestHavocPantryLevel(Arena2026Bunnybots arena, boolean isBlue, int level, boolean forCakes) {
+  public HarvestHavocPantryLevel(
+      Arena2026Bunnybots arena, boolean isBlue, int level, boolean forCakes) {
     super(
         arena,
         Meters.of(0.4776 * 5),
