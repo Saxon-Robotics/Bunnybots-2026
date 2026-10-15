@@ -17,6 +17,7 @@ import org.ironmaple.simulation.gamepieces.GamePieceProjectile;
 
 public class HarvestHavocCarrotOnFly extends GamePieceProjectile {
   public HarvestHavocCarrotOnFly(
+    boolean isCake,
       Translation2d robotPosition,
       Translation2d shooterPositionOnRobot,
       ChassisSpeeds chassisSpeeds,
@@ -25,6 +26,7 @@ public class HarvestHavocCarrotOnFly extends GamePieceProjectile {
       LinearVelocity launchingSpeed,
       Angle shooterAngle) {
     super(
+        isCake ? HarvestHavocCarrotOnField.HARVEST_HAVOC_CAKE_INFO :
         HarvestHavocCarrotOnField.HARVEST_HAVOC_CARROT_INFO,
         robotPosition,
         shooterPositionOnRobot,
@@ -38,12 +40,14 @@ public class HarvestHavocCarrotOnFly extends GamePieceProjectile {
   }
 
   public HarvestHavocCarrotOnFly(
+    boolean isCake, 
       Translation2d initialPosition,
       Translation2d initialLaunchingVelocityMPS,
       double initialHeight,
       double initialVerticalSpeedMPS,
       Rotation3d gamePieceRotation) {
     super(
+        isCake ? HarvestHavocCarrotOnField.HARVEST_HAVOC_CAKE_INFO :
         HarvestHavocCarrotOnField.HARVEST_HAVOC_CARROT_INFO,
         initialPosition,
         initialLaunchingVelocityMPS,
@@ -58,41 +62,44 @@ public class HarvestHavocCarrotOnFly extends GamePieceProjectile {
     BLUE_RAMP(
         new Pose2d(FieldConstants.BLUE_RAMP.getTranslation(), Rotation2d.kCW_90deg),
         Centimeters.of(57.659358),
-        new Translation2d(1.816, 0)),
+        new Translation2d(1.816, 0), true),
     RED_RAMP(
         new Pose2d(FieldConstants.RED_RAMP.getTranslation(), Rotation2d.kCCW_90deg),
         Centimeters.of(57.659358),
-        new Translation2d(-1.816, 0)),
+        new Translation2d(-1.816, 0), true),
     BLUE_REAR_DEPOT(
         new Pose2d(FieldConstants.BLUE_REAR_DEPOT.getTranslation(), Rotation2d.kCW_90deg),
         Centimeters.of(58.420),
-        new Translation2d(-1.816, 0)),
+        new Translation2d(-1.816, 0), false),
     BLUE_SIDE_DEPOT(
         new Pose2d(FieldConstants.BLUE_SIDE_DEPOT.getTranslation(), Rotation2d.kZero),
         Centimeters.of(58.420),
-        new Translation2d(0, 1.816)),
+        new Translation2d(0, 1.816), false),
     RED_REAR_DEPOT(
         new Pose2d(FieldConstants.RED_REAR_DEPOT.getTranslation(), Rotation2d.kCW_90deg),
         Centimeters.of(58.420),
-        new Translation2d(1.816, 0)),
+        new Translation2d(1.816, 0), false),
     RED_SIDE_DEPOT(
         new Pose2d(FieldConstants.RED_SIDE_DEPOT.getTranslation(), Rotation2d.kZero),
         Centimeters.of(58.420),
-        new Translation2d(0, 1.816));
+        new Translation2d(0, 1.816), false);
 
     private final Pose2d startingPose;
     private final Distance height;
     private final Translation2d droppingVelocity;
+    private final boolean dropsCakes;
 
-    CarrotStations(Pose2d startingPose, Distance height, Translation2d droppingVelocity) {
+    CarrotStations(Pose2d startingPose, Distance height, Translation2d droppingVelocity, boolean dropsCakes) {
       this.startingPose = startingPose;
       this.height = height;
       this.droppingVelocity = droppingVelocity;
+      this.dropsCakes = dropsCakes;
     }
   }
 
   public static HarvestHavocCarrotOnFly dropFromCarrotStation(CarrotStations station) {
     return new HarvestHavocCarrotOnFly(
+        station.dropsCakes,
         station.startingPose.getTranslation(),
         station.droppingVelocity,
         station.height.in(Meters),

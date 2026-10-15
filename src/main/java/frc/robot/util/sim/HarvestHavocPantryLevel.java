@@ -39,15 +39,16 @@ public class HarvestHavocPantryLevel extends Goal {
 
   private static final int MIN_LEVEL = 0;
   private static final int MAX_LEVEL = 2;
-
   private static final double CARROT_SIZE = 0.4572;
+
+  private static final Pose3d[][] carrots = new Pose3d[3][5];
 
   public final int level;
 
   private final double minZMeters;
   private final double maxZMeters;
 
-  private Pose3d[] carrots = new Pose3d[5];
+  
 
   /**
    *
@@ -58,13 +59,13 @@ public class HarvestHavocPantryLevel extends Goal {
    * @param isBlue Whether the position is on the blue pantry or the red pantry.
    * @param level The level of the pantry (0 indexed). Range of 0-2.
    */
-  public HarvestHavocPantryLevel(Arena2026Bunnybots arena, boolean isBlue, int level) {
+  public HarvestHavocPantryLevel(Arena2026Bunnybots arena, boolean isBlue, int level, boolean forCakes) {
     super(
         arena,
         Meters.of(0.4776 * 5),
         Meters.of(0.160),
         Meters.of(0.222),
-        "Carrot",
+        forCakes ? "CakedUpCarrot" : "Carrot",
         getPoseOfPantryAt(isBlue, level),
         isBlue,
         5,
@@ -96,15 +97,12 @@ public class HarvestHavocPantryLevel extends Goal {
           add variable to the list, with set y and z.
           return true
            */
-          if (gamePieceCount == max) return false;
-
           if (!xyBox.contains(new Vector2(position.getX(), position.getY()))
               || position.getZ() < minZMeters
               || position.getZ() > maxZMeters) {
             return false;
           }
-
-          for (Pose3d carrot : carrots) {
+          for (Pose3d carrot : carrots[level]) {
             if (carrot == null) break;
             if (Math.abs(carrot.getX() - position.getX()) < CARROT_SIZE) {
               return false;
@@ -116,7 +114,7 @@ public class HarvestHavocPantryLevel extends Goal {
                   this.position.getY(),
                   this.position.getZ(),
                   new Rotation3d(Rotation2d.kZero));
-          carrots[gamePieceCount] = carrotInPantry;
+          carrots[level][gamePieceCount] = carrotInPantry;
 
           return true;
         });
@@ -152,7 +150,7 @@ public class HarvestHavocPantryLevel extends Goal {
 
   @Override
   public void draw(List<Pose3d> drawList) {
-    for (Pose3d carrot : carrots) {
+    for (Pose3d carrot : carrots[level]) {
       if (carrot == null) break;
       drawList.add(carrot);
     }

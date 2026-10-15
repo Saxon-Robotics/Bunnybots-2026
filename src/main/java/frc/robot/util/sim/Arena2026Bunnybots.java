@@ -71,8 +71,10 @@ public class Arena2026Bunnybots extends SimulatedArena {
 
   public final HarvestHavocPantrySimulation bluePantry;
   public final HarvestHavocPantrySimulation redPantry;
-  public final HarvestHavocOvenSimulation blueOven;
-  public final HarvestHavocOvenSimulation redOven;
+  public final HarvestHavocOvenSimulation blueOvenCarrot;
+  public final HarvestHavocOvenSimulation blueOvenCake;
+  public final HarvestHavocOvenSimulation redOvenCarrot;
+  public final HarvestHavocOvenSimulation redOvenCake;
 
   public Arena2026Bunnybots() {
     super(new HarvestHavocFieldObstacleMap());
@@ -83,11 +85,15 @@ public class Arena2026Bunnybots extends SimulatedArena {
     redPantry = new HarvestHavocPantrySimulation(this, false);
     super.addCustomSimulation(redPantry);
 
-    blueOven = new HarvestHavocOvenSimulation(this, true);
-    super.addCustomSimulation(blueOven);
+    blueOvenCarrot = new HarvestHavocOvenSimulation(this, true, false);
+    blueOvenCake = new HarvestHavocOvenSimulation(this, true, true);
+    super.addCustomSimulation(blueOvenCarrot);
+    super.addCustomSimulation(blueOvenCake);
 
-    redOven = new HarvestHavocOvenSimulation(this, false);
-    super.addCustomSimulation(redOven);
+    redOvenCarrot = new HarvestHavocOvenSimulation(this, false, false);
+    redOvenCake = new HarvestHavocOvenSimulation(this, true, true);
+    super.addCustomSimulation(redOvenCarrot);
+    super.addCustomSimulation(redOvenCake);
   }
 
   @Override

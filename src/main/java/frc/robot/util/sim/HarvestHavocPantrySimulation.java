@@ -23,8 +23,9 @@ public class HarvestHavocPantrySimulation implements SimulatedArena.Simulatable 
     levels = new ArrayList<>(15);
     pantryLevelPoses = new Pose3d[3];
     for (int level = 0; level < 3; level++) {
-      HarvestHavocPantryLevel levelGoal = new HarvestHavocPantryLevel(arena, isBlue, level);
+      HarvestHavocPantryLevel levelGoal = new HarvestHavocPantryLevel(arena, isBlue, level, false);
       levels.add(levelGoal);
+      levels.add(new HarvestHavocPantryLevel(arena, isBlue, level, true));
 
       pantryLevelPoses[level] = levelGoal.getPose();
     }
