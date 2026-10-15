@@ -141,6 +141,7 @@ public class Elevator extends ExtendedSubsystem {
                   Math.copySign(magnitude * magnitude, magnitude)
                       * ElevatorConstants.MAX_MANUAL_VOLTAGE);
             })
+        .finallyDo(elevator::stop)
         .withInterruptBehavior(Command.InterruptionBehavior.kCancelIncoming);
   }
 
