@@ -7,7 +7,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.DriverStation;
 import java.util.List;
 import org.ironmaple.simulation.SimulatedArena;
 
@@ -132,26 +131,5 @@ public class Arena2026Bunnybots extends SimulatedArena {
     super.clearGamePieces();
     bluePantry.clearPantry();
     redPantry.clearPantry();
-  }
-
-  /**
-   * Obtains the amount of <strong>CARROT</strong> held in the <strong>PANTRY</strong>.
-   *
-   * <p>This method returns a 2D array of size 3 x 5, where each entry represents the number of
-   * <strong>CARROT</strong> held in a particular spot.
-   *
-   * <p>The [i][j] entry in the array represents the number of <strong>CARROT</strong>(s) held in
-   * the <code>j</code> slot (left to right) in the <code>i-1</code>th level.
-   *
-   * <p>For example, <code>getBranches()[2][3]</code> returns the number of CARROT held on slot 4 of
-   * L2.
-   *
-   * <p>Note that each slot can only hold one <strong>CARROT</strong>.
-   *
-   * @return a 2D array where each entry represents the number of <strong>CARROT</strong> held on
-   *     each branch
-   */
-  public int[][] getCarrots(DriverStation.Alliance side) {
-    return side == DriverStation.Alliance.Red ? redPantry.getSpots() : bluePantry.getSpots();
   }
 }
