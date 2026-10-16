@@ -8,8 +8,8 @@ import java.util.List;
 import org.ironmaple.simulation.SimulatedArena;
 
 public class HarvestHavocPantrySimulation implements SimulatedArena.Simulatable {
-  protected final List<HarvestHavocPantrySpot> spots;
-  Pose3d[] pantrySpotPoses;
+  protected final List<HarvestHavocPantryLevel> levels;
+  Pose3d[] pantryLevelPoses;
 
   /**
    *
@@ -20,15 +20,16 @@ public class HarvestHavocPantrySimulation implements SimulatedArena.Simulatable 
    * @param isBlue Whether this is the blue pantry or the red one.
    */
   HarvestHavocPantrySimulation(Arena2026Bunnybots arena, boolean isBlue) {
-    spots = new ArrayList<>(15);
-    pantrySpotPoses = new Pose3d[15];
+    levels = new ArrayList<>(6);
+    pantryLevelPoses = new Pose3d[3];
     for (int level = 0; level < 3; level++) {
-      for (int col = 0; col < 5; col++) {
-        HarvestHavocPantrySpot spot = new HarvestHavocPantrySpot(arena, isBlue, level, col);
-        spots.add(spot);
+      List<Pose3d> occupied = new ArrayList<>(5);
+      HarvestHavocPantryLevel levelGoal =
+          new HarvestHavocPantryLevel(arena, isBlue, level, false, occupied);
+      levels.add(levelGoal);
+      levels.add(new HarvestHavocPantryLevel(arena, isBlue, level, true, occupied));
 
-        pantrySpotPoses[(level * 5 + col)] = spot.getPose();
-      }
+      pantryLevelPoses[level] = levelGoal.getPose();
     }
 
     StructArrayPublisher<Pose3d> pantryPub =
@@ -38,19 +39,19 @@ public class HarvestHavocPantrySimulation implements SimulatedArena.Simulatable 
                 Pose3d.struct)
             .publish();
 
-    pantryPub.set(pantrySpotPoses);
+    pantryPub.set(pantryLevelPoses);
   }
 
-  public void draw(List<Pose3d> coralPosesToDisplay) {
-    for (HarvestHavocPantrySpot spot : spots) {
-      spot.draw(coralPosesToDisplay);
+  public void draw(String type, List<Pose3d> posesToDisplay) {
+    for (HarvestHavocPantryLevel level : levels) {
+      level.draw(type, posesToDisplay);
     }
   }
 
   @Override
   public void simulationSubTick(int subTickNum) {
-    for (HarvestHavocPantrySpot spot : spots) {
-      spot.simulationSubTick(subTickNum);
+    for (HarvestHavocPantryLevel level : levels) {
+      level.simulationSubTick(subTickNum);
     }
   }
 
@@ -60,33 +61,8 @@ public class HarvestHavocPantrySimulation implements SimulatedArena.Simulatable 
    * <h2>Resets the pantry to its original state.</h2>
    */
   public void clearPantry() {
-    for (HarvestHavocPantrySpot spot : spots) {
-      spot.clear();
+    for (HarvestHavocPantryLevel level : levels) {
+      level.clear();
     }
-  }
-
-  /**
-   * Obtains the amount of <strong>CARROT</strong> held in the <strong>PANTRY</strong>.
-   *
-   * <p>This method returns a 2D array of size 3 x 5, where each entry represents the number of
-   * <strong>CARROT</strong> held in a particular spot.
-   *
-   * <p>The [i][j] entry in the array represents the number of <strong>CARROT</strong>(s) held in
-   * the <code>j</code> slot (left to right) in the <code>i-1</code>th level.
-   *
-   * <p>For example, <code>getBranches()[2][3]</code> returns the number of CARROT held on slot 4 of
-   * L2.
-   *
-   * <p>Note that each slot can only hold one <strong>CARROT</strong>.
-   *
-   * @return a 2D array where each entry represents the number of <strong>CARROT</strong> held on
-   *     each branch
-   */
-  public int[][] getSpots() {
-    int[][] toReturn = new int[3][5];
-    for (HarvestHavocPantrySpot spot : spots) {
-      toReturn[spot.level][spot.column] = spot.getGamePieceCount();
-    }
-    return toReturn;
   }
 }

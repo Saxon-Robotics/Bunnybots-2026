@@ -7,9 +7,9 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.DriverStation;
 import java.util.List;
 import org.ironmaple.simulation.SimulatedArena;
+import org.ironmaple.simulation.gamepieces.GamePiece;
 
 /**
  *
@@ -72,8 +72,10 @@ public class Arena2026Bunnybots extends SimulatedArena {
 
   public final HarvestHavocPantrySimulation bluePantry;
   public final HarvestHavocPantrySimulation redPantry;
-  public final HarvestHavocOvenSimulation blueOven;
-  public final HarvestHavocOvenSimulation redOven;
+  public final HarvestHavocOvenSimulation blueOvenCarrot;
+  public final HarvestHavocOvenSimulation blueOvenCake;
+  public final HarvestHavocOvenSimulation redOvenCarrot;
+  public final HarvestHavocOvenSimulation redOvenCake;
 
   public Arena2026Bunnybots() {
     super(new HarvestHavocFieldObstacleMap());
@@ -84,11 +86,15 @@ public class Arena2026Bunnybots extends SimulatedArena {
     redPantry = new HarvestHavocPantrySimulation(this, false);
     super.addCustomSimulation(redPantry);
 
-    blueOven = new HarvestHavocOvenSimulation(this, true);
-    super.addCustomSimulation(blueOven);
+    blueOvenCarrot = new HarvestHavocOvenSimulation(this, true, false);
+    blueOvenCake = new HarvestHavocOvenSimulation(this, true, true);
+    super.addCustomSimulation(blueOvenCarrot);
+    super.addCustomSimulation(blueOvenCake);
 
-    redOven = new HarvestHavocOvenSimulation(this, false);
-    super.addCustomSimulation(redOven);
+    redOvenCarrot = new HarvestHavocOvenSimulation(this, false, false);
+    redOvenCake = new HarvestHavocOvenSimulation(this, false, true);
+    super.addCustomSimulation(redOvenCarrot);
+    super.addCustomSimulation(redOvenCake);
   }
 
   @Override
@@ -116,13 +122,16 @@ public class Arena2026Bunnybots extends SimulatedArena {
   }
 
   @Override
+  public synchronized List<GamePiece> getGamePiecesByType(String type) {
+    return gamePieces.stream().filter(gamePiece -> type.equals(gamePiece.getType())).toList();
+  }
+
+  @Override
   public synchronized List<Pose3d> getGamePiecesPosesByType(String type) {
     List<Pose3d> poses = super.getGamePiecesPosesByType(type);
 
-    if (type.equals("Carrot")) {
-      bluePantry.draw(poses);
-      redPantry.draw(poses);
-    }
+    bluePantry.draw(type, poses);
+    redPantry.draw(type, poses);
 
     return poses;
   }
@@ -132,26 +141,5 @@ public class Arena2026Bunnybots extends SimulatedArena {
     super.clearGamePieces();
     bluePantry.clearPantry();
     redPantry.clearPantry();
-  }
-
-  /**
-   * Obtains the amount of <strong>CARROT</strong> held in the <strong>PANTRY</strong>.
-   *
-   * <p>This method returns a 2D array of size 3 x 5, where each entry represents the number of
-   * <strong>CARROT</strong> held in a particular spot.
-   *
-   * <p>The [i][j] entry in the array represents the number of <strong>CARROT</strong>(s) held in
-   * the <code>j</code> slot (left to right) in the <code>i-1</code>th level.
-   *
-   * <p>For example, <code>getBranches()[2][3]</code> returns the number of CARROT held on slot 4 of
-   * L2.
-   *
-   * <p>Note that each slot can only hold one <strong>CARROT</strong>.
-   *
-   * @return a 2D array where each entry represents the number of <strong>CARROT</strong> held on
-   *     each branch
-   */
-  public int[][] getCarrots(DriverStation.Alliance side) {
-    return side == DriverStation.Alliance.Red ? redPantry.getSpots() : bluePantry.getSpots();
   }
 }

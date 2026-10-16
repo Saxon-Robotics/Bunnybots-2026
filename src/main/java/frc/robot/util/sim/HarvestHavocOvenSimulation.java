@@ -16,13 +16,13 @@ public class HarvestHavocOvenSimulation extends Goal {
   protected static final Translation3d redOvenPose =
       new Translation3d(Constants.FieldConstants.RED_OVEN.getTranslation());
 
-  public HarvestHavocOvenSimulation(Arena2026Bunnybots arena, boolean isBlue) {
+  public HarvestHavocOvenSimulation(Arena2026Bunnybots arena, boolean isBlue, boolean forCakes) {
     super(
         arena,
         Meters.of(0.762),
         Meters.of(0.55),
         Meters.of(0.381),
-        "Carrot",
+        HarvestHavocCarrotOnField.getInfo(forCakes).type(),
         isBlue ? blueOvenPose : redOvenPose,
         isBlue,
         true);

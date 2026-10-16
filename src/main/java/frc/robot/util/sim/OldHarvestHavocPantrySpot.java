@@ -9,7 +9,7 @@ import frc.robot.Constants;
 import java.util.List;
 import org.ironmaple.simulation.Goal;
 
-public class HarvestHavocPantrySpot extends Goal {
+public class OldHarvestHavocPantrySpot extends Goal {
   private static final Angle ANGLE_TOLERANCE = Degrees.of(10);
 
   public static final Translation2d bluePantry =
@@ -56,7 +56,8 @@ public class HarvestHavocPantrySpot extends Goal {
    * @param level The level of the pantry (0 indexed). Range of 0-2.
    * @param column The column of the pantry slot (0 indexed). Range of 0-4.
    */
-  public HarvestHavocPantrySpot(Arena2026Bunnybots arena, boolean isBlue, int level, int column) {
+  public OldHarvestHavocPantrySpot(
+      Arena2026Bunnybots arena, boolean isBlue, int level, int column) {
     super(
         arena,
         columnIncrement.getMeasureX(),

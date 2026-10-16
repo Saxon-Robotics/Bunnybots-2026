@@ -150,7 +150,6 @@ public class RobotContainer {
         sim =
             SimulationManager.createInstance(
                 elevator, trader, gripper, driveSimulation, drive::getChassisSpeeds);
-        resetSimulationField();
       }
       default -> {
         /* REPLAY */
