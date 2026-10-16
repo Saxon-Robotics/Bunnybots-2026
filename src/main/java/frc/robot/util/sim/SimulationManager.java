@@ -55,16 +55,16 @@ public class SimulationManager {
   private final IntakeSimulation traderCakeIntake;
 
   private Pose3d carrotInGripper;
-  private Pose3d[] carrotsInTrader = new Pose3d[3];
+  private Pose3d[] gamePiecesInTrader = new Pose3d[3];
   private Pose3d[] heldCarrotsInTrader = new Pose3d[3];
   private Pose3d[] heldCakesInTrader = new Pose3d[3];
-  private ArrayDeque<String> traderOrder = new ArrayDeque<>();
+  private ArrayDeque<Boolean> traderOrder = new ArrayDeque<>();
 
   private GamePieceOnFieldSimulation lastCarrot;
 
   private int traderCountBeforePreload;
   private int traderCakeCountBeforePreload;
-  private ArrayDeque<String> traderOrderBeforePreload = new ArrayDeque<>();
+  private ArrayDeque<Boolean> traderOrderBeforePreload = new ArrayDeque<>();
 
   private SimulationManager(
       Elevator elevator,
@@ -90,8 +90,8 @@ public class SimulationManager {
 
     gripperIntake.setCustomIntakeCondition(p -> checkIntakeCarrot(p) && getGripperCount() < 1);
     gripperCakeIntake.setCustomIntakeCondition(p -> checkIntakeCarrot(p) && getGripperCount() < 1);
-    traderIntake.setCustomIntakeCondition(p -> traderAccept(p, CARROT));
-    traderCakeIntake.setCustomIntakeCondition(p -> traderAccept(p, CAKE));
+    traderIntake.setCustomIntakeCondition(p -> traderAccept(p, false));
+    traderCakeIntake.setCustomIntakeCondition(p -> traderAccept(p, true));
     traderIntake.startIntake();
     traderCakeIntake.startIntake();
 
@@ -148,19 +148,19 @@ public class SimulationManager {
       Logger.recordOutput("FieldSimulation/HeldCakes/Gripper", Pose3d.kZero);
     }
 
-    Arrays.fill(carrotsInTrader, Pose3d.kZero);
+    Arrays.fill(gamePiecesInTrader, Pose3d.kZero);
     Arrays.fill(heldCarrotsInTrader, Pose3d.kZero);
     Arrays.fill(heldCakesInTrader, Pose3d.kZero);
     int i = 0;
-    for (String type : traderOrder) {
-      carrotsInTrader[i] =
+    for (boolean isCake : traderOrder) {
+      gamePiecesInTrader[i] =
           new Pose3d(
               robotPose.getTranslation().plus(TRADER_SLOTS[i].rotateBy(robotPose.getRotation())),
               carrotRotation);
-      if (type.equals(CAKE)) {
-        heldCakesInTrader[i] = carrotsInTrader[i];
+      if (isCake) {
+        heldCakesInTrader[i] = gamePiecesInTrader[i];
       } else {
-        heldCarrotsInTrader[i] = carrotsInTrader[i];
+        heldCarrotsInTrader[i] = gamePiecesInTrader[i];
       }
       i++;
     }
@@ -174,9 +174,9 @@ public class SimulationManager {
     return true;
   }
 
-  private boolean traderAccept(GamePieceOnFieldSimulation piece, String type) {
+  private boolean traderAccept(GamePieceOnFieldSimulation piece, boolean isCake) {
     if (getTraderCount() >= 3 || !checkIntakeCarrot(piece)) return false;
-    traderOrder.addLast(type);
+    traderOrder.addLast(isCake);
     return true;
   }
 
@@ -203,8 +203,8 @@ public class SimulationManager {
     traderIntake.setGamePiecesCount(2);
     traderCakeIntake.setGamePiecesCount(0);
     traderOrder.clear();
-    traderOrder.addLast(CARROT);
-    traderOrder.addLast(CARROT);
+    traderOrder.addLast(false);
+    traderOrder.addLast(false);
   }
 
   public void undoTraderPreload() {
@@ -245,9 +245,8 @@ public class SimulationManager {
   }
 
   private void traderScore() {
-    String next = traderOrder.pollFirst();
-    if (next == null) return;
-    boolean isCake = next.equals(CAKE);
+    Boolean isCake = traderOrder.pollFirst();
+    if (isCake == null) return;
     IntakeSimulation source = isCake ? traderCakeIntake : traderIntake;
     if (!source.obtainGamePieceFromIntake()) return;
 
@@ -255,9 +254,9 @@ public class SimulationManager {
     HarvestHavocCarrotOnFly carrotOnFly =
         new HarvestHavocCarrotOnFly(
             isCake,
-            new Translation2d(carrotsInTrader[0].getX(), carrotsInTrader[0].getY()),
+            new Translation2d(gamePiecesInTrader[0].getX(), gamePiecesInTrader[0].getY()),
             new Translation2d(-1.5, robotPose.getRotation()),
-            carrotsInTrader[0].getZ(),
+            gamePiecesInTrader[0].getZ(),
             1.0,
             new Rotation3d(robotPose.getRotation().plus(Rotation2d.kCCW_90deg)));
 
