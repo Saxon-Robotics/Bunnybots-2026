@@ -20,12 +20,14 @@ public class HarvestHavocPantrySimulation implements SimulatedArena.Simulatable 
    * @param isBlue Whether this is the blue pantry or the red one.
    */
   HarvestHavocPantrySimulation(Arena2026Bunnybots arena, boolean isBlue) {
-    levels = new ArrayList<>(15);
+    levels = new ArrayList<>(6);
     pantryLevelPoses = new Pose3d[3];
     for (int level = 0; level < 3; level++) {
-      HarvestHavocPantryLevel levelGoal = new HarvestHavocPantryLevel(arena, isBlue, level, false);
+      List<Pose3d> occupied = new ArrayList<>(5);
+      HarvestHavocPantryLevel levelGoal =
+          new HarvestHavocPantryLevel(arena, isBlue, level, false, occupied);
       levels.add(levelGoal);
-      levels.add(new HarvestHavocPantryLevel(arena, isBlue, level, true));
+      levels.add(new HarvestHavocPantryLevel(arena, isBlue, level, true, occupied));
 
       pantryLevelPoses[level] = levelGoal.getPose();
     }
@@ -40,9 +42,9 @@ public class HarvestHavocPantrySimulation implements SimulatedArena.Simulatable 
     pantryPub.set(pantryLevelPoses);
   }
 
-  public void draw(List<Pose3d> carrotPosesToDisplay) {
+  public void draw(String type, List<Pose3d> posesToDisplay) {
     for (HarvestHavocPantryLevel level : levels) {
-      level.draw(carrotPosesToDisplay);
+      level.draw(type, posesToDisplay);
     }
   }
 

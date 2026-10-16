@@ -153,7 +153,6 @@ public class SimulationManager {
     Arrays.fill(heldCakesInTrader, Pose3d.kZero);
     int i = 0;
     for (String type : traderOrder) {
-      if (i >= TRADER_SLOTS.length) break;
       carrotsInTrader[i] =
           new Pose3d(
               robotPose.getTranslation().plus(TRADER_SLOTS[i].rotateBy(robotPose.getRotation())),

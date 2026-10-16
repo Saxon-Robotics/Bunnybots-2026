@@ -29,9 +29,7 @@ public class HarvestHavocCarrotOnFly extends GamePieceProjectile {
       LinearVelocity launchingSpeed,
       Angle shooterAngle) {
     super(
-        isCake
-            ? HarvestHavocCarrotOnField.HARVEST_HAVOC_CAKE_INFO
-            : HarvestHavocCarrotOnField.HARVEST_HAVOC_CARROT_INFO,
+        HarvestHavocCarrotOnField.getInfo(isCake),
         robotPosition,
         shooterPositionOnRobot,
         chassisSpeeds,
@@ -52,9 +50,7 @@ public class HarvestHavocCarrotOnFly extends GamePieceProjectile {
       double initialVerticalSpeedMPS,
       Rotation3d gamePieceRotation) {
     super(
-        isCake
-            ? HarvestHavocCarrotOnField.HARVEST_HAVOC_CAKE_INFO
-            : HarvestHavocCarrotOnField.HARVEST_HAVOC_CARROT_INFO,
+        HarvestHavocCarrotOnField.getInfo(isCake),
         initialPosition,
         initialLaunchingVelocityMPS,
         initialHeight,
@@ -126,13 +122,10 @@ public class HarvestHavocCarrotOnFly extends GamePieceProjectile {
     if (!super.becomesGamePieceOnGroundAfterTouchGround) return;
     simulatedArena.addGamePiece(
         new GamePieceOnFieldSimulation(
-            isCake
-                ? HarvestHavocCarrotOnField.HARVEST_HAVOC_CAKE_INFO
-                : HarvestHavocCarrotOnField.HARVEST_HAVOC_CARROT_INFO,
+            HarvestHavocCarrotOnField.getInfo(isCake),
             () ->
                 Math.max(
-                    HarvestHavocCarrotOnField.HARVEST_HAVOC_CARROT_INFO.gamePieceHeight().in(Meters)
-                        / 2,
+                    HarvestHavocCarrotOnField.getInfo(isCake).gamePieceHeight().in(Meters) / 2,
                     getPositionAtTime(super.launchedTimer.get()).getZ()),
             new Pose2d(
                 getPositionAtTime(launchedTimer.get()).toTranslation2d(),

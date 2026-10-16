@@ -9,6 +9,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import java.util.List;
 import org.ironmaple.simulation.SimulatedArena;
+import org.ironmaple.simulation.gamepieces.GamePiece;
 
 /**
  *
@@ -91,7 +92,7 @@ public class Arena2026Bunnybots extends SimulatedArena {
     super.addCustomSimulation(blueOvenCake);
 
     redOvenCarrot = new HarvestHavocOvenSimulation(this, false, false);
-    redOvenCake = new HarvestHavocOvenSimulation(this, true, true);
+    redOvenCake = new HarvestHavocOvenSimulation(this, false, true);
     super.addCustomSimulation(redOvenCarrot);
     super.addCustomSimulation(redOvenCake);
   }
@@ -121,13 +122,16 @@ public class Arena2026Bunnybots extends SimulatedArena {
   }
 
   @Override
+  public synchronized List<GamePiece> getGamePiecesByType(String type) {
+    return gamePieces.stream().filter(gamePiece -> type.equals(gamePiece.getType())).toList();
+  }
+
+  @Override
   public synchronized List<Pose3d> getGamePiecesPosesByType(String type) {
     List<Pose3d> poses = super.getGamePiecesPosesByType(type);
 
-    if (type.equals("Carrot")) {
-      bluePantry.draw(poses);
-      redPantry.draw(poses);
-    }
+    bluePantry.draw(type, poses);
+    redPantry.draw(type, poses);
 
     return poses;
   }

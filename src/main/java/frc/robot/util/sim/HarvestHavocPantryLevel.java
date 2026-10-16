@@ -6,6 +6,7 @@ import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.Constants;
+import java.util.ArrayList;
 import java.util.List;
 import org.dyn4j.geometry.Vector2;
 import org.ironmaple.simulation.Goal;
@@ -41,9 +42,10 @@ public class HarvestHavocPantryLevel extends Goal {
   private static final int MAX_LEVEL = 2;
   private static final double CARROT_SIZE = 0.4572;
 
-  private static final Pose3d[][] carrots = new Pose3d[3][5];
-
   public final int level;
+
+  private final List<Pose3d> occupied;
+  private final List<Pose3d> pieces = new ArrayList<>(5);
 
   private final double minZMeters;
   private final double maxZMeters;
@@ -58,13 +60,17 @@ public class HarvestHavocPantryLevel extends Goal {
    * @param level The level of the pantry (0 indexed). Range of 0-2.
    */
   public HarvestHavocPantryLevel(
-      Arena2026Bunnybots arena, boolean isBlue, int level, boolean forCakes) {
+      Arena2026Bunnybots arena,
+      boolean isBlue,
+      int level,
+      boolean forCakes,
+      List<Pose3d> occupied) {
     super(
         arena,
         Meters.of(0.4776 * 5),
         Meters.of(0.160),
         Meters.of(0.222),
-        forCakes ? "CakedUpCarrot" : "Carrot",
+        HarvestHavocCarrotOnField.getInfo(forCakes).type(),
         getPoseOfPantryAt(isBlue, level),
         isBlue,
         5,
@@ -82,6 +88,7 @@ public class HarvestHavocPantryLevel extends Goal {
     }
 
     this.level = level;
+    this.occupied = occupied;
 
     minZMeters = position.getZ();
     maxZMeters = position.getZ() + height.in(Meters);
@@ -101,8 +108,7 @@ public class HarvestHavocPantryLevel extends Goal {
               || position.getZ() > maxZMeters) {
             return false;
           }
-          for (Pose3d carrot : carrots[level]) {
-            if (carrot == null) break;
+          for (Pose3d carrot : occupied) {
             if (Math.abs(carrot.getX() - position.getX()) < CARROT_SIZE) {
               return false;
             }
@@ -113,7 +119,8 @@ public class HarvestHavocPantryLevel extends Goal {
                   this.position.getY(),
                   this.position.getZ(),
                   new Rotation3d(Rotation2d.kZero));
-          carrots[level][gamePieceCount] = carrotInPantry;
+          occupied.add(carrotInPantry);
+          pieces.add(carrotInPantry);
 
           return true;
         });
@@ -149,9 +156,17 @@ public class HarvestHavocPantryLevel extends Goal {
 
   @Override
   public void draw(List<Pose3d> drawList) {
-    for (Pose3d carrot : carrots[level]) {
-      if (carrot == null) break;
-      drawList.add(carrot);
-    }
+    drawList.addAll(pieces);
+  }
+
+  public void draw(String type, List<Pose3d> drawList) {
+    if (type.equals(gamePieceType)) draw(drawList);
+  }
+
+  @Override
+  public void clear() {
+    super.clear();
+    occupied.clear();
+    pieces.clear();
   }
 }

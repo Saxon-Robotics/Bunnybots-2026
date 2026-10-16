@@ -28,7 +28,11 @@ public class HarvestHavocCarrotOnField extends GamePieceOnFieldSimulation {
           4,
           0.15);
 
+  public static GamePieceOnFieldSimulation.GamePieceInfo getInfo(boolean isCake) {
+    return isCake ? HARVEST_HAVOC_CAKE_INFO : HARVEST_HAVOC_CARROT_INFO;
+  }
+
   public HarvestHavocCarrotOnField(boolean isCake, Pose2d initialPose) {
-    super(isCake ? HARVEST_HAVOC_CAKE_INFO : HARVEST_HAVOC_CARROT_INFO, initialPose);
+    super(getInfo(isCake), initialPose);
   }
 }

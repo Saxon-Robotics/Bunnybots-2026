@@ -22,7 +22,7 @@ public class HarvestHavocOvenSimulation extends Goal {
         Meters.of(0.762),
         Meters.of(0.55),
         Meters.of(0.381),
-        forCakes ? "CakedUpCarrot" : "Carrot",
+        HarvestHavocCarrotOnField.getInfo(forCakes).type(),
         isBlue ? blueOvenPose : redOvenPose,
         isBlue,
         true);
