@@ -199,7 +199,7 @@ public class SimulationManager {
   public void preloadTrader() {
     traderCountBeforePreload = traderIntake.getGamePiecesAmount();
     traderCakeCountBeforePreload = traderCakeIntake.getGamePiecesAmount();
-    traderOrderBeforePreload = new ArrayDeque<>(traderOrder);
+    traderOrderBeforePreload = traderOrder.clone();
     traderIntake.setGamePiecesCount(2);
     traderCakeIntake.setGamePiecesCount(0);
     traderOrder.clear();
@@ -210,7 +210,7 @@ public class SimulationManager {
   public void undoTraderPreload() {
     traderIntake.setGamePiecesCount(traderCountBeforePreload);
     traderCakeIntake.setGamePiecesCount(traderCakeCountBeforePreload);
-    traderOrder = new ArrayDeque<>(traderOrderBeforePreload);
+    traderOrder = traderOrderBeforePreload.clone();
   }
 
   private void gripperScore() {
