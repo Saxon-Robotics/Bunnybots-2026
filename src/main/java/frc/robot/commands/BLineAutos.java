@@ -10,9 +10,6 @@ import frc.robot.lib.BLine.FlippingUtil;
 import frc.robot.lib.BLine.FollowPath;
 import frc.robot.lib.BLine.Path;
 import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.elevator.Elevator;
-import frc.robot.subsystems.gripper.Gripper;
-import frc.robot.subsystems.trader.Trader;
 import frc.robot.util.RobotUtil;
 import java.io.File;
 import java.util.ArrayList;
@@ -27,15 +24,9 @@ public class BLineAutos {
   private static FollowPath.Builder builder;
 
   private static Drive drive;
-  private static Elevator elevator;
-  private static Trader trader;
-  private static Gripper gripper;
 
-  public static void configure(Drive drive, Elevator elevator, Trader trader, Gripper gripper) {
+  public static void configure(Drive drive) {
     BLineAutos.drive = drive;
-    BLineAutos.elevator = elevator;
-    BLineAutos.trader = trader;
-    BLineAutos.gripper = gripper;
 
     builder =
         new FollowPath.Builder(

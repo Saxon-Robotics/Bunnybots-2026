@@ -301,7 +301,7 @@ public class Drive extends ExtendedSubsystem implements Vision.VisionConsumer {
 
     // Send setpoints to modules
     for (int i = 0; i < 4; i++) {
-      modules[i].runSetpoint(setpointStates[i], enableAntiJitter);
+      modules[i].runSetpoint(setpointStates[i], false);
     }
 
     // Log optimized setpoints (runSetpoint mutates each state)

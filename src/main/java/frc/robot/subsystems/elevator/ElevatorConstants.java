@@ -10,8 +10,6 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
-import java.util.EnumMap;
-import java.util.Map;
 
 public final class ElevatorConstants {
   public static Angle distanceToAngle(Distance distance) {
@@ -38,15 +36,21 @@ public final class ElevatorConstants {
   public static final double MAX_VELOCITY = 89.311;
   public static final double MAX_ACCELERATION = 1404.071;
 
-  public static final Map<Elevator.Setpoint, Angle> SETPOINTS =
-      new EnumMap<>(Elevator.Setpoint.class);
+  public enum Setpoint {
+    NONE(-1, Meters.of(0)),
+    STOWED(-1, Meters.of(0)),
+    RAMP(-1, Inches.of(10)),
+    L1(0, Inches.of(22)),
+    L2(1, Inches.of(34)),
+    L3(2, Inches.of(46));
 
-  static {
-    SETPOINTS.put(Elevator.Setpoint.STOWED, Rotations.of(0));
-    SETPOINTS.put(Elevator.Setpoint.RAMP, distanceToAngle(Inches.of(10)));
-    SETPOINTS.put(Elevator.Setpoint.L1, distanceToAngle(Inches.of(22)));
-    SETPOINTS.put(Elevator.Setpoint.L2, distanceToAngle(Inches.of(34)));
-    SETPOINTS.put(Elevator.Setpoint.L3, distanceToAngle(Inches.of(34)));
+    public final int scoringIndex;
+    public final Angle angle;
+
+    Setpoint(int scoringIndex, Distance height) {
+      this.scoringIndex = scoringIndex;
+      this.angle = distanceToAngle(height);
+    }
   }
 
   public static final TalonFXConfiguration MOTOR_CONFIG =

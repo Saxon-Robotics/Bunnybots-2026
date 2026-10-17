@@ -3,7 +3,6 @@ package frc.robot.subsystems.elevator;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Rotations;
 import static frc.robot.subsystems.elevator.ElevatorConstants.MOTOR_CONFIG;
-import static frc.robot.subsystems.elevator.ElevatorConstants.SETPOINTS;
 
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
@@ -15,6 +14,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
+import frc.robot.subsystems.elevator.ElevatorConstants.Setpoint;
 import frc.robot.util.io.motors.MotorIO;
 import frc.robot.util.io.motors.MotorIOTalonFX;
 import frc.robot.util.io.motors.elevator.LinearSystem;
@@ -27,24 +27,9 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Elevator extends ExtendedSubsystem {
-  public enum Setpoint {
-    NONE(false),
-    STOWED(false),
-    RAMP(true),
-    L1(true),
-    L2(true),
-    L3(true);
-
-    public final boolean isForScoring;
-
-    Setpoint(boolean forScoring) {
-      this.isForScoring = forScoring;
-    }
-  }
-
   private final LinearSystem elevator;
 
-  @Getter private Setpoint setpoint = Setpoint.NONE;
+  @Getter private ElevatorConstants.Setpoint setpoint = Setpoint.NONE;
   private double setpointRad;
   private boolean coastOverride;
 
@@ -101,7 +86,7 @@ public class Elevator extends ExtendedSubsystem {
       this.setpoint = setpoint;
       return;
     }
-    Angle newSetpoint = SETPOINTS.get(setpoint);
+    Angle newSetpoint = setpoint.angle;
     elevator.runPosition(newSetpoint);
     this.setpoint = setpoint;
     this.setpointRad = newSetpoint.in(Radians);

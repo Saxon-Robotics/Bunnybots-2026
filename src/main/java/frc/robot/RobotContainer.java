@@ -265,9 +265,9 @@ public class RobotContainer {
                 DriveCommands.singleAxisJoystickDrive(
                         drive,
                         () -> -driverController.getLeftY(),
-                        () -> AutoAlign.getLastTarget().getY(),
+                        () -> AutoAlign.getLastTargetPose().getY(),
                         // avoid recomputing nearest pantry
-                        () -> AutoAlign.getLastTarget().getRotation())
+                        () -> AutoAlign.getLastTargetPose().getRotation())
                     .beforeStarting(() -> drive.setSpeedLimiter(true))
                     .finallyDo(() -> drive.setSpeedLimiter(false)))
             .withName("Pantry Align");
@@ -449,7 +449,7 @@ public class RobotContainer {
   }
 
   private void addBLinePaths() {
-    BLineAutos.configure(drive, elevator, trader, gripper);
+    BLineAutos.configure(drive);
 
     NamedCommands.registerCommands(BLineAutos.getAllPathCommands());
   }

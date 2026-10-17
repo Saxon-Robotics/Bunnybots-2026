@@ -58,20 +58,21 @@ public class AutoAlign {
     /* This utility class should not be instantiated */
   }
 
-  @Getter private static Pose2d lastTarget = Pose2d.kZero;
-  @Getter private static APTarget lastAPTarget = new APTarget(lastTarget);
+  @Getter private static Target lastTarget;
+  @Getter private static Pose2d lastTargetPose = Pose2d.kZero;
+  @Getter private static APTarget lastAPTarget = new APTarget(lastTargetPose);
 
   public static void setTargetPose(Target target, Pose2d robotPose) {
     boolean isRedAlliance = RobotUtil.isRedAlliance();
     target = getTarget(target, robotPose, isRedAlliance);
 
-    lastTarget = target.getPose(isRedAlliance);
-    lastAPTarget = new APTarget(lastTarget);
+    lastTargetPose = target.getPose(isRedAlliance);
+    lastAPTarget = new APTarget(lastTargetPose);
     Logger.recordOutput("AutoAlign/Target", target);
-    Logger.recordOutput("AutoAlign/TargetPose", lastTarget);
+    Logger.recordOutput("AutoAlign/TargetPose", lastTargetPose);
   }
 
-  public static Target getTarget(Target target, Pose2d robotPose, boolean isRedAlliance) {
+  private static Target getTarget(Target target, Pose2d robotPose, boolean isRedAlliance) {
     if (target == Target.DEPOT) {
       if (robotPose
               .getTranslation()
@@ -84,6 +85,7 @@ public class AutoAlign {
         target = Target.SIDE_DEPOT;
       }
     }
+    lastTarget = target;
     return target;
   }
 }
