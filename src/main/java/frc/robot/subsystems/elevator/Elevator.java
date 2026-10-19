@@ -65,7 +65,7 @@ public class Elevator extends ExtendedSubsystem {
         new LinearSystem.Builder("Elevator", io)
             .setDrumRadius(ElevatorConstants.DRUM_RADIUS)
             .setBrakeMode(() -> !coastOverride)
-            .enableVisualization(1)
+            .enableVisualization(2)
             .build();
 
     Logger.recordOutput("Elevator/State", this.setpoint.toString());
