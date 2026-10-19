@@ -1,7 +1,6 @@
 package frc.robot.subsystems.elevator;
 
-import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.*;
 import static frc.robot.subsystems.elevator.ElevatorConstants.MOTOR_CONFIG;
 
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
@@ -176,7 +175,7 @@ public class Elevator extends ExtendedSubsystem {
 
   @AutoLogOutput(key = "Elevator/HeightMeters")
   public double getPositionMeters() {
-    return elevator.getPositionRad() * ElevatorConstants.DRUM_RADIUS;
+    return elevator.getHeight().in(Meters);
   }
 
   public boolean hasReachedSetpoint() {

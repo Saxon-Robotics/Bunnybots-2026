@@ -15,6 +15,7 @@ public class AutoAlign {
           Units.inchesToMeters(30.0 + BUMPER_THICKNESS) / 2.0);
 
   public enum Target {
+    NONE(Pose2d.kZero, Pose2d.kZero, Translation2d.kZero),
     PANTRY(
         FieldConstants.BLUE_PANTRY,
         FieldConstants.RED_PANTRY,
@@ -58,15 +59,22 @@ public class AutoAlign {
     /* This utility class should not be instantiated */
   }
 
-  @Getter private static Target lastTarget;
+  @Getter private static Target lastTarget = Target.NONE;
   @Getter private static Pose2d lastTargetPose = Pose2d.kZero;
   @Getter private static APTarget lastAPTarget = new APTarget(lastTargetPose);
 
-  public static void setTargetPose(Target target, Pose2d robotPose) {
+  public static void setTarget(Target target, Pose2d robotPose) {
     boolean isRedAlliance = RobotUtil.isRedAlliance();
     target = getTarget(target, robotPose, isRedAlliance);
 
     lastTargetPose = target.getPose(isRedAlliance);
+    lastAPTarget = new APTarget(lastTargetPose);
+    Logger.recordOutput("AutoAlign/Target", target);
+    Logger.recordOutput("AutoAlign/TargetPose", lastTargetPose);
+  }
+
+  public static void setTargetPose(Pose2d target, Pose2d robotPose) {
+    lastTargetPose = target;
     lastAPTarget = new APTarget(lastTargetPose);
     Logger.recordOutput("AutoAlign/Target", target);
     Logger.recordOutput("AutoAlign/TargetPose", lastTargetPose);

@@ -13,11 +13,11 @@ import edu.wpi.first.units.measure.Distance;
 
 public final class ElevatorConstants {
   public static Angle distanceToAngle(Distance distance) {
-    return Rotations.of(Units.radiansToRotations(distance.in(Meters) / DRUM_RADIUS));
+    return Rotations.of(Units.radiansToRotations(distance.in(Meters) / DRUM_RADIUS) / 2);
   }
 
   public static Distance angleToDistance(Angle angle) {
-    return Meters.of(angle.in(Radians) * DRUM_RADIUS);
+    return Meters.of(2 * angle.in(Radians) * DRUM_RADIUS);
   }
 
   public static final double SETPOINT_TOLERANCE = 3.8; // rad
@@ -27,22 +27,22 @@ public final class ElevatorConstants {
   public static final double HOMING_VELOCITY_THRESHOLD = 0.1; // placeholder, find this
 
   // physical constraints
-  public static final double GEAR_RATIO = 4;
+  public static final double GEAR_RATIO = 5;
   public static final double CARRIAGE_MASS = Units.lbsToKilograms(13.0);
   public static final double DRUM_RADIUS = Units.inchesToMeters(0.8785);
   public static final double MIN_HEIGHT_METERS = 0;
-  public static final double MAX_HEIGHT_METERS = Units.inchesToMeters(34.5);
+  public static final double MAX_HEIGHT_METERS = Units.inchesToMeters(45);
 
-  public static final double MAX_VELOCITY = 89.311;
-  public static final double MAX_ACCELERATION = 1404.071;
+  public static final double MAX_VELOCITY = 86.360;
+  public static final double MAX_ACCELERATION = 752.742;
 
   public enum Setpoint {
     NONE(-1, Meters.of(0)),
     STOWED(-1, Meters.of(0)),
-    RAMP(-1, Inches.of(10)),
-    L1(0, Inches.of(22)),
-    L2(1, Inches.of(34)),
-    L3(2, Inches.of(46));
+    RAMP(-1, Inches.of(9)),
+    L1(0, Inches.of(21)),
+    L2(1, Inches.of(33)),
+    L3(2, Inches.of(45));
 
     public final int scoringIndex;
     public final Angle angle;
@@ -57,7 +57,7 @@ public final class ElevatorConstants {
       new TalonFXConfiguration()
           .withCurrentLimits(
               new CurrentLimitsConfigs()
-                  .withStatorCurrentLimit(70)
+                  .withStatorCurrentLimit(80)
                   .withSupplyCurrentLimit(60)
                   .withStatorCurrentLimitEnable(true)
                   .withSupplyCurrentLimitEnable(true))
@@ -72,13 +72,13 @@ public final class ElevatorConstants {
           .withSlot0(
               new Slot0Configs()
                   // recalc values
-                  .withKP(2.071)
+                  .withKP(2.028)
                   .withKI(0)
-                  .withKD(0.026)
+                  .withKD(0.022)
                   .withKS(0)
                   .withKV(0.118)
                   .withKA(0.001)
-                  .withKG(0.311)
+                  .withKG(0.350)
                   .withGravityType(GravityTypeValue.Elevator_Static))
           .withMotionMagic(
               new MotionMagicConfigs()

@@ -90,12 +90,24 @@ public class LinearSystem extends Motor<LinearSystemIO, LinearSystemIOInputsAuto
     return inputs.positionRad;
   }
 
+  public Distance getHeight() {
+    return angleToDistance.apply(getPosition());
+  }
+
   public AngularVelocity getVelocity() {
     return RadiansPerSecond.of(inputs.velocityRadPerSec);
   }
 
   public double getVelocityRadPerSec() {
     return inputs.velocityRadPerSec;
+  }
+
+  public Angle distanceToAngle(Distance distance) {
+    return distanceToAngle.apply(distance);
+  }
+
+  public Distance angleToDistance(Angle angle) {
+    return angleToDistance.apply(angle);
   }
 
   public static class Builder {
@@ -125,10 +137,11 @@ public class LinearSystem extends Motor<LinearSystemIO, LinearSystemIOInputsAuto
     public Builder setDrumRadius(double drumRadiusMeters) {
       // don't override if manually set
       if (distanceToAngle == null) {
-        distanceToAngle = distance -> Radians.of(distance.in(Meters) / drumRadiusMeters);
+        distanceToAngle =
+            distance -> Radians.of(distance.in(Meters) / drumRadiusMeters / numStages);
       }
       if (angleToDistance == null) {
-        angleToDistance = angle -> Meters.of(angle.in(Radians) * drumRadiusMeters);
+        angleToDistance = angle -> Meters.of(numStages * angle.in(Radians) * drumRadiusMeters);
       }
       return this;
     }

@@ -259,7 +259,7 @@ public class RobotContainer {
         DriveCommands.alignToTarget(drive, AutoAlign::getLastAPTarget).withName("Auto Align");
     // Auto align to pantry (locked angle and y)
     Command pantryAlign =
-        Commands.runOnce(() -> AutoAlign.setTargetPose(AutoAlign.Target.PANTRY, drive.getPose()))
+        Commands.runOnce(() -> AutoAlign.setTarget(AutoAlign.Target.PANTRY, drive.getPose()))
             .andThen(DriveCommands.alignToTarget(drive, AutoAlign::getLastAPTarget))
             .andThen(
                 DriveCommands.singleAxisJoystickDrive(
@@ -273,13 +273,13 @@ public class RobotContainer {
             .withName("Pantry Align");
     // Set auto align targets
     Command ovenAlign =
-        Commands.runOnce(() -> AutoAlign.setTargetPose(AutoAlign.Target.OVEN, drive.getPose()));
+        Commands.runOnce(() -> AutoAlign.setTarget(AutoAlign.Target.OVEN, drive.getPose()));
     Command rampAlign =
-        Commands.runOnce(() -> AutoAlign.setTargetPose(AutoAlign.Target.RAMP, drive.getPose()));
+        Commands.runOnce(() -> AutoAlign.setTarget(AutoAlign.Target.RAMP, drive.getPose()));
     Command depotAlign =
-        Commands.runOnce(() -> AutoAlign.setTargetPose(AutoAlign.Target.DEPOT, drive.getPose()));
+        Commands.runOnce(() -> AutoAlign.setTarget(AutoAlign.Target.DEPOT, drive.getPose()));
     Command tableAlign =
-        Commands.runOnce(() -> AutoAlign.setTargetPose(AutoAlign.Target.TABLE, drive.getPose()));
+        Commands.runOnce(() -> AutoAlign.setTarget(AutoAlign.Target.TABLE, drive.getPose()));
 
     /* Elevator commands */
     DoubleSupplier elevatorJoystick =
@@ -302,6 +302,7 @@ public class RobotContainer {
         elevator
             .release()
             .withInterruptBehavior(Command.InterruptionBehavior.kCancelIncoming)
+            .ignoringDisable(true)
             .withName("Disable Elevator");
 
     /* End effector commands */
@@ -411,13 +412,13 @@ public class RobotContainer {
 
   private void configureAutoCommands() {
     Command pantryAlign =
-        Commands.runOnce(() -> AutoAlign.setTargetPose(AutoAlign.Target.PANTRY, drive.getPose()))
+        Commands.runOnce(() -> AutoAlign.setTarget(AutoAlign.Target.PANTRY, drive.getPose()))
             .andThen(DriveCommands.alignToTarget(drive, AutoAlign::getLastAPTarget));
     Command ovenAlign =
-        Commands.runOnce(() -> AutoAlign.setTargetPose(AutoAlign.Target.OVEN, drive.getPose()))
+        Commands.runOnce(() -> AutoAlign.setTarget(AutoAlign.Target.OVEN, drive.getPose()))
             .andThen(DriveCommands.alignToTarget(drive, AutoAlign::getLastAPTarget));
     Command rampAlign =
-        Commands.runOnce(() -> AutoAlign.setTargetPose(AutoAlign.Target.RAMP, drive.getPose()))
+        Commands.runOnce(() -> AutoAlign.setTarget(AutoAlign.Target.RAMP, drive.getPose()))
             .andThen(DriveCommands.alignToTarget(drive, AutoAlign::getLastAPTarget));
 
     Command scorePantry =
@@ -482,6 +483,7 @@ public class RobotContainer {
           elevator
               .release()
               .withInterruptBehavior(Command.InterruptionBehavior.kCancelIncoming)
+              .ignoringDisable(true)
               .withName("Disable Elevator");
 
       /* End effector commands */
