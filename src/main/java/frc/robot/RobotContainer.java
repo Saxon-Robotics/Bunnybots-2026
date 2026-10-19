@@ -342,7 +342,7 @@ public class RobotContainer {
     operatorController.leftBumper().onTrue(rampElevator).whileTrue(rumbleCommand);
     operatorController.povLeft().onTrue(l1Elevator).whileTrue(rumbleCommand);
     operatorController.povRight().onTrue(l2Elevator).whileTrue(rumbleCommand);
-    //    operatorController.povUp().onTrue(l3Elevator).whileTrue(rumbleCommand);
+    operatorController.povUp().onTrue(l3Elevator).whileTrue(rumbleCommand);
     operatorController.rightBumper().onTrue(elevatorHoming).whileTrue(rumbleCommand);
     operatorController.leftTrigger(0.85).whileTrue(disableElevator);
 
@@ -362,16 +362,17 @@ public class RobotContainer {
       // superstructure keybinds
       keyboard.button(1).onTrue(l1Elevator);
       keyboard.button(2).onTrue(l2Elevator);
-      keyboard.button(3).onTrue(rampElevator);
-      keyboard.button(4).onTrue(stowElevator);
-      keyboard.button(5).whileTrue(gripperIntake);
-      keyboard.button(6).whileTrue(gripperEject);
-      keyboard.button(7).whileTrue(traderEject);
+      keyboard.button(3).onTrue(l3Elevator);
+      keyboard.button(4).onTrue(rampElevator);
+      keyboard.button(5).onTrue(stowElevator);
+      keyboard.button(6).whileTrue(gripperIntake);
+      keyboard.button(7).whileTrue(gripperEject);
+      keyboard.button(8).whileTrue(traderEject);
 
-      keyboard.button(11).onTrue(ovenOrRampAlign).whileTrue(autoAlign);
-      keyboard.button(12).and(isPossessing).whileTrue(pantryAlign);
+      keyboard.button(12).onTrue(ovenOrRampAlign).whileTrue(autoAlign);
+      keyboard.button(13).and(isPossessing).whileTrue(pantryAlign);
       keyboard
-          .button(12)
+          .button(14)
           .and(new Trigger(isPossessing).negate())
           .onTrue(depotAlign)
           .whileTrue(autoAlign);
@@ -379,7 +380,7 @@ public class RobotContainer {
       keyboard.button(13).onTrue(tableAlign).whileTrue(autoAlign);
       // drop carrots
       keyboard
-          .button(8)
+          .button(9)
           .onTrue(
               Commands.runOnce(
                   () ->
@@ -388,7 +389,7 @@ public class RobotContainer {
                               ? HarvestHavocCarrotOnFly.CarrotStations.RED_RAMP
                               : HarvestHavocCarrotOnFly.CarrotStations.BLUE_RAMP)));
       keyboard
-          .button(9)
+          .button(10)
           .onTrue(
               Commands.runOnce(
                   () ->
@@ -397,7 +398,7 @@ public class RobotContainer {
                               ? HarvestHavocCarrotOnFly.CarrotStations.RED_REAR_DEPOT
                               : HarvestHavocCarrotOnFly.CarrotStations.BLUE_REAR_DEPOT)));
       keyboard
-          .button(10)
+          .button(11)
           .onTrue(
               Commands.runOnce(
                   () ->
@@ -506,7 +507,7 @@ public class RobotContainer {
       guitarHeroController.red().and(guitarHeroControls).and(neutralStrumBar).onTrue(rampElevator);
       guitarHeroController.yellow().and(guitarHeroControls).and(neutralStrumBar).onTrue(l1Elevator);
       guitarHeroController.blue().and(guitarHeroControls).and(neutralStrumBar).onTrue(l2Elevator);
-      // guitarHeroController.orange().and(guitarHeroControls).and(neutralStrumBar).onTrue(l3Elevator);
+      guitarHeroController.orange().and(guitarHeroControls).and(neutralStrumBar).onTrue(l3Elevator);
       guitarHeroController
           .green()
           .and(guitarHeroControls)
