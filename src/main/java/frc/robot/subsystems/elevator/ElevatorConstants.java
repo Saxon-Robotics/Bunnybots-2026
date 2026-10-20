@@ -33,9 +33,8 @@ public final class ElevatorConstants {
   public static final double MIN_HEIGHT_METERS = 0;
   public static final double MAX_HEIGHT_METERS = Units.inchesToMeters(45);
 
-  public static final double MAX_VELOCITY = 89.841;
-  //  public static final double MAX_ACCELERATION = 2719.462;
-  public static final double MAX_ACCELERATION = 800;
+  public static final double MAX_VELOCITY = 88.680;
+  public static final double MAX_ACCELERATION = 1554.706;
 
   public enum Setpoint {
     NONE(-1, Meters.of(0)),
@@ -73,13 +72,13 @@ public final class ElevatorConstants {
           .withSlot0(
               new Slot0Configs()
                   // recalc values
-                  .withKP(1.895)
+                  .withKP(1.915)
                   .withKI(0)
-                  .withKD(0.006)
+                  .withKD(0.010)
                   .withKS(0)
                   .withKV(0.118)
-                  .withKA(0.000)
-                  .withKG(0.118)
+                  .withKA(0.001)
+                  .withKG(0.197)
                   .withGravityType(GravityTypeValue.Elevator_Static))
           .withMotionMagic(
               new MotionMagicConfigs()
