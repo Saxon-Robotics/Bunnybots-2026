@@ -12,57 +12,20 @@ import frc.robot.subsystems.objectivetracker.ObjectiveTracker;
 import frc.robot.subsystems.trader.Trader;
 import frc.robot.util.AutoAlign;
 import frc.robot.util.AutoAlign.Target;
-import java.util.function.BooleanSupplier;
+import frc.robot.util.DecisionTree;
+import java.io.File;
+import java.io.IOException;
+import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class SelfDriving {
-  private static class Node {
-    private final BooleanSupplier condition;
-    private final Node yesBranch;
-    private final Node noBranch;
-    private final Command leafCommand;
+  private LoggedDashboardChooser<String> chooser;
 
-    // decision node
-    public Node(BooleanSupplier condition, Node yesBranch, Node noBranch) {
-      this.condition = condition;
-      this.yesBranch = yesBranch;
-      this.noBranch = noBranch;
-      this.leafCommand = null;
-    }
-
-    // leaf node
-    public Node(Command leafCommand) {
-      this.condition = null;
-      this.yesBranch = null;
-      this.noBranch = null;
-      this.leafCommand = leafCommand;
-    }
-
-    public boolean isLeaf() {
-      return leafCommand != null;
-    }
-
-    public Command evaluate() {
-      if (this.isLeaf()) {
-        return this.leafCommand;
-      }
-
-      if (condition.getAsBoolean()) {
-        return yesBranch.evaluate();
-      } else {
-        return noBranch.evaluate();
-      }
-    }
-  }
-
-  private final Node tree;
+  private DecisionTree.Node tree;
 
   private Command autoAlign;
 
   public SelfDriving(
       ObjectiveTracker tracker, Drive drive, Elevator elevator, Gripper gripper, Trader trader) {
-    // commands needed: scoreL1/2/3, scoreOven, collectRamp, collectDepot, park
-    // commands will call pathfinder then use autopilot for final align
-    // stopWithX might be tech?
     autoAlign = DriveCommands.alignToTarget(drive, AutoAlign::getLastAPTarget).asProxy();
 
     Command scoreL1 =
@@ -97,7 +60,16 @@ public class SelfDriving {
             .andThen(elevator.stow());
     Command park = driveAndAlign(drive, TABLE);
 
-    tree = null;
+    DecisionTree.registerCommand("scoreL1", scoreL1);
+    DecisionTree.registerCommand("scoreL2", scoreL2);
+    DecisionTree.registerCommand("scoreL3", scoreL3);
+    DecisionTree.registerCommand("scoreOven", scoreOven);
+    DecisionTree.registerCommand("collectRamp", collectRamp);
+    DecisionTree.registerCommand("traderCollectDepot", traderCollectDepot);
+    DecisionTree.registerCommand("elevatorCollectDepot", elevatorCollectDepot);
+    DecisionTree.registerCommand("park", park);
+
+    changeStrategy(chooser.get());
   }
 
   private Command driveAndAlign(Drive drive, Target target) {
@@ -113,5 +85,25 @@ public class SelfDriving {
 
   public Command routine() {
     return Commands.deferredProxy(tree::evaluate).repeatedly();
+  }
+
+  public void setUpChooser(LoggedDashboardChooser<String> chooser) {
+    chooser.addDefaultOption("None", null);
+    for (String name : DecisionTree.getAllStrategyNames()) {
+      chooser.addOption(name.substring(0, name.lastIndexOf(".")), name);
+    }
+    chooser.onChange(this::changeStrategy);
+    this.chooser = chooser;
+  }
+
+  public void changeStrategy(String name) {
+    if (name == null) tree = DecisionTree.EMPTY;
+    try {
+      tree = DecisionTree.fromJson(new File(name));
+    } catch (IOException e) {
+      System.err.println("Strategy not found: " + name);
+      e.printStackTrace();
+      tree = DecisionTree.EMPTY;
+    }
   }
 }

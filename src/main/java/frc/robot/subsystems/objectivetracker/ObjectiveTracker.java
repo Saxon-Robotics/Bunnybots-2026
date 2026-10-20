@@ -40,6 +40,21 @@ public class ObjectiveTracker extends SubsystemBase {
   private static final double PANTRY_MAX_X_RED =
       Constants.FieldConstants.ORIGIN.getX() + 5.54 + 1.194;
 
+  private static ObjectiveTracker instance;
+
+  public static ObjectiveTracker getInstance() {
+    if (instance == null) {
+      throw new IllegalStateException("ObjectiveTracker has not been initialized");
+    }
+    return instance;
+  }
+
+  public static ObjectiveTracker initialize(
+      Drive drive, Vision vision, Elevator elevator, Gripper gripper, Trader trader) {
+    instance = new ObjectiveTracker(drive, vision, elevator, gripper, trader);
+    return instance;
+  }
+
   // tracked subsystems
   private final Drive drive;
   private final Vision vision;
@@ -62,7 +77,7 @@ public class ObjectiveTracker extends SubsystemBase {
   private int bakedUpProgress;
   @Getter private boolean stockedUp;
 
-  public ObjectiveTracker(
+  private ObjectiveTracker(
       Drive drive, Vision vision, Elevator elevator, Gripper gripper, Trader trader) {
     this.drive = drive;
     this.vision = vision;

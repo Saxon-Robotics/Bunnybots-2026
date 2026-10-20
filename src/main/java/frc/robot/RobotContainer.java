@@ -24,6 +24,7 @@ import frc.robot.Constants.ControlScheme;
 import frc.robot.Constants.ControllerConstants;
 import frc.robot.commands.BLineAutos;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.SelfDriving;
 import frc.robot.generated.TunerConstants;
 import frc.robot.lib.BLine.FollowPath;
 import frc.robot.subsystems.drive.Drive;
@@ -35,6 +36,7 @@ import frc.robot.subsystems.drive.ModuleIOTalonFXReal;
 import frc.robot.subsystems.drive.ModuleIOTalonFXSim;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.gripper.Gripper;
+import frc.robot.subsystems.objectivetracker.ObjectiveTracker;
 import frc.robot.subsystems.trader.Trader;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionConstants;
@@ -188,9 +190,23 @@ public class RobotContainer {
     // Set up BLine paths
     addBLinePaths();
 
+    // Set up full autos
+    SelfDriving selfDriving =
+        new SelfDriving(
+            ObjectiveTracker.initialize(drive, vision, elevator, gripper, trader),
+            drive,
+            elevator,
+            gripper,
+            trader);
+
+    LoggedDashboardChooser<String> strategyChooser =
+        new LoggedDashboardChooser<>("Full Auto Strategy");
+    selfDriving.setUpChooser(strategyChooser);
+
     // Have the autoChooser pull in all PathPlanner autos as options
     autoChooser =
         new LoggedDashboardChooser<>("Auto Chooser", BetterAutoChooser.buildAutoChooser());
+    autoChooser.addOption("Full Self Driving", selfDriving.routine());
 
     // Set up SysId routines when not in competition
     if (!DriverStation.isFMSAttached()) {
@@ -209,10 +225,6 @@ public class RobotContainer {
       autoChooser.addOption(
           "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
     }
-
-    // Set up custom autos
-    //    autoChooser.addOption("Full System Check", Autos.systemCheck(drive, shooter, feeder,
-    // intake));
 
     // Visualize BLine Paths
     //    autoChooser.onChange(
