@@ -150,9 +150,9 @@ public class ObjectiveTracker extends SubsystemBase {
   /** Returns the open slot on a pantry level closest to the robot, or null if the level is full. */
   public Pose2d getPantryPose(int level, Pose2d robotPose) {
     double robotX = robotPose.getX();
+
     double pantryMinX;
     double pantryMaxX;
-
     if (RobotUtil.isRedAlliance()) {
       pantryMinX = PANTRY_MIN_X_RED;
       pantryMaxX = PANTRY_MAX_X_RED;
@@ -195,8 +195,8 @@ public class ObjectiveTracker extends SubsystemBase {
 
     if (bestX == null) return null;
 
-    Pose2d pantry = AutoAlign.Target.PANTRY.getPose(RobotUtil.isRedAlliance());
-    return new Pose2d(bestX, pantry.getY(), pantry.getRotation());
+    Pose2d pantryPose = AutoAlign.Target.PANTRY.getPose(RobotUtil.isRedAlliance());
+    return new Pose2d(bestX, pantryPose.getY(), pantryPose.getRotation());
   }
 
   public boolean checkStockedUp() {

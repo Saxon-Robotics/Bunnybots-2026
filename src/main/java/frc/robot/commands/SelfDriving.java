@@ -112,7 +112,7 @@ public class SelfDriving {
       tree = DecisionTree.EMPTY;
       return;
     }
-      try {
+    try {
       tree = DecisionTree.fromJson(name);
     } catch (IOException e) {
       System.err.println("Strategy not found: " + name);
