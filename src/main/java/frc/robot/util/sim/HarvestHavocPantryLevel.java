@@ -40,7 +40,7 @@ public class HarvestHavocPantryLevel extends Goal {
 
   private static final int MIN_LEVEL = 0;
   private static final int MAX_LEVEL = 2;
-  private static final double CARROT_SIZE = 0.4572;
+  public static final double CARROT_SIZE = 0.4572;
 
   public final int level;
 

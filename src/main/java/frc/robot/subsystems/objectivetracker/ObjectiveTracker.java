@@ -1,10 +1,13 @@
 package frc.robot.subsystems.objectivetracker;
 
+import static frc.robot.util.sim.HarvestHavocPantryLevel.CARROT_SIZE;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Constants;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.gripper.Gripper;
@@ -13,6 +16,7 @@ import frc.robot.subsystems.vision.Vision;
 import frc.robot.util.AutoAlign;
 import frc.robot.util.RobotUtil;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import lombok.Getter;
 
@@ -23,6 +27,18 @@ public class ObjectiveTracker extends SubsystemBase {
   }
 
   private static final double NEAR_THRESHOLD = 0.6;
+  private static final double PANTRY_MIN_X_BLUE =
+      Constants.FieldConstants.ORIGIN.getX()
+          - 7.928
+          - 1.194; // just realized we have to take into account alliances welp
+  private static final double PANTRY_MAX_X_BLUE =
+      Constants.FieldConstants.ORIGIN.getX() - 7.928 + 1.194;
+  private static final double PANTRY_MIN_X_RED =
+      Constants.FieldConstants.ORIGIN.getX()
+          + 5.54
+          - 1.194; // just realized we have to take into account alliances welp
+  private static final double PANTRY_MAX_X_RED =
+      Constants.FieldConstants.ORIGIN.getX() + 5.54 + 1.194;
 
   // tracked subsystems
   private final Drive drive;
@@ -111,12 +127,62 @@ public class ObjectiveTracker extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // RP checks and pantry vision would go here
+    // RP checks
+    if (!isTrackingRP) return;
+    if (!stockedUp) stockedUp = checkStockedUp();
   }
 
   public Pose2d getPantryPose(int level, Pose2d robotPose) {
-    // will calculate best pose to drop cake based on strat
-    return Pose2d.kZero;
+    double robotX = robotPose.getX();
+    List<Double> sorted = pantry.get(level);
+    Collections.sort(sorted);
+
+    List<Double> candidates = new ArrayList<>();
+
+    candidates.add(sorted.get(0) - CARROT_SIZE);
+    candidates.add(sorted.get(sorted.size() - 1) + CARROT_SIZE);
+
+    for (int i = 0; i < sorted.size() - 1; i++) {
+      double left = sorted.get(i);
+      double right = sorted.get(i + 1);
+
+      if (right - left >= 2 * CARROT_SIZE) {
+        candidates.add(left + CARROT_SIZE);
+        candidates.add(right - CARROT_SIZE);
+      }
+    }
+
+    double pantryMinX;
+    double pantryMaxX;
+    if (RobotUtil.isRedAlliance()) {
+      pantryMinX = PANTRY_MIN_X_RED;
+      pantryMaxX = PANTRY_MAX_X_RED;
+    } else {
+      pantryMinX = PANTRY_MIN_X_BLUE;
+      pantryMaxX = PANTRY_MAX_X_BLUE;
+    }
+
+    Double bestX = null;
+    for (double x : candidates) {
+      if (x < pantryMinX || x > pantryMaxX) {
+        continue;
+      }
+      if (bestX == null || Math.abs(x - robotX) < Math.abs(bestX - robotX)) {
+        bestX = x;
+      }
+    }
+
+    if (bestX == null) return null;
+
+    Pose2d pantry = AutoAlign.Target.PANTRY.getPose(true);
+    return new Pose2d(bestX, pantry.getY(), pantry.getRotation());
+  }
+
+  public boolean checkStockedUp() {
+    for (List<Double> level : pantry) {
+      if (level.size() < 3) return false;
+    }
+    return true;
   }
 
   public boolean isBakedUp() {
