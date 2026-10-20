@@ -96,7 +96,7 @@ public class SelfDriving {
             .deadlineFor(elevator.ramp())
             .andThen(elevator.stow());
     Command park = driveAndAlign(drive, TABLE);
-    
+
     tree = null;
   }
 
