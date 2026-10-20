@@ -21,6 +21,7 @@ import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.path.PathConstraints;
+import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.therekrab.autopilot.APConstraints;
 import com.therekrab.autopilot.APProfile;
@@ -56,6 +57,7 @@ import frc.robot.Constants.Mode;
 import frc.robot.generated.TunerConstants;
 import frc.robot.lib.BLine.FlippingUtil;
 import frc.robot.subsystems.vision.Vision;
+import frc.robot.util.LocalADStarAK;
 import frc.robot.util.RobotUtil;
 import frc.robot.util.subsystems.ExtendedSubsystem;
 import java.util.concurrent.locks.Lock;
@@ -194,7 +196,7 @@ public class Drive extends ExtendedSubsystem implements Vision.VisionConsumer {
         PP_CONFIG,
         () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
         this);
-    //    Pathfinding.setPathfinder(new LocalADStarAK());
+    Pathfinding.setPathfinder(new LocalADStarAK());
     PathPlannerLogging.setLogActivePathCallback(
         activePath -> {
           Logger.recordOutput("Odometry/Trajectory", activePath.toArray(new Pose2d[0]));
@@ -310,6 +312,10 @@ public class Drive extends ExtendedSubsystem implements Vision.VisionConsumer {
 
   public void runVelocity(ChassisSpeeds speeds) {
     runVelocity(speeds, true);
+  }
+
+  public Command pathfindToPose(Pose2d pose) {
+    return defer(() -> AutoBuilder.pathfindToPose(pose, CONSTRAINTS));
   }
 
   /** Runs the drive in a straight line with the specified drive output. */

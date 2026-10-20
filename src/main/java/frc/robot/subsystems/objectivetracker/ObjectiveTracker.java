@@ -1,5 +1,7 @@
 package frc.robot.subsystems.objectivetracker;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -40,6 +42,7 @@ public class ObjectiveTracker extends SubsystemBase {
   private boolean cakeReady;
 
   // RP tracking
+  public final boolean isTrackingRP;
   private int bakedUpProgress;
   @Getter private boolean stockedUp;
 
@@ -102,11 +105,18 @@ public class ObjectiveTracker extends SubsystemBase {
                     cakeReady = true;
                   }
                 }));
+
+    isTrackingRP = DriverStation.getMatchType() == DriverStation.MatchType.Qualification;
   }
 
   @Override
   public void periodic() {
     // RP checks and pantry vision would go here
+  }
+
+  public Pose2d getPantryPose(int level, Pose2d robotPose) {
+    // will calculate best pose to drop cake based on strat
+    return Pose2d.kZero;
   }
 
   public boolean isBakedUp() {
