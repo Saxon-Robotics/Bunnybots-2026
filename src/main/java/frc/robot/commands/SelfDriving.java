@@ -15,34 +15,17 @@ import frc.robot.util.AutoAlign;
 import frc.robot.util.AutoAlign.Target;
 import frc.robot.util.DecisionTree;
 import java.io.IOException;
+import java.util.function.Supplier;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class SelfDriving {
-  private LoggedDashboardChooser<String> chooser;
-
-  private DecisionTree.Node tree;
-
-  private Command autoAlign;
+  private DecisionTree.Node tree = DecisionTree.EMPTY;
 
   public SelfDriving(
       ObjectiveTracker tracker, Drive drive, Elevator elevator, Gripper gripper, Trader trader) {
-    autoAlign = DriveCommands.alignToTarget(drive, AutoAlign::getLastAPTarget).asProxy();
-
-    Command scoreL1 =
-        driveAndAlign(drive, tracker.getPantryPose(0, drive.getPose()))
-            .andThen(elevator.l1())
-            .andThen(gripper.eject().until(() -> !gripper.isLoaded()))
-            .andThen(elevator.stow());
-    Command scoreL2 =
-        driveAndAlign(drive, tracker.getPantryPose(1, drive.getPose()))
-            .andThen(elevator.l2())
-            .andThen(gripper.eject().until(() -> !gripper.isLoaded()))
-            .andThen(elevator.stow());
-    Command scoreL3 =
-        driveAndAlign(drive, tracker.getPantryPose(2, drive.getPose()))
-            .andThen(elevator.l3())
-            .andThen(gripper.eject().until(() -> !gripper.isLoaded()))
-            .andThen(elevator.stow());
+    Command scoreL1 = scorePantry(0, tracker, drive, elevator, gripper);
+    Command scoreL2 = scorePantry(1, tracker, drive, elevator, gripper);
+    Command scoreL3 = scorePantry(2, tracker, drive, elevator, gripper);
     Command scoreOven =
         driveAndAlign(drive, OVEN).andThen(trader.eject().until(() -> !trader.isLoaded()));
     Command collectRamp =
@@ -79,19 +62,30 @@ public class SelfDriving {
     DecisionTree.registerCondition("pantryL1Open", () -> tracker.hasPantrySlot(0));
     DecisionTree.registerCondition("pantryL2Open", () -> tracker.hasPantrySlot(1));
     DecisionTree.registerCondition("pantryL3Open", () -> tracker.hasPantrySlot(2));
-
-    changeStrategy(chooser.get());
   }
 
   private Command driveAndAlign(Drive drive, Target target) {
-    return drive.pathfindToPose(AutoAlign.setTarget(target, drive.getPose())).andThen(autoAlign);
+    return drive
+        .pathfindToPose(AutoAlign.setTarget(target, drive.getPose()))
+        .andThen(DriveCommands.alignToTarget(drive, AutoAlign::getLastAPTarget));
   }
 
-  private Command driveAndAlign(Drive drive, Pose2d target) {
+  private Command driveAndAlign(Drive drive, Supplier<Pose2d> target) {
     return drive
-        .pathfindToPose(target)
-        .andThen(() -> AutoAlign.setTargetPose(target, drive.getPose()))
-        .andThen(autoAlign);
+        .defer(
+            () ->
+                drive
+                    .pathfindToPose(target.get())
+                    .andThen(() -> AutoAlign.setTargetPose(target.get(), drive.getPose())))
+        .andThen(DriveCommands.alignToTarget(drive, AutoAlign::getLastAPTarget));
+  }
+
+  private Command scorePantry(
+      int level, ObjectiveTracker tracker, Drive drive, Elevator elevator, Gripper gripper) {
+    return driveAndAlign(drive, () -> tracker.getPantryPose(level, drive.getPose()))
+        .andThen(elevator.l1())
+        .andThen(gripper.eject().until(() -> !gripper.isLoaded()))
+        .andThen(elevator.stow());
   }
 
   public Command routine() {
@@ -104,7 +98,7 @@ public class SelfDriving {
       chooser.addOption(name.substring(0, name.lastIndexOf(".")), name);
     }
     chooser.onChange(this::changeStrategy);
-    this.chooser = chooser;
+    changeStrategy(chooser.get());
   }
 
   public void changeStrategy(String name) {
