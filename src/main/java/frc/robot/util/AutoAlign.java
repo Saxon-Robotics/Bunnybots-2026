@@ -63,7 +63,7 @@ public class AutoAlign {
   @Getter private static Pose2d lastTargetPose = Pose2d.kZero;
   @Getter private static APTarget lastAPTarget = new APTarget(lastTargetPose);
 
-  public static void setTarget(Target target, Pose2d robotPose) {
+  public static Pose2d setTarget(Target target, Pose2d robotPose) {
     boolean isRedAlliance = RobotUtil.isRedAlliance();
     target = getTarget(target, robotPose, isRedAlliance);
 
@@ -71,6 +71,7 @@ public class AutoAlign {
     lastAPTarget = new APTarget(lastTargetPose);
     Logger.recordOutput("AutoAlign/Target", target);
     Logger.recordOutput("AutoAlign/TargetPose", lastTargetPose);
+    return lastTargetPose;
   }
 
   public static void setTargetPose(Pose2d target, Pose2d robotPose) {

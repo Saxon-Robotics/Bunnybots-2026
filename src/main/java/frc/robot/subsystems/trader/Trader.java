@@ -92,4 +92,8 @@ public class Trader extends SubsystemBase {
   public double getVelocityRPS() {
     return roller.getVelocityRPS();
   }
+
+  public boolean isFullyLoaded() {
+    return false;
+  }
 }
