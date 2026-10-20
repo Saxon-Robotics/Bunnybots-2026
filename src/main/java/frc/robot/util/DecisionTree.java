@@ -16,7 +16,6 @@ import java.util.Map;
 import java.util.function.BooleanSupplier;
 import java.util.stream.Stream;
 import lombok.Getter;
-import org.w3c.dom.Node;
 
 public class DecisionTree {
   private DecisionTree() {
@@ -70,6 +69,8 @@ public class DecisionTree {
   private static final Map<String, BooleanSupplier> conditionRegistry = new HashMap<>();
   private static final Map<String, Command> commandRegistry = new HashMap<>();
   private static final ObjectMapper mapper = new ObjectMapper();
+  private static final File STRATEGY_DIRECTORY =
+      new File(Filesystem.getDeployDirectory(), "strategies");
 
   public static final Node EMPTY = new Node(null, null, null, "none");
 
@@ -77,12 +78,13 @@ public class DecisionTree {
     commandRegistry.put("none", Commands.none());
   }
 
-  public static Node fromJson(File filePath) throws IOException {
-    return mapper.readValue(filePath, Node.class);
+  /** Loads a strategy file (e.g. "Example.json") from deploy/strategies. */
+  public static Node fromJson(String fileName) throws IOException {
+    return mapper.readValue(new File(STRATEGY_DIRECTORY, fileName), Node.class);
   }
 
   public static List<String> getAllStrategyNames() {
-    File[] autoFiles = new File(Filesystem.getDeployDirectory(), "autos/paths").listFiles();
+    File[] autoFiles = STRATEGY_DIRECTORY.listFiles();
     if (autoFiles == null) {
       return new ArrayList<>();
     }

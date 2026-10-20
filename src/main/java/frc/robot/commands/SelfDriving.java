@@ -9,11 +9,11 @@ import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.gripper.Gripper;
 import frc.robot.subsystems.objectivetracker.ObjectiveTracker;
+import frc.robot.subsystems.objectivetracker.ObjectiveTracker.GamePiece;
 import frc.robot.subsystems.trader.Trader;
 import frc.robot.util.AutoAlign;
 import frc.robot.util.AutoAlign.Target;
 import frc.robot.util.DecisionTree;
-import java.io.File;
 import java.io.IOException;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -69,6 +69,17 @@ public class SelfDriving {
     DecisionTree.registerCommand("elevatorCollectDepot", elevatorCollectDepot);
     DecisionTree.registerCommand("park", park);
 
+    DecisionTree.registerCondition("gripperLoaded", gripper::isLoaded);
+    DecisionTree.registerCondition(
+        "gripperHasCake", () -> tracker.getGripperHeld() == GamePiece.CARROT_CAKE);
+    DecisionTree.registerCondition("traderLoaded", trader::isLoaded);
+    DecisionTree.registerCondition("traderFull", trader::isFullyLoaded);
+    DecisionTree.registerCondition("cakeReady", tracker::isCakeReady);
+    DecisionTree.registerCondition("stockedUp", tracker::isStockedUp);
+    DecisionTree.registerCondition("pantryL1Open", () -> tracker.hasPantrySlot(0));
+    DecisionTree.registerCondition("pantryL2Open", () -> tracker.hasPantrySlot(1));
+    DecisionTree.registerCondition("pantryL3Open", () -> tracker.hasPantrySlot(2));
+
     changeStrategy(chooser.get());
   }
 
@@ -97,9 +108,12 @@ public class SelfDriving {
   }
 
   public void changeStrategy(String name) {
-    if (name == null) tree = DecisionTree.EMPTY;
-    try {
-      tree = DecisionTree.fromJson(new File(name));
+    if (name == null) {
+      tree = DecisionTree.EMPTY;
+      return;
+    }
+      try {
+      tree = DecisionTree.fromJson(name);
     } catch (IOException e) {
       System.err.println("Strategy not found: " + name);
       e.printStackTrace();

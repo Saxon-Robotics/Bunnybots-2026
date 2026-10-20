@@ -1,0 +1,39 @@
+{
+  "conditionId": "gripperLoaded",
+  "yesBranch": {
+    "conditionId": "pantryL3Open",
+    "yesBranch": {
+      "leafCommandId": "scoreL3"
+    },
+    "noBranch": {
+      "conditionId": "pantryL2Open",
+      "yesBranch": {
+        "leafCommandId": "scoreL2"
+      },
+      "noBranch": {
+        "conditionId": "pantryL1Open",
+        "yesBranch": {
+          "leafCommandId": "scoreL1"
+        },
+        "noBranch": {
+          "leafCommandId": "scoreOven"
+        }
+      }
+    }
+  },
+  "noBranch": {
+    "conditionId": "cakeReady",
+    "yesBranch": {
+      "leafCommandId": "collectRamp"
+    },
+    "noBranch": {
+      "conditionId": "traderFull",
+      "yesBranch": {
+        "leafCommandId": "scoreOven"
+      },
+      "noBranch": {
+        "leafCommandId": "traderCollectDepot"
+      }
+    }
+  }
+}

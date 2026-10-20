@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Strategy Editor</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="toolbar">
+      <div class="brand">Strategy Editor</div>
+      <div class="doc-title" id="doc-title"></div>
+      <button class="issue-badge" id="issue-badge" data-action="next-issue" title="Jump to the first issue" hidden></button>
+      <div class="spacer"></div>
+      <button data-action="undo" title="Undo (Ctrl+Z)">Undo</button>
+      <button data-action="redo" title="Redo (Ctrl+Y)">Redo</button>
+      <button data-action="fit" title="Fit tree to view (F)">Fit</button>
+      <button class="primary" data-action="save" title="Save (Ctrl+S)">Save</button>
+    </header>
+
+    <aside class="sidebar">
+      <section>
+        <div class="section-head">
+          <h2>Project</h2>
+          <button class="small" data-action="rescan" title="Re-read strategies and registered IDs">Rescan</button>
+        </div>
+        <div class="project-name" id="project-name"></div>
+        <button class="block" data-action="open-folder">Open robot project…</button>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <h2>Strategies</h2>
+          <div class="btn-row">
+            <button class="small" data-action="import" id="import-btn" hidden>Import</button>
+            <button class="small" data-action="new-file" title="New strategy">+ New</button>
+          </div>
+        </div>
+        <ul class="file-list" id="file-list"></ul>
+        <div class="btn-row file-actions">
+          <button class="small" data-action="duplicate-file">Duplicate</button>
+          <button class="small" data-action="rename-file">Rename</button>
+          <button class="small danger" data-action="delete-file">Delete</button>
+        </div>
+      </section>
+
+      <section class="palette">
+        <h2>Commands</h2>
+        <p class="hint">Drag onto a node, or click to apply to the selected node.</p>
+        <div class="chips" id="palette-commands"></div>
+        <h2>Conditions</h2>
+        <div class="chips" id="palette-conditions"></div>
+      </section>
+    </aside>
+
+    <main class="canvas" id="canvas" tabindex="-1">
+      <div class="world" id="world"></div>
+      <div class="overlay" id="overlay"></div>
+      <div class="zoom-readout" id="zoom-readout"></div>
+    </main>
+
+    <aside class="panel">
+      <nav class="tabs" id="tabs">
+        <button data-tab="inspect">Inspector</button>
+        <button data-tab="preview">Preview</button>
+        <button data-tab="json">JSON</button>
+      </nav>
+      <div class="panel-body" id="panel-body"></div>
+    </aside>
+
+    <div class="toasts" id="toasts"></div>
+    <input type="file" id="import-input" accept=".json,application/json" multiple hidden />
+
+    <script src="model.js"></script>
+    <script src="project.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

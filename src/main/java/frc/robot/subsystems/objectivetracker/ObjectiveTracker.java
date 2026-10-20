@@ -63,14 +63,14 @@ public class ObjectiveTracker extends SubsystemBase {
   private final Trader trader;
 
   // not gonna track number of pieces because that's annoying
-  private GamePiece traderHeld;
-  private GamePiece gripperHeld;
+  @Getter private GamePiece traderHeld;
+  @Getter private GamePiece gripperHeld;
 
   // x positions of each game piece in pantry
   @Getter private final List<List<Double>> pantry = new ArrayList<>(3);
 
   // whether we've dumped carrots in oven
-  private boolean cakeReady;
+  @Getter private boolean cakeReady;
 
   // RP tracking
   public final boolean isTrackingRP;
@@ -147,15 +147,31 @@ public class ObjectiveTracker extends SubsystemBase {
     if (!stockedUp) stockedUp = checkStockedUp();
   }
 
+  /** Returns the open slot on a pantry level closest to the robot, or null if the level is full. */
   public Pose2d getPantryPose(int level, Pose2d robotPose) {
     double robotX = robotPose.getX();
+    double pantryMinX;
+    double pantryMaxX;
+
+    if (RobotUtil.isRedAlliance()) {
+      pantryMinX = PANTRY_MIN_X_RED;
+      pantryMaxX = PANTRY_MAX_X_RED;
+    } else {
+      pantryMinX = PANTRY_MIN_X_BLUE;
+      pantryMaxX = PANTRY_MAX_X_BLUE;
+    }
+
     List<Double> sorted = pantry.get(level);
     Collections.sort(sorted);
 
     List<Double> candidates = new ArrayList<>();
 
-    candidates.add(sorted.get(0) - CARROT_SIZE);
-    candidates.add(sorted.get(sorted.size() - 1) + CARROT_SIZE);
+    if (sorted.isEmpty()) {
+      candidates.add(pantryMinX + CARROT_SIZE);
+    } else {
+      candidates.add(sorted.get(0) - CARROT_SIZE);
+      candidates.add(sorted.get(sorted.size() - 1) + CARROT_SIZE);
+    }
 
     for (int i = 0; i < sorted.size() - 1; i++) {
       double left = sorted.get(i);
@@ -165,16 +181,6 @@ public class ObjectiveTracker extends SubsystemBase {
         candidates.add(left + CARROT_SIZE);
         candidates.add(right - CARROT_SIZE);
       }
-    }
-
-    double pantryMinX;
-    double pantryMaxX;
-    if (RobotUtil.isRedAlliance()) {
-      pantryMinX = PANTRY_MIN_X_RED;
-      pantryMaxX = PANTRY_MAX_X_RED;
-    } else {
-      pantryMinX = PANTRY_MIN_X_BLUE;
-      pantryMaxX = PANTRY_MAX_X_BLUE;
     }
 
     Double bestX = null;
@@ -189,7 +195,7 @@ public class ObjectiveTracker extends SubsystemBase {
 
     if (bestX == null) return null;
 
-    Pose2d pantry = AutoAlign.Target.PANTRY.getPose(true);
+    Pose2d pantry = AutoAlign.Target.PANTRY.getPose(RobotUtil.isRedAlliance());
     return new Pose2d(bestX, pantry.getY(), pantry.getRotation());
   }
 
@@ -202,5 +208,9 @@ public class ObjectiveTracker extends SubsystemBase {
 
   public boolean isBakedUp() {
     return bakedUpProgress > 2;
+  }
+
+  public boolean hasPantrySlot(int level) {
+    return pantry.get(level).size() < 5;
   }
 }
