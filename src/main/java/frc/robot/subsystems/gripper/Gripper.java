@@ -78,7 +78,7 @@ public class Gripper extends SubsystemBase {
   }
 
   public Command eject() {
-    return startEnd(() -> roller.runVelocity(GripperConstants.RPS), roller::stop);
+    return startEnd(() -> roller.runVoltage(GripperConstants.VOLTAGE), roller::stop);
   }
 
   public double getVelocityRPS() {
