@@ -20,22 +20,21 @@ public final class ElevatorConstants {
     return Meters.of(2 * angle.in(Radians) * DRUM_RADIUS);
   }
 
-  public static final double SETPOINT_TOLERANCE = 3.8; // rad
+  public static final double SETPOINT_TOLERANCE = 1.0; // rad
 
   public static final double MAX_MANUAL_VOLTAGE = 2.5;
   public static final double HOMING_VOLTAGE = 1.0;
   public static final double HOMING_VELOCITY_THRESHOLD = 0.1; // placeholder, find this
 
   // physical constraints
-  public static final double GEAR_RATIO = 5;
+  public static final double GEAR_RATIO = 9;
   public static final double CARRIAGE_MASS = Units.lbsToKilograms(13.0);
   public static final double DRUM_RADIUS = Units.inchesToMeters(0.8785);
   public static final double MIN_HEIGHT_METERS = 0;
   public static final double MAX_HEIGHT_METERS = Units.inchesToMeters(45);
 
-  public static final double MAX_VELOCITY = 89.841;
-  //  public static final double MAX_ACCELERATION = 2719.462;
-  public static final double MAX_ACCELERATION = 800;
+  public static final double MAX_VELOCITY = 88.445;
+  public static final double MAX_ACCELERATION = 2557.418;
 
   public enum Setpoint {
     NONE(-1, Meters.of(0)),
@@ -73,13 +72,13 @@ public final class ElevatorConstants {
           .withSlot0(
               new Slot0Configs()
                   // recalc values
-                  .withKP(1.895)
+                  .withKP(1.863)
                   .withKI(0)
-                  .withKD(0.006)
+                  .withKD(0.005)
                   .withKS(0)
                   .withKV(0.118)
-                  .withKA(0.000)
-                  .withKG(0.118)
+                  .withKA(0.00)
+                  .withKG(0.35)
                   .withGravityType(GravityTypeValue.Elevator_Static))
           .withMotionMagic(
               new MotionMagicConfigs()
