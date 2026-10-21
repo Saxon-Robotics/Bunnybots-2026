@@ -27,7 +27,7 @@
       "leafCommandId": "collectRamp"
     },
     "noBranch": {
-      "conditionId": "traderFull",
+      "conditionId": "traderLoaded",
       "yesBranch": {
         "leafCommandId": "scoreOven"
       },

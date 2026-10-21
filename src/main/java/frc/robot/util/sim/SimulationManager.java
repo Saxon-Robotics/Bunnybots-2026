@@ -196,6 +196,10 @@ public class SimulationManager {
     return getTraderCount() > 0;
   }
 
+  public boolean isTraderFull() {
+    return getTraderCount() >= 3;
+  }
+
   public void preloadTrader() {
     traderCountBeforePreload = traderIntake.getGamePiecesAmount();
     traderCakeCountBeforePreload = traderCakeIntake.getGamePiecesAmount();

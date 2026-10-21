@@ -80,6 +80,7 @@ public class RobotContainer {
 
   // dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
+  private final Command teleopFullAuto;
 
   // Simulated things
   private final SwerveDriveSimulation driveSimulation;
@@ -207,6 +208,7 @@ public class RobotContainer {
     autoChooser =
         new LoggedDashboardChooser<>("Auto Chooser", BetterAutoChooser.buildAutoChooser());
     autoChooser.addOption("Full Self Driving", selfDriving.routine());
+    teleopFullAuto = selfDriving.routine().withName("Teleop Full Self Driving");
 
     // Set up SysId routines when not in competition
     if (!DriverStation.isFMSAttached()) {
@@ -565,6 +567,13 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     return autoChooser.get();
+  }
+
+  /**
+   * @return the full self driving routine to run during teleop
+   */
+  public Command getTeleopCommand() {
+    return teleopFullAuto;
   }
 
   public void resetSimulationField() {

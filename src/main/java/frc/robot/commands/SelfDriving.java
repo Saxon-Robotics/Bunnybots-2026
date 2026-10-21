@@ -66,7 +66,7 @@ public class SelfDriving {
 
   private Command driveAndAlign(Drive drive, Target target) {
     return drive
-        .pathfindToPose(AutoAlign.setTarget(target, drive.getPose()))
+        .defer(() -> drive.pathfindToPose(AutoAlign.setTarget(target, drive.getPose())))
         .andThen(DriveCommands.alignToTarget(drive, AutoAlign::getLastAPTarget));
   }
 
@@ -89,7 +89,7 @@ public class SelfDriving {
   }
 
   public Command routine() {
-    return Commands.deferredProxy(tree::evaluate).repeatedly();
+    return Commands.deferredProxy(() -> tree.evaluate()).repeatedly();
   }
 
   public void setUpChooser(LoggedDashboardChooser<String> chooser) {
