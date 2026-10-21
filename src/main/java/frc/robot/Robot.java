@@ -153,8 +153,9 @@ public class Robot extends LoggedRobot {
       m_autonomousCommand.cancel();
     }
 
-    // Run full self driving during teleop on this branch
-    CommandScheduler.getInstance().schedule(m_robotContainer.getTeleopCommand());
+    if (m_robotContainer.isTeleopFullAuto()) {
+      CommandScheduler.getInstance().schedule(m_robotContainer.getFullAutoCommand());
+    }
 
     Elastic.selectTab("Teleoperated");
   }

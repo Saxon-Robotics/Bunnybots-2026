@@ -23,25 +23,30 @@ public class SelfDriving {
 
   public SelfDriving(
       ObjectiveTracker tracker, Drive drive, Elevator elevator, Gripper gripper, Trader trader) {
-    Command scoreL1 = scorePantry(0, tracker, drive, elevator, gripper);
-    Command scoreL2 = scorePantry(1, tracker, drive, elevator, gripper);
-    Command scoreL3 = scorePantry(2, tracker, drive, elevator, gripper);
+    Command scoreL1 = scorePantry(0, tracker, drive, elevator, gripper).withName("Score L1");
+    Command scoreL2 = scorePantry(1, tracker, drive, elevator, gripper).withName("Score L2");
+    Command scoreL3 = scorePantry(2, tracker, drive, elevator, gripper).withName("Score L3");
     Command scoreOven =
-        driveAndAlign(drive, OVEN).andThen(trader.eject().until(() -> !trader.isLoaded()));
+        driveAndAlign(drive, OVEN)
+            .andThen(trader.eject().until(() -> !trader.isLoaded()))
+            .withName("Score Oven");
     Command collectRamp =
         driveAndAlign(drive, RAMP)
             .andThen(gripper.intake().until(gripper::isLoaded))
             .deadlineFor(elevator.ramp())
-            .andThen(elevator.stow());
+            .andThen(elevator.stow())
+            .withName("Collect Ramp");
     Command traderCollectDepot =
         driveAndAlign(drive, DEPOT)
-            .andThen(Commands.waitUntil(trader::isFullyLoaded)); // add intake until
+            .andThen(Commands.waitUntil(trader::isFullyLoaded))
+            .withName("Collect Depot - Trader"); // add intake until
     Command elevatorCollectDepot =
         driveAndAlign(drive, DEPOT)
             .andThen(gripper.intake().until(gripper::isLoaded))
             .deadlineFor(elevator.ramp())
-            .andThen(elevator.stow());
-    Command park = driveAndAlign(drive, TABLE);
+            .andThen(elevator.stow())
+            .withName("Collect Depot - Elevator");
+    Command park = driveAndAlign(drive, TABLE).withName("Park");
 
     DecisionTree.registerCommand("scoreL1", scoreL1);
     DecisionTree.registerCommand("scoreL2", scoreL2);

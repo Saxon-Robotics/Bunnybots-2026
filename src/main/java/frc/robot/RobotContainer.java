@@ -55,6 +55,7 @@ import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -80,7 +81,10 @@ public class RobotContainer {
 
   // dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
-  private final Command teleopFullAuto;
+
+  // full auto stuff
+  private final LoggedNetworkBoolean isTeleopFullAuto;
+  private final Command fullAuto;
 
   // Simulated things
   private final SwerveDriveSimulation driveSimulation;
@@ -199,16 +203,16 @@ public class RobotContainer {
             elevator,
             gripper,
             trader);
-
     LoggedDashboardChooser<String> strategyChooser =
         new LoggedDashboardChooser<>("Full Auto Strategy");
     selfDriving.setUpChooser(strategyChooser);
+    fullAuto = selfDriving.routine();
+    isTeleopFullAuto = new LoggedNetworkBoolean("SelfDriving/StartTeleop");
 
     // Have the autoChooser pull in all PathPlanner autos as options
     autoChooser =
         new LoggedDashboardChooser<>("Auto Chooser", BetterAutoChooser.buildAutoChooser());
     autoChooser.addOption("Full Self Driving", selfDriving.routine());
-    teleopFullAuto = selfDriving.routine().withName("Teleop Full Self Driving");
 
     // Set up SysId routines when not in competition
     if (!DriverStation.isFMSAttached()) {
@@ -392,7 +396,6 @@ public class RobotContainer {
           .onTrue(depotAlign)
           .whileTrue(autoAlign);
 
-      keyboard.button(13).onTrue(tableAlign).whileTrue(autoAlign);
       // drop carrots
       keyboard
           .button(9)
@@ -569,11 +572,12 @@ public class RobotContainer {
     return autoChooser.get();
   }
 
-  /**
-   * @return the full self driving routine to run during teleop
-   */
-  public Command getTeleopCommand() {
-    return teleopFullAuto;
+  public boolean isTeleopFullAuto() {
+    return isTeleopFullAuto.get();
+  }
+
+  public Command getFullAutoCommand() {
+    return fullAuto;
   }
 
   public void resetSimulationField() {

@@ -51,8 +51,8 @@ public class Elevator extends ExtendedSubsystem {
                       ElevatorConstants.DRUM_RADIUS,
                       ElevatorConstants.MIN_HEIGHT_METERS,
                       ElevatorConstants.MAX_HEIGHT_METERS),
-                  0.3296,
-                  0.0041,
+                  MOTOR_CONFIG.Slot0.kP / 2 / Math.PI,
+                  MOTOR_CONFIG.Slot0.kD / 2 / Math.PI,
                   1)
               .withProfiledPID(
                   Units.rotationsToRadians(ElevatorConstants.MAX_VELOCITY),
@@ -178,6 +178,7 @@ public class Elevator extends ExtendedSubsystem {
     return elevator.getHeight().in(Meters);
   }
 
+  @AutoLogOutput(key = "Elevator/AtSetpoint")
   public boolean hasReachedSetpoint() {
     return Math.abs(setpointRad - getPositionRad()) < ElevatorConstants.SETPOINT_TOLERANCE;
   }
