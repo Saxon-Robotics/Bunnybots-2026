@@ -7,6 +7,7 @@ package frc.robot.subsystems.gripper;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -28,6 +29,10 @@ public class Gripper extends SubsystemBase {
   private final LaserCanIO beambreak;
   private final LaserCanIOInputsAutoLogged beambreakInputs = new LaserCanIOInputsAutoLogged();
 
+  private final Alert topDisconnectedAlert =
+      new Alert("Top gripper motor disconnected.", Alert.AlertType.kError);
+  private final Alert bottomDisconnectedAlert =
+      new Alert("Bottom gripper motor disconnected.", Alert.AlertType.kError);
   private final Debouncer beambreakDebounce = new Debouncer(0.5, Debouncer.DebounceType.kBoth);
 
   @Getter
@@ -72,6 +77,8 @@ public class Gripper extends SubsystemBase {
         beambreakDebounce.calculate(
             beambreakInputs.measurementValid
                 && beambreakInputs.distanceMillimeters <= GripperConstants.BEAMBREAK_THRESHOLD);
+    topDisconnectedAlert.set(!roller.isConnected());
+    bottomDisconnectedAlert.set(!roller.getFollowerConnected()[0]);
     LoggedTracer.record("Gripper/Periodic");
   }
 

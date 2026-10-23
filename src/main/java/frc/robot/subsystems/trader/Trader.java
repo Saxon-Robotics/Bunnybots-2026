@@ -9,6 +9,7 @@ import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -31,6 +32,12 @@ public class Trader extends SubsystemBase {
   private final LaserCanIO beambreak;
   private final LaserCanIOInputsAutoLogged beambreakInputs = new LaserCanIOInputsAutoLogged();
 
+  private final Alert beltsDisconnectedAlert =
+      new Alert("Trader belts motor disconnected.", Alert.AlertType.kError);
+  private final Alert rollerDisconnectedAlert =
+      new Alert("Trader roller motor disconnected.", Alert.AlertType.kError);
+  private final Alert beambreakDisconnectedAlert =
+      new Alert("Trader LaserCAN disconnected.", Alert.AlertType.kError);
   private final Debouncer beambreakDebounce = new Debouncer(0.5, Debouncer.DebounceType.kBoth);
 
   @Getter
@@ -80,6 +87,9 @@ public class Trader extends SubsystemBase {
         beambreakDebounce.calculate(
             beambreakInputs.measurementValid
                 && beambreakInputs.distanceMillimeters <= TraderConstants.BEAMBREAK_THRESHOLD);
+    beltsDisconnectedAlert.set(!roller.isConnected());
+    rollerDisconnectedAlert.set(!roller.getFollowerConnected()[0]);
+    beambreakDisconnectedAlert.set(!beambreakInputs.connected);
     LoggedTracer.record("Trader/Periodic");
   }
 

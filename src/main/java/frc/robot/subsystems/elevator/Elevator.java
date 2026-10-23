@@ -10,6 +10,7 @@ import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
@@ -28,6 +29,12 @@ import org.littletonrobotics.junction.Logger;
 
 public class Elevator extends ExtendedSubsystem {
   private final LinearSystem elevator;
+
+  private final Alert leftDisconnectedAlert =
+      new Alert("Disconnected elevator motor on the left side.", Alert.AlertType.kError);
+  ;
+  private final Alert rightDisconnectedAlert =
+      new Alert("Disconnected elevator motor on the right side.", Alert.AlertType.kError);
 
   @Getter private ElevatorConstants.Setpoint setpoint = Setpoint.NONE;
   private double setpointRad;
@@ -79,6 +86,8 @@ public class Elevator extends ExtendedSubsystem {
   @Override
   public void periodic() {
     elevator.periodic();
+    leftDisconnectedAlert.set(!elevator.isConnected());
+    rightDisconnectedAlert.set(!elevator.getFollowerConnected()[0]);
     LoggedTracer.record("Elevator/Periodic");
   }
 
@@ -143,6 +152,7 @@ public class Elevator extends ExtendedSubsystem {
               elevator.runVoltage(-ElevatorConstants.HOMING_VOLTAGE);
             },
             () -> {
+              // TODO find stall current and velocity threshold
               if (homingDebouncer.calculate(
                       Math.abs(elevator.getVelocityRadPerSec())
                           <= ElevatorConstants.HOMING_VELOCITY_THRESHOLD)
