@@ -72,9 +72,9 @@ public final class ElevatorConstants {
           .withSlot0(
               new Slot0Configs()
                   // recalc values
-                  .withKP(1.856)
+                  .withKP(2.9)
                   .withKI(0)
-                  .withKD(0.003)
+                  .withKD(0.002)
                   .withKS(0)
                   .withKV(0.118)
                   .withKA(0.000)

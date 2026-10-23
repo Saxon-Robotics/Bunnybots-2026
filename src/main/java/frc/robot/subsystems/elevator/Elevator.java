@@ -88,6 +88,19 @@ public class Elevator extends ExtendedSubsystem {
     elevator.periodic();
     leftDisconnectedAlert.set(!elevator.isConnected());
     rightDisconnectedAlert.set(!elevator.getFollowerConnected()[0]);
+
+    // log motion magic velocity setpoint temporarily for tuning
+    //    if (Constants.currentMode == Constants.Mode.REAL) {
+    //      Logger.recordOutput(
+    //          "Elevator/SetpointRadPerSec",
+    //          Units.rotationsToRadians(
+    //                  ((MotorIOTalonFX) elevator.getIO())
+    //                      .getRawIO()
+    //                      .getClosedLoopReferenceSlope()
+    //                      .getValue())
+    //              / 9);
+    //    }
+
     LoggedTracer.record("Elevator/Periodic");
   }
 

@@ -279,6 +279,22 @@ public class MotorIOTalonFX implements AutoCloseable, RollerIO, PivotIO, LinearS
     }
   }
 
+  /**
+   * Returns the unwrapped motor object for more advanced control. Not recommended for regular use;
+   * may cause unexpected behavior.
+   */
+  public TalonFX getRawIO() {
+    return leader;
+  }
+
+  /**
+   * Returns the unwrapped follower motor object(s) for more advanced control. Not recommended for
+   * regular use; may cause unexpected behavior.
+   */
+  public TalonFX[] getRawFollowerIO() {
+    return followers;
+  }
+
   private void configurePositionControl() {
     if (resetPosition != null) return;
     if (positionRequests == null || positionRequests.length == 0) {
