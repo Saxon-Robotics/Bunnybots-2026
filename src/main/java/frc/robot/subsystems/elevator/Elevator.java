@@ -32,7 +32,7 @@ public class Elevator extends ExtendedSubsystem {
 
   private final Alert leftDisconnectedAlert =
       new Alert("Disconnected elevator motor on the left side.", Alert.AlertType.kError);
-  ;
+
   private final Alert rightDisconnectedAlert =
       new Alert("Disconnected elevator motor on the right side.", Alert.AlertType.kError);
 
