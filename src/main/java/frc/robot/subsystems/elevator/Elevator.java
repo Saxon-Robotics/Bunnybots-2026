@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 import frc.robot.subsystems.elevator.ElevatorConstants.Setpoint;
+import frc.robot.util.LoggedTracer;
 import frc.robot.util.io.motors.MotorIO;
 import frc.robot.util.io.motors.MotorIOTalonFX;
 import frc.robot.util.io.motors.elevator.LinearSystem;
@@ -78,6 +79,7 @@ public class Elevator extends ExtendedSubsystem {
   @Override
   public void periodic() {
     elevator.periodic();
+    LoggedTracer.record("Elevator/Periodic");
   }
 
   private void runSetpoint(Setpoint setpoint) {

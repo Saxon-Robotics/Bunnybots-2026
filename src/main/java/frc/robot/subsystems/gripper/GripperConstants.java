@@ -12,8 +12,8 @@ public final class GripperConstants {
   public static final double VOLTAGE = 7.0;
   public static final double STERILIZATION_RPS = 15;
 
-  public static final double TOP_GEAR_RATIO = 27/16d;
-  public static final double BOTTOM_GEAR_RATIO = 24/16d;
+  public static final double TOP_GEAR_RATIO = 27 / 16d;
+  public static final double BOTTOM_GEAR_RATIO = 24 / 16d;
   public static final double MOI = 0.002;
 
   public static final TalonFXConfiguration MOTOR_CONFIG =

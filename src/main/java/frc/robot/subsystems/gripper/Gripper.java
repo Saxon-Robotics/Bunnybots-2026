@@ -10,6 +10,7 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.util.LoggedTracer;
 import frc.robot.util.io.motors.MotorIO;
 import frc.robot.util.io.motors.MotorIOTalonFX;
 import frc.robot.util.io.motors.roller.Roller;
@@ -71,6 +72,7 @@ public class Gripper extends SubsystemBase {
         beambreakDebounce.calculate(
             beambreakInputs.measurementValid
                 && beambreakInputs.distanceMillimeters <= GripperConstants.BEAMBREAK_THRESHOLD);
+    LoggedTracer.record("Gripper/Periodic");
   }
 
   public Command intake() {
