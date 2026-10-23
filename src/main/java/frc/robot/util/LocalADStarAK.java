@@ -11,9 +11,9 @@ import com.pathplanner.lib.path.GoalEndState;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.path.PathPoint;
+import com.pathplanner.lib.pathfinding.LocalADStar;
 import com.pathplanner.lib.pathfinding.Pathfinder;
 import edu.wpi.first.math.Pair;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -42,16 +42,6 @@ public class LocalADStarAK implements Pathfinder {
     Logger.processInputs("LocalADStarAK", io);
 
     return io.isNewPathAvailable;
-  }
-
-  public Pose2d getGoalPose() {
-    if (!Logger.hasReplaySource()) {
-      io.updateCurrentGoal();
-    }
-
-    Logger.processInputs("LocalADStarAK", io);
-
-    return io.currentGoal;
   }
 
   /**
@@ -92,25 +82,13 @@ public class LocalADStarAK implements Pathfinder {
   /**
    * Set the goal position to pathfind to
    *
-   * @param goalPosition Goal position on the field. If this is within an obstacle it will be moved
+   * @param goalPosition Goal position on the field. f this is within an obstacle it will be moved
    *     to the nearest non-obstacle node.
    */
   @Override
   public void setGoalPosition(Translation2d goalPosition) {
     if (!Logger.hasReplaySource()) {
       io.adStar.setGoalPosition(goalPosition);
-    }
-  }
-
-  /**
-   * Set multiple goal positions to pathfind to
-   *
-   * @param goalPositions Goal poses on the field. If this is within an obstacle it will be moved to
-   *     the nearest non-obstacle node.
-   */
-  public void setGoalPoses(List<Pose2d> goalPositions) {
-    if (!Logger.hasReplaySource()) {
-      io.adStar.setGoalPoses(goalPositions);
     }
   }
 
@@ -131,15 +109,13 @@ public class LocalADStarAK implements Pathfinder {
   }
 
   private static class ADStarIO implements LoggableInputs {
-    public MultiGoalADStar adStar = new MultiGoalADStar();
+    public LocalADStar adStar = new LocalADStar();
     public boolean isNewPathAvailable = false;
-    public Pose2d currentGoal = null;
     public List<PathPoint> currentPathPoints = Collections.emptyList();
 
     @Override
     public void toLog(LogTable table) {
       table.put("IsNewPathAvailable", isNewPathAvailable);
-      table.put("CurrentGoalPose", currentGoal);
 
       double[] pointsLogged = new double[currentPathPoints.size() * 2];
       int idx = 0;
@@ -155,7 +131,6 @@ public class LocalADStarAK implements Pathfinder {
     @Override
     public void fromLog(LogTable table) {
       isNewPathAvailable = table.get("IsNewPathAvailable", false);
-      currentGoal = table.get("CurrentGoalPose", Pose2d.struct, (Pose2d) null);
 
       double[] pointsLogged = table.get("CurrentPathPoints", new double[0]);
 
@@ -170,10 +145,6 @@ public class LocalADStarAK implements Pathfinder {
 
     public void updateIsNewPathAvailable() {
       isNewPathAvailable = adStar.isNewPathAvailable();
-    }
-
-    public void updateCurrentGoal() {
-      currentGoal = adStar.getGoalPose();
     }
 
     public void updateCurrentPathPoints(PathConstraints constraints, GoalEndState goalEndState) {

@@ -96,6 +96,8 @@ public class Trader extends SubsystemBase {
   }
 
   public boolean isFullyLoaded() {
-    return false;
+    // TODO: no sensor for a full trader on the real robot yet
+    return Constants.currentMode == Constants.Mode.SIM
+        && SimulationManager.getInstance().isTraderFull();
   }
 }

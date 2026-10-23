@@ -156,6 +156,10 @@ public class Robot extends LoggedRobot {
       m_autonomousCommand.cancel();
     }
 
+    if (m_robotContainer.isTeleopFullAuto()) {
+      CommandScheduler.getInstance().schedule(m_robotContainer.getFullAutoCommand());
+    }
+
     Elastic.selectTab("Teleoperated");
   }
 

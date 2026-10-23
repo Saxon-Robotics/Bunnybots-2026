@@ -732,15 +732,29 @@
                   "data_type": "string",
                   "show_submit_button": false
                 }
+              },
+              {
+                "title": "Full Auto Strategy",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/NetworkInputs/SmartDashboard/Full Auto Strategy",
+                  "period": 0.06,
+                  "data_type": "string",
+                  "show_submit_button": false
+                }
               }
             ]
           }
         ],
         "containers": [
           {
-            "title": "Control Profile",
+            "title": "STEP 1 - Control Profile",
             "x": 896.0,
-            "y": 128.0,
+            "y": 0.0,
             "width": 768.0,
             "height": 128.0,
             "type": "Split Button Chooser",
@@ -773,7 +787,7 @@
           {
             "title": "FMSInfo",
             "x": 896.0,
-            "y": 0.0,
+            "y": 384.0,
             "width": 768.0,
             "height": 128.0,
             "type": "FMSInfo",
@@ -846,11 +860,11 @@
             }
           },
           {
-            "title": "Auto Chooser",
+            "title": "STEP 2 - Auto Chooser",
             "x": 896.0,
-            "y": 256.0,
+            "y": 128.0,
             "width": 768.0,
-            "height": 256.0,
+            "height": 128.0,
             "type": "ComboBox Chooser",
             "properties": {
               "topic": "/SmartDashboard/Auto Chooser",
@@ -873,6 +887,32 @@
               "false_color": 4294198070,
               "true_icon": "None",
               "false_icon": "None"
+            }
+          },
+          {
+            "title": "Teleop Full Auto",
+            "x": 1536.0,
+            "y": 256.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Toggle Switch",
+            "properties": {
+              "topic": "/AdvantageKit/NetworkInputs/SelfDriving/StartTeleop",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "STEP 3 - Full Auto Strategy",
+            "x": 896.0,
+            "y": 256.0,
+            "width": 640.0,
+            "height": 128.0,
+            "type": "ComboBox Chooser",
+            "properties": {
+              "topic": "/SmartDashboard/Full Auto Strategy",
+              "period": 0.06,
+              "sort_options": false
             }
           }
         ]
