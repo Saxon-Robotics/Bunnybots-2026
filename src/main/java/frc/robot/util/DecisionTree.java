@@ -47,11 +47,12 @@ public class DecisionTree {
     }
 
     // Pass registers into the evaluation loop
-    public Command evaluate() {
+    public Command evaluate(List<String> traversalPath) {
       if (this.isLeaf()) {
         Command command = commandRegistry.get(this.leafCommandId);
         if (command == null)
           throw new IllegalStateException("Unknown command ID: " + leafCommandId);
+        traversalPath.add("[Command] " + leafCommandId);
         return command;
       }
 
@@ -59,9 +60,11 @@ public class DecisionTree {
       if (supplier == null) throw new IllegalStateException("Unknown condition ID: " + conditionId);
 
       if (supplier.getAsBoolean()) {
-        return yesBranch.evaluate();
+        traversalPath.add("[Condition] " + conditionId + ": " + true);
+        return yesBranch.evaluate(traversalPath);
       } else {
-        return noBranch.evaluate();
+        traversalPath.add("[Condition] " + conditionId + ": " + false);
+        return noBranch.evaluate(traversalPath);
       }
     }
   }
