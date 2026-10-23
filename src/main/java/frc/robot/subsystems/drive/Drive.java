@@ -58,6 +58,7 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.lib.BLine.FlippingUtil;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.util.LocalADStarAK;
+import frc.robot.util.LoggedTracer;
 import frc.robot.util.RobotUtil;
 import frc.robot.util.subsystems.ExtendedSubsystem;
 import java.util.concurrent.locks.Lock;
@@ -241,8 +242,10 @@ public class Drive extends ExtendedSubsystem implements Vision.VisionConsumer {
     odometryLock.lock(); // Prevents odometry updates while reading data
     gyroIO.updateInputs(gyroInputs);
     Logger.processInputs("Drive/Gyro", gyroInputs);
-    for (var module : modules) {
-      module.periodic();
+    LoggedTracer.record("Drive/Gyro/Update");
+    for (int i = 0; i < modules.length; i++) {
+      modules[i].periodic();
+      LoggedTracer.record("Drive/Module" + i + "/Periodic");
     }
     odometryLock.unlock();
 
@@ -283,6 +286,8 @@ public class Drive extends ExtendedSubsystem implements Vision.VisionConsumer {
 
     // Update robot pose in Field2d
     field.setRobotPose(getPose());
+
+    LoggedTracer.record("Drive/Periodic");
   }
 
   /**

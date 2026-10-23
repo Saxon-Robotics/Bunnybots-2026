@@ -76,7 +76,6 @@ public final class PhoenixUtil {
         System.arraycopy(signals, 0, newSignals, rioSignals.length, signals.length);
         rioSignals = newSignals;
       }
-      default -> {}
     }
   }
 
@@ -91,6 +90,7 @@ public final class PhoenixUtil {
     if (rioSignals.length > 0) {
       BaseStatusSignal.refreshAll(rioSignals);
     }
+    LoggedTracer.record("Phoenix/RefreshSignals");
   }
 
   public static class TalonFXMotorControllerSim implements SimulatedMotorController {

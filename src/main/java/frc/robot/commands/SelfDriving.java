@@ -14,8 +14,12 @@ import frc.robot.subsystems.trader.Trader;
 import frc.robot.util.AutoAlign;
 import frc.robot.util.AutoAlign.Target;
 import frc.robot.util.DecisionTree;
+import frc.robot.util.LoggedTracer;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Supplier;
+import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class SelfDriving {
@@ -102,7 +106,16 @@ public class SelfDriving {
   }
 
   public Command routine() {
-    return Commands.deferredProxy(() -> tree.evaluate()).repeatedly();
+    return Commands.deferredProxy(
+            () -> {
+              List<String> traversalPath = new ArrayList<>();
+              Command next = tree.evaluate(traversalPath);
+              Logger.recordOutput(
+                  "SelfDriving/TraversalPath", traversalPath.toArray(new String[0]));
+              LoggedTracer.record("SelfDriving/Decision");
+              return next;
+            })
+        .repeatedly();
   }
 
   public void setUpChooser(LoggedDashboardChooser<String> chooser) {
