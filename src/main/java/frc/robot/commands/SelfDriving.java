@@ -75,20 +75,28 @@ public class SelfDriving {
         .andThen(DriveCommands.alignToTarget(drive, AutoAlign::getLastAPTarget));
   }
 
-  private Command driveAndAlign(Drive drive, Supplier<Pose2d> target) {
+  private Command driveAndAlign(Drive drive, Target target, Supplier<Pose2d> targetPose) {
     return drive
         .defer(
             () ->
                 drive
-                    .pathfindToPose(target.get())
-                    .andThen(() -> AutoAlign.setTargetPose(target.get(), drive.getPose())))
+                    .pathfindToPose(targetPose.get())
+                    .andThen(
+                        () -> AutoAlign.setTargetPose(target, targetPose.get(), drive.getPose())))
         .andThen(DriveCommands.alignToTarget(drive, AutoAlign::getLastAPTarget));
   }
 
   private Command scorePantry(
       int level, ObjectiveTracker tracker, Drive drive, Elevator elevator, Gripper gripper) {
-    return driveAndAlign(drive, () -> tracker.getPantryPose(level, drive.getPose()))
-        .andThen(elevator.l1())
+    Command raiseElevator =
+        switch (level) {
+          case 0 -> elevator.l1();
+          case 1 -> elevator.l2();
+          case 2 -> elevator.l3();
+          default -> throw new IllegalArgumentException("Invalid pantry level: " + level);
+        };
+    return driveAndAlign(drive, PANTRY, () -> tracker.getPantryPose(level, drive.getPose()))
+        .andThen(raiseElevator)
         .andThen(gripper.eject().until(() -> !gripper.isLoaded()))
         .andThen(elevator.stow());
   }

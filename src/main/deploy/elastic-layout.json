@@ -897,7 +897,7 @@
             "height": 128.0,
             "type": "Toggle Switch",
             "properties": {
-              "topic": "/AdvantageKit/NetworkInputs/SelfDriving/StartTeleop",
+              "topic": "/SmartDashboard/SelfDriving/StartTeleop",
               "period": 0.06,
               "data_type": "boolean"
             }

@@ -8,7 +8,7 @@ import lombok.Getter;
 import org.littletonrobotics.junction.Logger;
 
 public class AutoAlign {
-  private static final double BUMPER_THICKNESS = 4;
+  private static final double BUMPER_THICKNESS = 5.5;
   private static final Translation2d ROBOT_OFFSET =
       new Translation2d(
           Units.inchesToMeters(29.5 + BUMPER_THICKNESS) / 2.0,
@@ -72,6 +72,11 @@ public class AutoAlign {
     Logger.recordOutput("AutoAlign/Target", target);
     Logger.recordOutput("AutoAlign/TargetPose", lastTargetPose);
     return lastTargetPose;
+  }
+
+  public static void setTargetPose(Target target, Pose2d targetPose, Pose2d robotPose) {
+    lastTarget = target;
+    setTargetPose(targetPose, robotPose);
   }
 
   public static void setTargetPose(Pose2d target, Pose2d robotPose) {

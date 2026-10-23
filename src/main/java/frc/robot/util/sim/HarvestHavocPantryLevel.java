@@ -14,10 +14,13 @@ import org.ironmaple.simulation.Goal;
 public class HarvestHavocPantryLevel extends Goal {
   private static final Angle ANGLE_TOLERANCE = Degrees.of(10);
 
+  public static final double PANTRY_HALF_WIDTH = 1.194;
+
   public static final Translation2d bluePantry =
-      new Translation2d(-7.928 - 1.194, 4.03).plus(Constants.FieldConstants.ORIGIN);
+      new Translation2d(-7.928 - PANTRY_HALF_WIDTH, 4.03).plus(Constants.FieldConstants.ORIGIN);
   public static final Translation2d redPantry =
-      new Translation2d(5.54 + 1.194, 4.03).plus(Constants.FieldConstants.ORIGIN);
+      new Translation2d(5.54 + PANTRY_HALF_WIDTH, 4.03).plus(Constants.FieldConstants.ORIGIN);
+
   public static final Translation3d[] heights =
       new Translation3d[] {
         new Translation3d(0, 0, 0.830), // L1
@@ -40,7 +43,7 @@ public class HarvestHavocPantryLevel extends Goal {
 
   private static final int MIN_LEVEL = 0;
   private static final int MAX_LEVEL = 2;
-  public static final double CARROT_SIZE = 0.4572;
+  public static final double CARROT_SIZE = 0.45;
 
   public final int level;
 
@@ -113,14 +116,19 @@ public class HarvestHavocPantryLevel extends Goal {
               return false;
             }
           }
-          Pose3d carrotInPantry =
+          // check spacing against where the piece really landed, the shift is only for drawing
+          occupied.add(
+              new Pose3d(
+                  position.getX(),
+                  this.position.getY(),
+                  this.position.getZ(),
+                  new Rotation3d(Rotation2d.kZero)));
+          pieces.add(
               new Pose3d(
                   position.getX() + CARROT_SIZE / 4,
                   this.position.getY(),
                   this.position.getZ(),
-                  new Rotation3d(Rotation2d.kZero));
-          occupied.add(carrotInPantry);
-          pieces.add(carrotInPantry);
+                  new Rotation3d(Rotation2d.kZero)));
 
           return true;
         });

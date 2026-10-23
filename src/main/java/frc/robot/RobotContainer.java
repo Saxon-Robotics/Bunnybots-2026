@@ -207,7 +207,7 @@ public class RobotContainer {
         new LoggedDashboardChooser<>("Full Auto Strategy");
     selfDriving.setUpChooser(strategyChooser);
     fullAuto = selfDriving.routine();
-    isTeleopFullAuto = new LoggedNetworkBoolean("SelfDriving/StartTeleop");
+    isTeleopFullAuto = new LoggedNetworkBoolean("/SmartDashboard/SelfDriving/StartTeleop", false);
 
     // Have the autoChooser pull in all PathPlanner autos as options
     autoChooser =
@@ -391,7 +391,7 @@ public class RobotContainer {
       keyboard.button(12).onTrue(ovenOrRampAlign).whileTrue(autoAlign);
       keyboard.button(13).and(isPossessing).whileTrue(pantryAlign);
       keyboard
-          .button(14)
+          .button(13)
           .and(new Trigger(isPossessing).negate())
           .onTrue(depotAlign)
           .whileTrue(autoAlign);
