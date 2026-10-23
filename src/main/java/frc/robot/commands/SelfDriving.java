@@ -15,6 +15,7 @@ import frc.robot.util.AutoAlign;
 import frc.robot.util.AutoAlign.Target;
 import frc.robot.util.DecisionTree;
 import frc.robot.util.LoggedTracer;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -85,8 +86,7 @@ public class SelfDriving {
             () ->
                 drive
                     .pathfindToPose(targetPose.get())
-                    .andThen(
-                        () -> AutoAlign.setTargetPose(target, targetPose.get(), drive.getPose())))
+                    .andThen(() -> AutoAlign.setTargetPose(target, targetPose.get())))
         .andThen(DriveCommands.alignToTarget(drive, AutoAlign::getLastAPTarget));
   }
 
@@ -118,24 +118,25 @@ public class SelfDriving {
         .repeatedly();
   }
 
-  public void setUpChooser(LoggedDashboardChooser<String> chooser) {
+  public void setUpChooser(LoggedDashboardChooser<File> chooser) {
     chooser.addDefaultOption("None", null);
-    for (String name : DecisionTree.getAllStrategyNames()) {
-      chooser.addOption(name.substring(0, name.lastIndexOf(".")), name);
+    for (File file : DecisionTree.getAllStrategyFiles()) {
+      String fileName = file.getName();
+      chooser.addOption(fileName.substring(0, fileName.lastIndexOf(".")), file);
     }
     chooser.onChange(this::changeStrategy);
     changeStrategy(chooser.get());
   }
 
-  public void changeStrategy(String name) {
-    if (name == null) {
+  public void changeStrategy(File file) {
+    if (file == null) {
       tree = DecisionTree.EMPTY;
       return;
     }
     try {
-      tree = DecisionTree.fromJson(name);
+      tree = DecisionTree.fromJson(file);
     } catch (IOException e) {
-      System.err.println("Strategy not found: " + name);
+      System.err.println("Strategy not found: " + file.getName());
       e.printStackTrace();
       tree = DecisionTree.EMPTY;
     }

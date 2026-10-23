@@ -12,10 +12,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ConditionalCommand;
+import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -49,6 +46,7 @@ import frc.robot.util.io.GuitarHeroController;
 import frc.robot.util.sim.Arena2026Bunnybots;
 import frc.robot.util.sim.HarvestHavocCarrotOnFly;
 import frc.robot.util.sim.SimulationManager;
+import java.io.File;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import org.ironmaple.simulation.SimulatedArena;
@@ -203,7 +201,7 @@ public class RobotContainer {
             elevator,
             gripper,
             trader);
-    LoggedDashboardChooser<String> strategyChooser =
+    LoggedDashboardChooser<File> strategyChooser =
         new LoggedDashboardChooser<>("Full Auto Strategy");
     selfDriving.setUpChooser(strategyChooser);
     fullAuto = selfDriving.routine();
