@@ -42,8 +42,8 @@ public class SelfDriving {
             .withName("Collect Ramp");
     Command traderCollectDepot =
         driveAndAlign(drive, DEPOT)
-            .andThen(Commands.waitUntil(trader::isFullyLoaded))
-            .withName("Collect Depot - Trader"); // add intake until
+            .andThen(Commands.waitUntil(trader::isFull))
+            .withName("Collect Depot - Trader");
     Command elevatorCollectDepot =
         driveAndAlign(drive, DEPOT)
             .andThen(gripper.intake().until(gripper::isLoaded))
@@ -65,7 +65,7 @@ public class SelfDriving {
     DecisionTree.registerCondition(
         "gripperHasCake", () -> tracker.getGripperHeld() == GamePiece.CARROT_CAKE);
     DecisionTree.registerCondition("traderLoaded", trader::isLoaded);
-    DecisionTree.registerCondition("traderFull", trader::isFullyLoaded);
+    DecisionTree.registerCondition("traderFull", trader::isFull);
     DecisionTree.registerCondition("cakeReady", tracker::isCakeReady);
     DecisionTree.registerCondition("stockedUp", tracker::isStockedUp);
     DecisionTree.registerCondition("pantryL1Open", () -> tracker.hasPantrySlot(0));

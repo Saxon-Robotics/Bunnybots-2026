@@ -38,11 +38,16 @@ public class Trader extends SubsystemBase {
       new Alert("Trader roller motor disconnected.", Alert.AlertType.kError);
   private final Alert beambreakDisconnectedAlert =
       new Alert("Trader LaserCAN disconnected.", Alert.AlertType.kError);
-  private final Debouncer beambreakDebounce = new Debouncer(0.5, Debouncer.DebounceType.kBoth);
+  private final Debouncer isLoadedDebounce = new Debouncer(0.1, Debouncer.DebounceType.kBoth);
+  private final Debouncer isFullDebounce = new Debouncer(0.1, Debouncer.DebounceType.kBoth);
 
   @Getter
   @AutoLogOutput(key = "Trader/HasGamePiece")
   private boolean isLoaded;
+
+  @Getter
+  @AutoLogOutput(key = "Trader/IsFull")
+  private boolean isFull;
 
   public Trader() {
     RollerIO leftIO =
@@ -71,9 +76,17 @@ public class Trader extends SubsystemBase {
               LaserCanInterface.RangingMode.SHORT,
               LaserCanInterface.TimingBudget.TIMING_BUDGET_20MS,
               new LaserCanInterface.RegionOfInterest(8, 8, 4, 4));
-          case SIM -> LaserCanIO.beambreakSim(
-              () -> SimulationManager.getInstance().isTraderLoaded(),
-              TraderConstants.BEAMBREAK_THRESHOLD);
+          case SIM -> inputs -> {
+            inputs.connected = true;
+            inputs.measurementValid = true;
+            if (SimulationManager.getInstance().isTraderFull()) {
+              inputs.distanceMillimeters = TraderConstants.FULL_THRESHOLD_MM - 1;
+            } else if (SimulationManager.getInstance().isTraderLoaded()) {
+              inputs.distanceMillimeters = TraderConstants.LOADED_THRESHOLD_MM - 1;
+            } else {
+              inputs.distanceMillimeters = TraderConstants.LOADED_THRESHOLD_MM + 1;
+            }
+          };
           case REPLAY -> inputs -> {};
         };
   }
@@ -83,13 +96,17 @@ public class Trader extends SubsystemBase {
     roller.periodic();
     beambreak.updateInputs(beambreakInputs);
     Logger.processInputs("Trader/DistanceSensor", beambreakInputs);
-    isLoaded =
-        beambreakDebounce.calculate(
-            beambreakInputs.measurementValid
-                && beambreakInputs.distanceMillimeters <= TraderConstants.BEAMBREAK_THRESHOLD);
     beltsDisconnectedAlert.set(!roller.isConnected());
     rollerDisconnectedAlert.set(!roller.getFollowerConnected()[0]);
     beambreakDisconnectedAlert.set(!beambreakInputs.connected);
+    isLoaded =
+        isLoadedDebounce.calculate(
+            beambreakInputs.measurementValid
+                && beambreakInputs.distanceMillimeters <= TraderConstants.LOADED_THRESHOLD_MM);
+    isFull =
+        isFullDebounce.calculate(
+            beambreakInputs.measurementValid
+                && beambreakInputs.distanceMillimeters <= TraderConstants.FULL_THRESHOLD_MM);
     LoggedTracer.record("Trader/Periodic");
   }
 
@@ -103,11 +120,5 @@ public class Trader extends SubsystemBase {
 
   public double getVelocityRPS() {
     return roller.getVelocityRPS();
-  }
-
-  public boolean isFullyLoaded() {
-    // TODO: no sensor for a full trader on the real robot yet
-    return Constants.currentMode == Constants.Mode.SIM
-        && SimulationManager.getInstance().isTraderFull();
   }
 }

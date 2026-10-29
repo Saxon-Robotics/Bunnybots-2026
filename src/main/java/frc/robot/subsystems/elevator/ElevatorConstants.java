@@ -24,7 +24,7 @@ public final class ElevatorConstants {
 
   public static final double MAX_MANUAL_VOLTAGE = 2.5;
   public static final double HOMING_VOLTAGE = 1.0;
-  public static final double HOMING_VELOCITY_THRESHOLD = 0.1; // placeholder, find this
+  public static final double HOMING_VELOCITY_THRESHOLD = 0.1;
 
   // physical constraints
   public static final double GEAR_RATIO = 9;
@@ -71,7 +71,6 @@ public final class ElevatorConstants {
                   .withSensorToMechanismRatio(GEAR_RATIO))
           .withSlot0(
               new Slot0Configs()
-                  // recalc values
                   .withKP(2.9)
                   .withKI(0)
                   .withKD(0.002)

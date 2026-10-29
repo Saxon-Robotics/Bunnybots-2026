@@ -17,23 +17,17 @@ import frc.robot.util.io.motors.MotorIOTalonFX;
 import frc.robot.util.io.motors.roller.Roller;
 import frc.robot.util.io.motors.roller.RollerIO;
 import frc.robot.util.io.motors.roller.RollerIOSim;
-import frc.robot.util.io.sensors.lasercan.LaserCanIO;
-import frc.robot.util.io.sensors.lasercan.LaserCanIOInputsAutoLogged;
-import frc.robot.util.sim.SimulationManager;
 import lombok.Getter;
 import org.littletonrobotics.junction.AutoLogOutput;
-import org.littletonrobotics.junction.Logger;
 
 public class Gripper extends SubsystemBase {
   private final Roller roller;
-  private final LaserCanIO beambreak;
-  private final LaserCanIOInputsAutoLogged beambreakInputs = new LaserCanIOInputsAutoLogged();
 
   private final Alert topDisconnectedAlert =
       new Alert("Top gripper motor disconnected.", Alert.AlertType.kError);
   private final Alert bottomDisconnectedAlert =
       new Alert("Bottom gripper motor disconnected.", Alert.AlertType.kError);
-  private final Debouncer beambreakDebounce = new Debouncer(0.5, Debouncer.DebounceType.kBoth);
+  private final Debouncer loadedDebounce = new Debouncer(0.1, Debouncer.DebounceType.kBoth);
 
   @Getter
   @AutoLogOutput(key = "Gripper/HasGamePiece")
@@ -57,37 +51,36 @@ public class Gripper extends SubsystemBase {
           case REPLAY -> new RollerIO() {};
         };
     roller = new Roller("Gripper", io, () -> true);
-
-    beambreak =
-        switch (Constants.currentMode) {
-          case REAL -> ignored -> {};
-          case SIM -> LaserCanIO.beambreakSim(
-              () -> SimulationManager.getInstance().isGripperLoaded(),
-              GripperConstants.BEAMBREAK_THRESHOLD);
-          case REPLAY -> inputs -> {};
-        };
   }
 
   @Override
   public void periodic() {
     roller.periodic();
-    beambreak.updateInputs(beambreakInputs);
-    Logger.processInputs("Gripper/DistanceSensor", beambreakInputs);
-    isLoaded =
-        beambreakDebounce.calculate(
-            beambreakInputs.measurementValid
-                && beambreakInputs.distanceMillimeters <= GripperConstants.BEAMBREAK_THRESHOLD);
     topDisconnectedAlert.set(!roller.isConnected());
     bottomDisconnectedAlert.set(!roller.getFollowerConnected()[0]);
     LoggedTracer.record("Gripper/Periodic");
   }
 
   public Command intake() {
-    return startEnd(() -> roller.runVelocity(-GripperConstants.RPS), roller::stop);
+    return startRun(
+            () -> roller.runVelocity(-GripperConstants.RPS),
+            () -> {
+              if (loadedDebounce.calculate(
+                  roller.getVelocityRPS() < GripperConstants.VELOCITY_THRESHOLD
+                      && roller.getStatorCurrentAmps() > GripperConstants.STATOR_THRESHOLD)) {
+                isLoaded = true;
+              }
+            })
+        .finallyDo(roller::stop);
   }
 
   public Command eject() {
-    return startEnd(() -> roller.runVoltage(GripperConstants.VOLTAGE), roller::stop);
+    return startEnd(
+        () -> roller.runVoltage(GripperConstants.VOLTAGE),
+        () -> {
+          roller.stop();
+          isLoaded = false;
+        });
   }
 
   public double getVelocityRPS() {

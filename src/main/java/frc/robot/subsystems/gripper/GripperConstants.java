@@ -10,10 +10,9 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 public final class GripperConstants {
   public static final double RPS = 50;
   public static final double VOLTAGE = 7.0;
-  public static final double STERILIZATION_RPS = 15;
 
-  public static final double TOP_GEAR_RATIO = 27 / 16d;
-  public static final double BOTTOM_GEAR_RATIO = 24 / 16d;
+  public static final double TOP_GEAR_RATIO = 27.0 / 16.0;
+  public static final double BOTTOM_GEAR_RATIO = 24.0 / 16.0;
   public static final double MOI = 0.002;
 
   public static final TalonFXConfiguration MOTOR_CONFIG =
@@ -31,5 +30,7 @@ public final class GripperConstants {
           .withSlot0(
               new Slot0Configs().withKP(0.1).withKI(0).withKD(0).withKS(0).withKV(0.12).withKA(0));
 
-  public static final double BEAMBREAK_THRESHOLD = 75; // mm
+  // game piece detection
+  public static final double VELOCITY_THRESHOLD = 0.5; // placeholder
+  public static final double STATOR_THRESHOLD = 10; // placeholder
 }
