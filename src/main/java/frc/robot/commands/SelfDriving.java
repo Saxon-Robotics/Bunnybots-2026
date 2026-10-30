@@ -15,6 +15,7 @@ import frc.robot.util.AutoAlign;
 import frc.robot.util.AutoAlign.Target;
 import frc.robot.util.DecisionTree;
 import frc.robot.util.LoggedTracer;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -79,20 +80,27 @@ public class SelfDriving {
         .andThen(DriveCommands.alignToTarget(drive, AutoAlign::getLastAPTarget));
   }
 
-  private Command driveAndAlign(Drive drive, Supplier<Pose2d> target) {
+  private Command driveAndAlign(Drive drive, Target target, Supplier<Pose2d> targetPose) {
     return drive
         .defer(
             () ->
                 drive
-                    .pathfindToPose(target.get())
-                    .andThen(() -> AutoAlign.setTargetPose(target.get(), drive.getPose())))
+                    .pathfindToPose(targetPose.get())
+                    .andThen(() -> AutoAlign.setTargetPose(target, targetPose.get())))
         .andThen(DriveCommands.alignToTarget(drive, AutoAlign::getLastAPTarget));
   }
 
   private Command scorePantry(
       int level, ObjectiveTracker tracker, Drive drive, Elevator elevator, Gripper gripper) {
-    return driveAndAlign(drive, () -> tracker.getPantryPose(level, drive.getPose()))
-        .andThen(elevator.l1())
+    Command raiseElevator =
+        switch (level) {
+          case 0 -> elevator.l1();
+          case 1 -> elevator.l2();
+          case 2 -> elevator.l3();
+          default -> throw new IllegalArgumentException("Invalid pantry level: " + level);
+        };
+    return driveAndAlign(drive, PANTRY, () -> tracker.getPantryPose(level, drive.getPose()))
+        .andThen(raiseElevator)
         .andThen(gripper.eject().until(() -> !gripper.isLoaded()))
         .andThen(elevator.stow());
   }
@@ -110,24 +118,25 @@ public class SelfDriving {
         .repeatedly();
   }
 
-  public void setUpChooser(LoggedDashboardChooser<String> chooser) {
+  public void setUpChooser(LoggedDashboardChooser<File> chooser) {
     chooser.addDefaultOption("None", null);
-    for (String name : DecisionTree.getAllStrategyNames()) {
-      chooser.addOption(name.substring(0, name.lastIndexOf(".")), name);
+    for (File file : DecisionTree.getAllStrategyFiles()) {
+      String fileName = file.getName();
+      chooser.addOption(fileName.substring(0, fileName.lastIndexOf(".")), file);
     }
     chooser.onChange(this::changeStrategy);
     changeStrategy(chooser.get());
   }
 
-  public void changeStrategy(String name) {
-    if (name == null) {
+  public void changeStrategy(File file) {
+    if (file == null) {
       tree = DecisionTree.EMPTY;
       return;
     }
     try {
-      tree = DecisionTree.fromJson(name);
+      tree = DecisionTree.fromJson(file);
     } catch (IOException e) {
-      System.err.println("Strategy not found: " + name);
+      System.err.println("Strategy not found: " + file.getName());
       e.printStackTrace();
       tree = DecisionTree.EMPTY;
     }

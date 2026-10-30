@@ -29,7 +29,6 @@ public class DecisionTree {
     @Getter private final Node noBranch;
     @Getter private final String leafCommandId;
 
-    // Unified Constructor for Jackson Data-Binding
     @JsonCreator
     public Node(
         @JsonProperty("conditionId") String conditionId,
@@ -46,7 +45,6 @@ public class DecisionTree {
       return leafCommandId != null;
     }
 
-    // Pass registers into the evaluation loop
     public Command evaluate(List<String> traversalPath) {
       if (this.isLeaf()) {
         Command command = commandRegistry.get(this.leafCommandId);
@@ -81,35 +79,39 @@ public class DecisionTree {
     commandRegistry.put("none", Commands.none());
   }
 
-  /** Loads a strategy file (e.g. "Example.json") from deploy/strategies. */
-  public static Node fromJson(String fileName) throws IOException {
-    return mapper.readValue(new File(STRATEGY_DIRECTORY, fileName), Node.class);
+  /** Builds a decision tree from a strategy file (e.g. "Example.json"). */
+  public static Node fromJson(File file) throws IOException {
+    return mapper.readValue(file, Node.class);
   }
 
-  public static List<String> getAllStrategyNames() {
-    File[] autoFiles = STRATEGY_DIRECTORY.listFiles();
-    if (autoFiles == null) {
+  /** Lists all strategy files in the strategy folder */
+  public static List<File> getAllStrategyFiles() {
+    File[] stratFiles = STRATEGY_DIRECTORY.listFiles();
+    if (stratFiles == null) {
       return new ArrayList<>();
     }
-    return Stream.of(autoFiles)
+    return Stream.of(stratFiles)
         .filter(file -> !file.isDirectory())
-        .map(File::getName)
-        .filter(name -> name.endsWith(".json"))
+        .filter(file -> file.getName().endsWith(".json"))
         .toList();
   }
 
+  /** Assigns a {@link BooleanSupplier} condition to a {@link String} identifier. */
   public static void registerCondition(String name, BooleanSupplier condition) {
     conditionRegistry.put(name, condition);
   }
 
+  /** Assigns a {@link Command} to a {@link String} identifier. */
   public static void registerCommand(String name, Command command) {
     commandRegistry.put(name, command);
   }
 
+  /** Retrieves a {@link BooleanSupplier} condition from a {@link String} identifier. */
   public static BooleanSupplier getCondition(String id) {
     return conditionRegistry.get(id);
   }
 
+  /** Retrieves a {@link Command} from a {@link String} identifier. */
   public static Command getCommand(String id) {
     return commandRegistry.get(id);
   }

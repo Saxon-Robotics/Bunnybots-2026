@@ -39,7 +39,7 @@ public final class ElevatorConstants {
   public enum Setpoint {
     NONE(-1, Meters.of(0)),
     STOWED(-1, Meters.of(0)),
-    RAMP(-1, Inches.of(9)),
+    RAMP(-1, Inches.of(4)),
     L1(0, Inches.of(21)),
     L2(1, Inches.of(33)),
     L3(2, Inches.of(48));

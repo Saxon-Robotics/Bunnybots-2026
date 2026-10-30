@@ -8,7 +8,7 @@ import lombok.Getter;
 import org.littletonrobotics.junction.Logger;
 
 public class AutoAlign {
-  private static final double BUMPER_THICKNESS = 4;
+  private static final double BUMPER_THICKNESS = 5.5;
   private static final Translation2d ROBOT_OFFSET =
       new Translation2d(
           Units.inchesToMeters(29.5 + BUMPER_THICKNESS) / 2.0,
@@ -63,6 +63,7 @@ public class AutoAlign {
   @Getter private static Pose2d lastTargetPose = Pose2d.kZero;
   @Getter private static APTarget lastAPTarget = new APTarget(lastTargetPose);
 
+  /** Set and retrieve the goal of an {@link AutoAlign.Target}. */
   public static Pose2d setTarget(Target target, Pose2d robotPose) {
     boolean isRedAlliance = RobotUtil.isRedAlliance();
     target = getTarget(target, robotPose, isRedAlliance);
@@ -74,10 +75,15 @@ public class AutoAlign {
     return lastTargetPose;
   }
 
-  public static void setTargetPose(Pose2d target, Pose2d robotPose) {
-    lastTargetPose = target;
+  /**
+   * Set a specific target pose and relate it to a target enum for logging. If the pose has no
+   * correlation, pass in {@link Target#NONE}.
+   */
+  public static void setTargetPose(Target target, Pose2d targetPose) {
+    lastTarget = target;
+    lastTargetPose = targetPose;
     lastAPTarget = new APTarget(lastTargetPose);
-    Logger.recordOutput("AutoAlign/Target", target);
+    Logger.recordOutput("AutoAlign/Target", lastTarget);
     Logger.recordOutput("AutoAlign/TargetPose", lastTargetPose);
   }
 
