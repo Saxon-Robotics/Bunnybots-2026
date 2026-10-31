@@ -22,7 +22,7 @@ public final class ElevatorConstants {
 
   public static final double SETPOINT_TOLERANCE = 1.0; // rad
 
-  public static final double MAX_MANUAL_VOLTAGE = 2.5;
+  public static final double MAX_MANUAL_VELOCITY = 5;
   public static final double HOMING_VOLTAGE = 1.0;
   public static final double HOMING_VELOCITY_THRESHOLD = 0.1;
 

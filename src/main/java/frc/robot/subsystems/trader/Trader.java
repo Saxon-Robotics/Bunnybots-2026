@@ -7,7 +7,6 @@ package frc.robot.subsystems.trader;
 import au.grapplerobotics.interfaces.LaserCanInterface;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
-import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -38,16 +37,8 @@ public class Trader extends SubsystemBase {
       new Alert("Trader roller motor disconnected.", Alert.AlertType.kError);
   private final Alert beambreakDisconnectedAlert =
       new Alert("Trader LaserCAN disconnected.", Alert.AlertType.kError);
-  private final Debouncer isLoadedDebounce = new Debouncer(0.1, Debouncer.DebounceType.kBoth);
-  private final Debouncer isFullDebounce = new Debouncer(0.1, Debouncer.DebounceType.kBoth);
 
-  @Getter
-  @AutoLogOutput(key = "Trader/HasGamePiece")
-  private boolean isLoaded;
-
-  @Getter
-  @AutoLogOutput(key = "Trader/IsFull")
-  private boolean isFull;
+  @Getter @AutoLogOutput private int numGamePieces;
 
   public Trader() {
     RollerIO leftIO =
@@ -79,13 +70,14 @@ public class Trader extends SubsystemBase {
           case SIM -> inputs -> {
             inputs.connected = true;
             inputs.measurementValid = true;
-            if (SimulationManager.getInstance().isTraderFull()) {
-              inputs.distanceMillimeters = TraderConstants.FULL_THRESHOLD_MM - 1;
-            } else if (SimulationManager.getInstance().isTraderLoaded()) {
-              inputs.distanceMillimeters = TraderConstants.LOADED_THRESHOLD_MM - 1;
-            } else {
-              inputs.distanceMillimeters = TraderConstants.LOADED_THRESHOLD_MM + 1;
-            }
+            int numCarrots = SimulationManager.getInstance().getTraderCount();
+            inputs.distanceMillimeters =
+                switch (numCarrots) {
+                  case 3 -> TraderConstants.LOADED_THRESHOLD_MM[0] - 1.0;
+                  case 2 -> TraderConstants.LOADED_THRESHOLD_MM[1] - 1.0;
+                  case 1 -> TraderConstants.LOADED_THRESHOLD_MM[2] - 1.0;
+                  default -> 500.0;
+                };
           };
           case REPLAY -> inputs -> {};
         };
@@ -99,14 +91,15 @@ public class Trader extends SubsystemBase {
     beltsDisconnectedAlert.set(!roller.isConnected());
     rollerDisconnectedAlert.set(!roller.getFollowerConnected()[0]);
     beambreakDisconnectedAlert.set(!beambreakInputs.connected);
-    isLoaded =
-        isLoadedDebounce.calculate(
-            beambreakInputs.measurementValid
-                && beambreakInputs.distanceMillimeters <= TraderConstants.LOADED_THRESHOLD_MM);
-    isFull =
-        isFullDebounce.calculate(
-            beambreakInputs.measurementValid
-                && beambreakInputs.distanceMillimeters <= TraderConstants.FULL_THRESHOLD_MM);
+    if (beambreakInputs.distanceMillimeters < TraderConstants.LOADED_THRESHOLD_MM[0]) {
+      numGamePieces = 3;
+    } else if (beambreakInputs.distanceMillimeters < TraderConstants.LOADED_THRESHOLD_MM[1]) {
+      numGamePieces = 2;
+    } else if (beambreakInputs.distanceMillimeters < TraderConstants.LOADED_THRESHOLD_MM[2]) {
+      numGamePieces = 1;
+    } else {
+      numGamePieces = 0;
+    }
     LoggedTracer.record("Trader/Periodic");
   }
 
@@ -120,5 +113,13 @@ public class Trader extends SubsystemBase {
 
   public double getVelocityRPS() {
     return roller.getVelocityRPS();
+  }
+
+  public boolean isLoaded() {
+    return numGamePieces > 0;
+  }
+
+  public boolean isFull() {
+    return numGamePieces == 3;
   }
 }

@@ -296,6 +296,9 @@ public class RobotContainer {
         Commands.runOnce(() -> AutoAlign.setTarget(AutoAlign.Target.DEPOT, drive.getPose()));
     Command tableAlign =
         Commands.runOnce(() -> AutoAlign.setTarget(AutoAlign.Target.TABLE, drive.getPose()));
+    // manual speed limiting
+    Command speedLimit =
+        Commands.startEnd(() -> drive.setSpeedLimiter(true), () -> drive.setSpeedLimiter(false));
 
     /* Elevator commands */
     DoubleSupplier elevatorJoystick =
@@ -314,12 +317,7 @@ public class RobotContainer {
     Command l2Elevator = elevator.l2().withName("L2 Elevator");
     Command l3Elevator = elevator.l3().withName("L3 Elevator");
     // emergency disable while true
-    Command disableElevator =
-        elevator
-            .release()
-            .withInterruptBehavior(Command.InterruptionBehavior.kCancelIncoming)
-            .ignoringDisable(true)
-            .withName("Disable Elevator");
+    Command disableElevator = elevator.release().withName("Disable Elevator");
 
     /* End effector commands */
     Command gripperIntake = gripper.intake().withName("Gripper Intake");
@@ -347,6 +345,7 @@ public class RobotContainer {
         .and(new Trigger(isPossessing).negate())
         .onTrue(depotAlign)
         .whileTrue(autoAlign);
+    driverController.b().whileTrue(speedLimit);
 
     /* operator controls */
     RobotUtil.RumbleRequest elevatorRumble = new RobotUtil.RumbleRequest(0.8, 0);
@@ -494,12 +493,7 @@ public class RobotContainer {
       Command l1Elevator = elevator.l1().withName("L1 Elevator");
       Command l2Elevator = elevator.l2().withName("L2 Elevator");
       Command l3Elevator = elevator.l3().withName("L3 Elevator");
-      Command disableElevator =
-          elevator
-              .release()
-              .withInterruptBehavior(Command.InterruptionBehavior.kCancelIncoming)
-              .ignoringDisable(true)
-              .withName("Disable Elevator");
+      Command disableElevator = elevator.release().withName("Disable Elevator");
 
       /* End effector commands */
       Command gripperIntake = gripper.intake().withName("Gripper Intake");

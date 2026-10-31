@@ -184,20 +184,12 @@ public class SimulationManager {
     return gripperIntake.getGamePiecesAmount() + gripperCakeIntake.getGamePiecesAmount();
   }
 
-  private int getTraderCount() {
+  public int getTraderCount() {
     return traderIntake.getGamePiecesAmount() + traderCakeIntake.getGamePiecesAmount();
   }
 
   public boolean isGripperLoaded() {
     return getGripperCount() > 0;
-  }
-
-  public boolean isTraderLoaded() {
-    return getTraderCount() > 0;
-  }
-
-  public boolean isTraderFull() {
-    return getTraderCount() >= 3;
   }
 
   public void preloadTrader() {

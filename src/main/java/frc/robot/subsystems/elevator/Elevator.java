@@ -145,12 +145,12 @@ public class Elevator extends ExtendedSubsystem {
             },
             () -> {
               double magnitude = MathUtil.clamp(joystick.getAsDouble(), -1.0, 1.0);
-              elevator.runVoltage(
-                  Math.copySign(magnitude * magnitude, magnitude)
-                      * ElevatorConstants.MAX_MANUAL_VOLTAGE);
+              double goalRPS = magnitude * ElevatorConstants.MAX_MANUAL_VELOCITY;
+              elevator.runVelocity(goalRPS);
+              Logger.recordOutput("Elevator/SetpointRadPerSec", Units.rotationsToRadians(goalRPS));
             })
-        .finallyDo(elevator::stop)
-        .withInterruptBehavior(Command.InterruptionBehavior.kCancelIncoming);
+        // hold position
+        .finallyDo(() -> elevator.runVelocity(0));
   }
 
   public Command homingSequence() {
@@ -187,11 +187,13 @@ public class Elevator extends ExtendedSubsystem {
 
   public Command release() {
     return startEnd(
-        () -> {
-          coastOverride = true;
-          elevator.stop();
-        },
-        () -> coastOverride = false);
+            () -> {
+              coastOverride = true;
+              elevator.stop();
+            },
+            () -> coastOverride = false)
+        .withInterruptBehavior(Command.InterruptionBehavior.kCancelIncoming)
+        .ignoringDisable(true);
   }
 
   public double getPositionRad() {
