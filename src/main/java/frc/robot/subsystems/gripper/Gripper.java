@@ -58,6 +58,10 @@ public class Gripper extends SubsystemBase {
     roller.periodic();
     topDisconnectedAlert.set(!roller.isConnected());
     bottomDisconnectedAlert.set(!roller.getFollowerConnected()[0]);
+    if (isLoaded && roller.getMode() == MotorIO.MotorIOMode.BRAKE) {
+      // hold position
+      roller.runVelocity(0);
+    }
     LoggedTracer.record("Gripper/Periodic");
   }
 

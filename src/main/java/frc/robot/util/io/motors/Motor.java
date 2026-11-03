@@ -14,7 +14,7 @@ public abstract class Motor<IOType extends MotorIO, InputsType extends MotorIO.M
   protected final InputsType inputs;
   protected final EncoderIO encoderIO;
   protected final EncoderIOInputsAutoLogged encoderInputs = new EncoderIOInputsAutoLogged();
-  protected MotorIO.MotorIOMode mode;
+  @Getter protected MotorIO.MotorIOMode mode;
 
   private final BooleanSupplier brakeDurNeutral;
 

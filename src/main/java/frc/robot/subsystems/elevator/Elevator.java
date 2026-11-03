@@ -79,11 +79,6 @@ public class Elevator extends ExtendedSubsystem {
   }
 
   @Override
-  public void disable() {
-    elevator.stop();
-  }
-
-  @Override
   public void periodic() {
     elevator.periodic();
     leftDisconnectedAlert.set(!elevator.isConnected());
