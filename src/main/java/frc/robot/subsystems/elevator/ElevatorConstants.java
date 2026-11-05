@@ -39,10 +39,10 @@ public final class ElevatorConstants {
   public enum Setpoint {
     NONE(-1, Meters.of(0)),
     STOWED(-1, Meters.of(0)),
-    RAMP(-1, Inches.of(4)),
-    L1(0, Inches.of(21)),
-    L2(1, Inches.of(33)),
-    L3(2, Inches.of(48));
+    RAMP(0, Inches.of(4)),
+    L1(1, Inches.of(21)),
+    L2(2, Inches.of(33)),
+    L3(3, Inches.of(48));
 
     public final int scoringIndex;
     public final Angle angle;

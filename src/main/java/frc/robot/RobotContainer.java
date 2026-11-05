@@ -22,8 +22,10 @@ import frc.robot.Constants.ControllerConstants;
 import frc.robot.commands.BLineAutos;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.SelfDriving;
+import frc.robot.commands.SuperstructureCommands;
 import frc.robot.generated.TunerConstants;
 import frc.robot.lib.BLine.FollowPath;
+import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -66,6 +68,7 @@ public class RobotContainer {
   private final Drive drive;
   private final Vision vision;
   private final Elevator elevator;
+  private final Arm arm;
   private final Gripper gripper;
   private final Trader trader;
 
@@ -111,6 +114,7 @@ public class RobotContainer {
         //                new VisionIOPhotonVision(
         //                    VisionConstants.CAMERA_3_NAME, VisionConstants.CAMERA_3_OFFSET));
         elevator = new Elevator();
+        arm = new Arm();
         gripper = new Gripper();
         trader = new Trader();
         sim = null;
@@ -150,6 +154,7 @@ public class RobotContainer {
                     VisionConstants.CAMERA_3_OFFSET,
                     driveSimulation::getSimulatedDriveTrainPose));
         elevator = new Elevator();
+        arm = new Arm();
         gripper = new Gripper();
         trader = new Trader();
         sim =
@@ -171,6 +176,7 @@ public class RobotContainer {
             new Vision(
                 drive, new VisionIO() {}, new VisionIO() {}, new VisionIO() {}, new VisionIO() {});
         elevator = new Elevator();
+        arm = new Arm();
         gripper = new Gripper();
         trader = new Trader();
         sim = null;
@@ -182,8 +188,8 @@ public class RobotContainer {
 
     LoggedDashboardChooser<ControlScheme> controlProfiles =
         new LoggedDashboardChooser<>("Control Profile");
-    controlProfiles.addDefaultOption("Main", ControlScheme.MAIN);
-    controlProfiles.addOption("Guitar Hero Operator", ControlScheme.GUITAR_HERO);
+    controlProfiles.addOption("Main", ControlScheme.MAIN);
+    controlProfiles.addDefaultOption("Guitar Hero Operator", ControlScheme.GUITAR_HERO);
     controlProfiles.addOption("Testing", ControlScheme.TEST);
     controlProfiles.onChange(this::setControlScheme);
 
@@ -496,8 +502,11 @@ public class RobotContainer {
       Command disableElevator = elevator.release().withName("Disable Elevator");
 
       /* End effector commands */
-      Command gripperIntake = gripper.intake().withName("Gripper Intake");
-      Command gripperEject = gripper.eject().withName("Gripper Eject");
+      Command gripperIntake =
+          SuperstructureCommands.intake(elevator, arm, gripper).withName("Gripper Intake");
+      Command gripperEject =
+          SuperstructureCommands.outtake(elevator, arm, gripper).withName("Gripper Eject");
+      Command deployTongue = arm.tongue().withName("Tongue Deploy");
 
       /* Trader commands */
       Command traderReverse = trader.reverse().withName("Trader Reverse");
@@ -510,15 +519,30 @@ public class RobotContainer {
       BooleanSupplier downStrumBar = guitarHeroController.povDown();
       BooleanSupplier neutralStrumBar = guitarHeroController.povCenter();
 
+      // main elevator controls
+      // since neutral strum is the default state, don't let it fire an onTrue command when the
+      // operator lets go of the strum bar without repressing the fret
       guitarHeroController
           .green()
           .and(guitarHeroControls)
-          .and(neutralStrumBar)
-          .onTrue(stowElevator);
-      guitarHeroController.red().and(guitarHeroControls).and(neutralStrumBar).onTrue(rampElevator);
-      guitarHeroController.yellow().and(guitarHeroControls).and(neutralStrumBar).onTrue(l1Elevator);
-      guitarHeroController.blue().and(guitarHeroControls).and(neutralStrumBar).onTrue(l2Elevator);
-      guitarHeroController.orange().and(guitarHeroControls).and(neutralStrumBar).onTrue(l3Elevator);
+          .onTrue(stowElevator.onlyIf(neutralStrumBar));
+      guitarHeroController
+          .red()
+          .and(guitarHeroControls)
+          .onTrue(rampElevator.onlyIf(neutralStrumBar));
+      guitarHeroController
+          .yellow()
+          .and(guitarHeroControls)
+          .onTrue(l1Elevator.onlyIf(neutralStrumBar));
+      guitarHeroController
+          .blue()
+          .and(guitarHeroControls)
+          .onTrue(l2Elevator.onlyIf(neutralStrumBar));
+      guitarHeroController
+          .orange()
+          .and(guitarHeroControls)
+          .onTrue(l3Elevator.onlyIf(neutralStrumBar));
+      // elevator backup controls
       guitarHeroController
           .green()
           .and(guitarHeroControls)
@@ -535,13 +559,14 @@ public class RobotContainer {
           .and(guitarHeroControls)
           .and(upStrumBar)
           .whileTrue(disableElevator);
-
+      // other subsystem controls
       guitarHeroController
           .green()
           .and(guitarHeroControls)
           .and(downStrumBar)
           .whileTrue(gripperIntake);
       guitarHeroController.red().and(guitarHeroControls).and(downStrumBar).whileTrue(gripperEject);
+      guitarHeroController.yellow().and(guitarHeroControls).and(downStrumBar).whileTrue(deployTongue);
       guitarHeroController
           .blue()
           .and(guitarHeroControls)

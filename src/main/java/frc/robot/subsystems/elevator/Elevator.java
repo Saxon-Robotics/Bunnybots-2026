@@ -207,6 +207,7 @@ public class Elevator extends ExtendedSubsystem {
 
   @AutoLogOutput(key = "Elevator/AtSetpoint")
   public boolean hasReachedSetpoint() {
+    if (setpoint == Setpoint.NONE) return false;
     return Math.abs(setpointRad - getPositionRad()) < ElevatorConstants.SETPOINT_TOLERANCE;
   }
 }
