@@ -108,8 +108,8 @@ public class ObjectiveTracker extends SubsystemBase {
             Commands.runOnce(
                 () -> {
                   int scoringIndex = elevator.getSetpoint().scoringIndex;
-                  if (scoringIndex > -1 && AutoAlign.getLastTarget() == AutoAlign.Target.PANTRY) {
-                    pantry.get(scoringIndex).add(drive.getPose().getX());
+                  if (scoringIndex > 0 && AutoAlign.getLastTarget() == AutoAlign.Target.PANTRY) {
+                    pantry.get(scoringIndex - 1).add(drive.getPose().getX());
                   }
                   gripperHeld = null;
                 }));
