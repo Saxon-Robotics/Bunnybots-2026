@@ -8,8 +8,6 @@ import edu.wpi.first.units.measure.Angle;
 import frc.robot.Constants;
 
 public final class ArmConstants {
-  public static final boolean ENABLED = false;
-
   public static final double SETPOINT_TOLERANCE = 2.5; // deg
   public static final double STOW_DELAY = 1.0;
 
@@ -54,7 +52,7 @@ public final class ArmConstants {
           .withFeedback(
               new FeedbackConfigs()
                   .withFeedbackSensorSource(FeedbackSensorSourceValue.FusedCANcoder)
-                  .withFeedbackRemoteSensorID(Constants.CANConstants.TONGUE_ENCODER)
+                  .withFeedbackRemoteSensorID(Constants.CANConstants.ARM_ENCODER)
                   .withRotorToSensorRatio(20)
                   .withSensorToMechanismRatio(GEAR_RATIO))
           .withSlot0(

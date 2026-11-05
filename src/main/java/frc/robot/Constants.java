@@ -60,9 +60,8 @@ public final class Constants {
     public static final int ELEVATOR_RIGHT = 2;
     public static final int GRIPPER_TOP = 3;
     public static final int GRIPPER_BOTTOM = 4;
-    public static final int TONGUE_PIVOT = 5;
-    public static final int TONGUE_ROLLER = 6;
-    public static final int TONGUE_ENCODER = 7;
+    public static final int ARM = 5;
+    public static final int ARM_ENCODER = 6;
     // rio canbus
     public static final int TRADER_BELTS = 10;
     public static final int TRADER_ROLLER = 11;

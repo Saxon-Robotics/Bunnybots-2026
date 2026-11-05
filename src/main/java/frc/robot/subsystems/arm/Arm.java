@@ -2,7 +2,6 @@ package frc.robot.subsystems.arm;
 
 import static edu.wpi.first.units.Units.*;
 
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.Timer;
@@ -11,12 +10,10 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 import frc.robot.subsystems.arm.ArmConstants.Setpoint;
 import frc.robot.util.io.motors.MotorIO;
-import frc.robot.util.io.motors.MotorIOTalonFX;
 import frc.robot.util.io.motors.pivot.Pivot;
 import frc.robot.util.io.motors.pivot.PivotIO;
 import frc.robot.util.io.motors.pivot.PivotIOSim;
 import frc.robot.util.io.sensors.encoder.EncoderIO;
-import frc.robot.util.io.sensors.encoder.EncoderIOCANcoder;
 import frc.robot.util.subsystems.ExtendedSubsystem;
 import lombok.Getter;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -34,14 +31,12 @@ public class Arm extends ExtendedSubsystem {
   public Arm() {
     PivotIO pivotIO =
         switch (Constants.currentMode) {
-          case REAL -> ArmConstants.ENABLED
-              ? new MotorIOTalonFX.Builder(
-                      Constants.CANConstants.SUPERSTRUCTURE,
-                      Constants.CANConstants.TONGUE_PIVOT,
-                      ArmConstants.PIVOT_CONFIG)
-                  .addControlRequest(new MotionMagicVoltage(0))
-                  .build()
-              : new PivotIO() {};
+            //          case REAL -> new MotorIOTalonFX.Builder(
+            //                  Constants.CANConstants.SUPERSTRUCTURE,
+            //                  Constants.CANConstants.ARM,
+            //                  ArmConstants.PIVOT_CONFIG)
+            //              .addControlRequest(new MotionMagicVoltage(0))
+            //              .build();
           case SIM -> new PivotIOSim(
               DCMotor.getKrakenX60(1),
               new MotorIO.RotationalMechanismConstraints(
@@ -59,12 +54,10 @@ public class Arm extends ExtendedSubsystem {
         };
     EncoderIO encoderIO =
         switch (Constants.currentMode) {
-          case REAL -> ArmConstants.ENABLED
-              ? new EncoderIOCANcoder(
-                  Constants.CANConstants.SUPERSTRUCTURE,
-                  Constants.CANConstants.TONGUE_ENCODER,
-                  ArmConstants.ENCODER_CONFIG)
-              : inputs -> {};
+            //          case REAL -> new EncoderIOCANcoder(
+            //              Constants.CANConstants.SUPERSTRUCTURE,
+            //              Constants.CANConstants.ARM_ENCODER,
+            //              ArmConstants.ENCODER_CONFIG);
           default -> inputs -> {};
         };
 
@@ -78,12 +71,12 @@ public class Arm extends ExtendedSubsystem {
     pivot.periodic();
     if (stowDelay.hasElapsed(ArmConstants.STOW_DELAY)) {
       stow();
-      stowDelay.stop();
-      stowDelay.reset();
     }
   }
 
   private void runSetpoint(Setpoint setpoint) {
+    stowDelay.stop();
+    stowDelay.reset();
     if (setpoint == Setpoint.NONE) {
       this.setpoint = setpoint;
       return;
@@ -121,7 +114,7 @@ public class Arm extends ExtendedSubsystem {
   }
 
   public double getPositionDeg() {
-    return pivot.getPositionDeg();
+    return pivot.getAbsolutePosition().in(Degrees);
   }
 
   @AutoLogOutput(key = "Arm/AtSetpoint")
