@@ -566,7 +566,11 @@ public class RobotContainer {
           .and(downStrumBar)
           .whileTrue(gripperIntake);
       guitarHeroController.red().and(guitarHeroControls).and(downStrumBar).whileTrue(gripperEject);
-      guitarHeroController.yellow().and(guitarHeroControls).and(downStrumBar).whileTrue(deployTongue);
+      guitarHeroController
+          .yellow()
+          .and(guitarHeroControls)
+          .and(downStrumBar)
+          .whileTrue(deployTongue);
       guitarHeroController
           .blue()
           .and(guitarHeroControls)

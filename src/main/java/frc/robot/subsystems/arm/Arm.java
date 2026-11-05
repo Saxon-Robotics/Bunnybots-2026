@@ -21,7 +21,6 @@ import frc.robot.util.subsystems.ExtendedSubsystem;
 import lombok.Getter;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
 public class Arm extends ExtendedSubsystem {
   private final Pivot pivot;
@@ -35,12 +34,14 @@ public class Arm extends ExtendedSubsystem {
   public Arm() {
     PivotIO pivotIO =
         switch (Constants.currentMode) {
-          case REAL -> new MotorIOTalonFX.Builder(
-                  Constants.CANConstants.SUPERSTRUCTURE,
-                  Constants.CANConstants.TONGUE_PIVOT,
-                  ArmConstants.PIVOT_CONFIG)
-              .addControlRequest(new MotionMagicVoltage(0))
-              .build();
+          case REAL -> ArmConstants.ENABLED
+              ? new MotorIOTalonFX.Builder(
+                      Constants.CANConstants.SUPERSTRUCTURE,
+                      Constants.CANConstants.TONGUE_PIVOT,
+                      ArmConstants.PIVOT_CONFIG)
+                  .addControlRequest(new MotionMagicVoltage(0))
+                  .build()
+              : new PivotIO() {};
           case SIM -> new PivotIOSim(
               DCMotor.getKrakenX60(1),
               new MotorIO.RotationalMechanismConstraints(
@@ -58,11 +59,12 @@ public class Arm extends ExtendedSubsystem {
         };
     EncoderIO encoderIO =
         switch (Constants.currentMode) {
-            // todo figure out how CANCoder simulation works
-          case REAL, SIM -> new EncoderIOCANcoder(
-              Constants.CANConstants.SUPERSTRUCTURE,
-              Constants.CANConstants.TONGUE_ENCODER,
-              ArmConstants.ENCODER_CONFIG);
+          case REAL -> ArmConstants.ENABLED
+              ? new EncoderIOCANcoder(
+                  Constants.CANConstants.SUPERSTRUCTURE,
+                  Constants.CANConstants.TONGUE_ENCODER,
+                  ArmConstants.ENCODER_CONFIG)
+              : inputs -> {};
           default -> inputs -> {};
         };
 
@@ -82,7 +84,6 @@ public class Arm extends ExtendedSubsystem {
   }
 
   private void runSetpoint(Setpoint setpoint) {
-    if (!ArmConstants.ENABLED) return;
     if (setpoint == Setpoint.NONE) {
       this.setpoint = setpoint;
       return;
