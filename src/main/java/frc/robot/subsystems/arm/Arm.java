@@ -124,7 +124,7 @@ public class Arm extends ExtendedSubsystem {
   }
 
   public Command ground() {
-    return startEnd(() -> runSetpoint(Setpoint.GROUND), stowDelay::start);
+    return startEnd(() -> runSetpoint(Setpoint.GROUND), this::stow);
   }
 
   public Command oven() {
