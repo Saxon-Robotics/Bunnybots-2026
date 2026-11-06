@@ -2,18 +2,23 @@ package frc.robot.subsystems.arm;
 
 import static edu.wpi.first.units.Units.*;
 
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 import frc.robot.subsystems.arm.ArmConstants.Setpoint;
+import frc.robot.util.LoggedTracer;
 import frc.robot.util.io.motors.MotorIO;
+import frc.robot.util.io.motors.MotorIOTalonFX;
 import frc.robot.util.io.motors.pivot.Pivot;
 import frc.robot.util.io.motors.pivot.PivotIO;
 import frc.robot.util.io.motors.pivot.PivotIOSim;
 import frc.robot.util.io.sensors.encoder.EncoderIO;
+import frc.robot.util.io.sensors.encoder.EncoderIOCANcoder;
 import frc.robot.util.subsystems.ExtendedSubsystem;
 import lombok.Getter;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -22,7 +27,12 @@ import org.littletonrobotics.junction.Logger;
 public class Arm extends ExtendedSubsystem {
   private final Pivot pivot;
 
-  @Getter private Setpoint setpoint = Setpoint.STOWED;
+  private final Alert disconnectedAlert =
+      new Alert("Pivot motor disconnected.", Alert.AlertType.kError);
+  private final Alert encoderDisconnectedAlert =
+      new Alert("Pivot encoder disconnected.", Alert.AlertType.kError);
+
+  @Getter private Setpoint setpoint = Setpoint.NONE;
   private double setpointDeg;
   private boolean coastOverride;
 
@@ -31,12 +41,14 @@ public class Arm extends ExtendedSubsystem {
   public Arm() {
     PivotIO pivotIO =
         switch (Constants.currentMode) {
-            //          case REAL -> new MotorIOTalonFX.Builder(
-            //                  Constants.CANConstants.SUPERSTRUCTURE,
-            //                  Constants.CANConstants.ARM,
-            //                  ArmConstants.PIVOT_CONFIG)
-            //              .addControlRequest(new MotionMagicVoltage(0))
-            //              .build();
+          case REAL -> ArmConstants.ENABLED
+              ? new MotorIOTalonFX.Builder(
+                      Constants.CANConstants.SUPERSTRUCTURE,
+                      Constants.CANConstants.ARM,
+                      ArmConstants.PIVOT_CONFIG)
+                  .addControlRequest(new MotionMagicVoltage(0))
+                  .build()
+              : new PivotIO() {};
           case SIM -> new PivotIOSim(
               DCMotor.getKrakenX60(1),
               new MotorIO.RotationalMechanismConstraints(
@@ -54,14 +66,23 @@ public class Arm extends ExtendedSubsystem {
         };
     EncoderIO encoderIO =
         switch (Constants.currentMode) {
-            //          case REAL -> new EncoderIOCANcoder(
-            //              Constants.CANConstants.SUPERSTRUCTURE,
-            //              Constants.CANConstants.ARM_ENCODER,
-            //              ArmConstants.ENCODER_CONFIG);
+          case REAL -> ArmConstants.ENABLED
+              ? new EncoderIOCANcoder(
+                  Constants.CANConstants.SUPERSTRUCTURE,
+                  Constants.CANConstants.ARM_ENCODER,
+                  ArmConstants.ENCODER_CONFIG)
+              : inputs -> inputs.absolutePosition = setpoint.angle;
           default -> inputs -> {};
         };
 
     pivot = new Pivot("Arm", pivotIO, encoderIO, () -> !coastOverride);
+
+    if (!ArmConstants.ENABLED) {
+      new Alert(
+              "End effector pivot is currently disabled. To enable it, set ArmConstants.ENABLED to true.",
+              Alert.AlertType.kWarning)
+          .set(true);
+    }
 
     Logger.recordOutput("Arm/State", setpoint.toString());
   }
@@ -72,6 +93,11 @@ public class Arm extends ExtendedSubsystem {
     if (stowDelay.hasElapsed(ArmConstants.STOW_DELAY)) {
       stow();
     }
+    if (ArmConstants.ENABLED) {
+      disconnectedAlert.set(!pivot.isConnected());
+      encoderDisconnectedAlert.set(!pivot.isEncoderConnected());
+    }
+    LoggedTracer.record("Arm/Periodic");
   }
 
   private void runSetpoint(Setpoint setpoint) {

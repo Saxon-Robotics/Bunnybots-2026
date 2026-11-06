@@ -102,6 +102,10 @@ public abstract class Motor<IOType extends MotorIO, InputsType extends MotorIO.M
     return encoderInputs.absolutePosition;
   }
 
+  public boolean isEncoderConnected() {
+    return encoderInputs.connected;
+  }
+
   public boolean isConnected() {
     return inputs.connected;
   }
