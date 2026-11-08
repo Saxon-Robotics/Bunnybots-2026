@@ -348,7 +348,7 @@ public class RobotContainer {
     driverController.rightBumper().and(isPossessing).whileTrue(pantryAlign);
     driverController
         .rightBumper()
-        .and(new Trigger(isPossessing).negate())
+        .and(() -> !isPossessing.getAsBoolean())
         .onTrue(depotAlign)
         .whileTrue(autoAlign);
     driverController.b().whileTrue(speedLimit);
