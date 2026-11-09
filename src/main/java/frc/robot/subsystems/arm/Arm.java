@@ -4,7 +4,7 @@ import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.Alert;
@@ -22,6 +22,7 @@ import frc.robot.util.io.motors.pivot.PivotIOSim;
 import frc.robot.util.io.sensors.encoder.EncoderIO;
 import frc.robot.util.io.sensors.encoder.EncoderIOCANcoder;
 import frc.robot.util.subsystems.ExtendedSubsystem;
+import java.util.function.DoubleSupplier;
 import lombok.Getter;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -40,7 +41,7 @@ public class Arm extends ExtendedSubsystem {
 
   private final Timer stowDelay = new Timer();
 
-  public Arm() {
+  public Arm(DoubleSupplier elevatorHeightMeters) {
     PivotIO pivotIO =
         switch (Constants.currentMode) {
           case REAL -> ArmConstants.ENABLED
@@ -79,7 +80,9 @@ public class Arm extends ExtendedSubsystem {
 
     pivot =
         new Pivot("Arm", pivotIO, encoderIO, () -> !coastOverride)
-            .enableVisualization(new Transform3d(0.3, 0, 0.1, new Rotation3d(0, 0, 0)));
+            .enableVisualization(
+                () -> new Translation3d(0.3, 0, 0.1 + elevatorHeightMeters.getAsDouble()),
+                () -> Rotation3d.kZero);
 
     if (!ArmConstants.ENABLED) {
       new Alert(

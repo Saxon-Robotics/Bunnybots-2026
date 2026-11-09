@@ -114,7 +114,7 @@ public class RobotContainer {
         //                new VisionIOPhotonVision(
         //                    VisionConstants.CAMERA_3_NAME, VisionConstants.CAMERA_3_OFFSET));
         elevator = new Elevator();
-        arm = new Arm();
+        arm = new Arm(elevator::getPositionMeters);
         gripper = new Gripper();
         trader = new Trader();
         sim = null;
@@ -154,7 +154,7 @@ public class RobotContainer {
                     VisionConstants.CAMERA_3_OFFSET,
                     driveSimulation::getSimulatedDriveTrainPose));
         elevator = new Elevator();
-        arm = new Arm();
+        arm = new Arm(elevator::getPositionMeters);
         gripper = new Gripper();
         trader = new Trader();
         sim =
@@ -176,7 +176,7 @@ public class RobotContainer {
             new Vision(
                 drive, new VisionIO() {}, new VisionIO() {}, new VisionIO() {}, new VisionIO() {});
         elevator = new Elevator();
-        arm = new Arm();
+        arm = new Arm(elevator::getPositionMeters);
         gripper = new Gripper();
         trader = new Trader();
         sim = null;
