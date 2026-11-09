@@ -1,0 +1,55 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "OvenToCarrotResetPose"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "ScoreOven"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "OvenToCarrot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "GroundIntakeCarrot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "CarrotToPantry"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "ScoreL1"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "PantryToWait"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}

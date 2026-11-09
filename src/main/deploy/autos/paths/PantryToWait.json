@@ -3,25 +3,8 @@
     {
       "type": "waypoint",
       "translation_target": {
-        "x_meters": 1.7,
-        "y_meters": 7.48,
-        "intermediate_handoff_radius_meters": 0.45
-      },
-      "rotation_target": {
-        "rotation_radians": 1.5708,
-        "profiled_rotation": true
-      }
-    },
-    {
-      "type": "event_trigger",
-      "t_ratio": 0.33859,
-      "lib_key": "ElevatorStow"
-    },
-    {
-      "type": "waypoint",
-      "translation_target": {
-        "x_meters": 5.48762,
-        "y_meters": 6.18715,
+        "x_meters": 1.62183,
+        "y_meters": 7.44698,
         "intermediate_handoff_radius_meters": 0.45
       },
       "rotation_target": {
@@ -32,8 +15,8 @@
     {
       "type": "waypoint",
       "translation_target": {
-        "x_meters": 6.51307,
-        "y_meters": 2.95477,
+        "x_meters": 5.66354,
+        "y_meters": 5.91525,
         "intermediate_handoff_radius_meters": 0.45
       },
       "rotation_target": {
@@ -44,12 +27,12 @@
     {
       "type": "waypoint",
       "translation_target": {
-        "x_meters": 7.78556,
-        "y_meters": 0.81528,
+        "x_meters": 7.71013,
+        "y_meters": 0.79233,
         "intermediate_handoff_radius_meters": 0.45
       },
       "rotation_target": {
-        "rotation_radians": 1.5708,
+        "rotation_radians": 1.55175,
         "profiled_rotation": true
       }
     }
@@ -62,14 +45,9 @@
         "end_ordinal": 0
       },
       {
-        "value": 3.76,
+        "value": 4.05,
         "start_ordinal": 1,
         "end_ordinal": 2
-      },
-      {
-        "value": 3.82,
-        "start_ordinal": 3,
-        "end_ordinal": 3
       }
     ]
   }
