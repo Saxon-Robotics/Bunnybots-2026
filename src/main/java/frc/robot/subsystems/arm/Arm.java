@@ -2,7 +2,6 @@ package frc.robot.subsystems.arm;
 
 import static edu.wpi.first.units.Units.*;
 
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -49,7 +48,6 @@ public class Arm extends ExtendedSubsystem {
                       Constants.CANConstants.SUPERSTRUCTURE,
                       Constants.CANConstants.ARM,
                       ArmConstants.PIVOT_CONFIG)
-                  .addControlRequest(new MotionMagicVoltage(0))
                   .build()
               : new PivotIO() {};
           case SIM -> new PivotIOSim(
@@ -58,9 +56,8 @@ public class Arm extends ExtendedSubsystem {
                   ArmConstants.GEAR_RATIO,
                   SingleJointedArmSim.estimateMOI(ArmConstants.RADIUS, ArmConstants.MASS),
                   ArmConstants.RADIUS,
-                  // placeholders, todo figure them out
-                  0,
-                  0,
+                  ArmConstants.MIN_ANGLE_RAD,
+                  ArmConstants.MAX_ANGLE_RAD,
                   0),
               ArmConstants.PIVOT_CONFIG.Slot0.kP,
               ArmConstants.PIVOT_CONFIG.Slot0.kD,

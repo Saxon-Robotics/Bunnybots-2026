@@ -8,6 +8,8 @@ import frc.robot.subsystems.elevator.ElevatorConstants;
 import frc.robot.subsystems.gripper.Gripper;
 
 public class SuperstructureCommands {
+  private static final double WAIT_TIMEOUT_SEC = 1.5;
+
   public static Command intake(Elevator elevator, Arm arm, Gripper gripper) {
     return Commands.either(
             arm.ground(),
@@ -18,6 +20,9 @@ public class SuperstructureCommands {
 
   public static Command outtake(Elevator elevator, Arm arm, Gripper gripper) {
     return Commands.either(arm.pantry(), arm.oven(), () -> elevator.getSetpoint().scoringIndex > 0)
-        .alongWith(Commands.waitUntil(arm::hasReachedSetpoint).andThen(gripper.eject()));
+        .alongWith(
+            Commands.waitUntil(arm::hasReachedSetpoint)
+                .withTimeout(WAIT_TIMEOUT_SEC)
+                .andThen(gripper.eject()));
   }
 }

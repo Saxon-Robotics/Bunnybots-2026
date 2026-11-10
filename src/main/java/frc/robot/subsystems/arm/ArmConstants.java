@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.configs.*;
 import com.ctre.phoenix6.signals.*;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import frc.robot.Constants;
 
@@ -14,9 +15,12 @@ public final class ArmConstants {
   public static final double STOW_DELAY = 1.0;
 
   // physical constraints
-  public static final double GEAR_RATIO = 75;
-  public static final double RADIUS = 0.5; // m
-  public static final double MASS = 2.0; // kg
+  public static final double GEAR_RATIO = 64;
+  public static final double RADIUS = Units.inchesToMeters(18.6); // m
+  public static final double MASS = Units.lbsToKilograms(15.0); // kg
+  public static final double MIN_ANGLE_RAD = 0.0;
+  public static final double MAX_ANGLE_RAD = Math.toRadians(100);
+
   public static final double MAX_PIVOT_VELOCITY = 10;
   public static final double MAX_PIVOT_ACCELERATION = 10;
 
@@ -55,16 +59,16 @@ public final class ArmConstants {
               new FeedbackConfigs()
                   .withFeedbackSensorSource(FeedbackSensorSourceValue.FusedCANcoder)
                   .withFeedbackRemoteSensorID(Constants.CANConstants.ARM_ENCODER)
-                  .withRotorToSensorRatio(20)
-                  .withSensorToMechanismRatio(GEAR_RATIO))
+                  .withRotorToSensorRatio(GEAR_RATIO))
           .withSlot0(
               new Slot0Configs()
-                  .withKP(160)
+                  .withKP(142.248)
                   .withKI(0)
-                  .withKD(0.645)
+                  .withKD(2.487)
                   .withKS(0)
-                  .withKV(0)
-                  .withKG(0)
+                  .withKV(7.540)
+                  .withKA(0.096)
+                  .withKG(0.316)
                   .withGravityType(GravityTypeValue.Arm_Cosine))
           .withMotionMagic(
               new MotionMagicConfigs()

@@ -35,6 +35,7 @@ public class SelfDriving {
         driveAndAlign(drive, OVEN)
             .andThen(trader.eject().until(() -> !trader.isLoaded()))
             .withName("Score Oven");
+    // todo update
     Command collectRamp =
         driveAndAlign(drive, RAMP)
             .andThen(gripper.intake().until(gripper::isLoaded))
