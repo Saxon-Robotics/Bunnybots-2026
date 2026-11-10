@@ -12,6 +12,7 @@ import com.ctre.phoenix6.hardware.ParentDevice;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
+import edu.wpi.first.math.Pair;
 import edu.wpi.first.units.measure.*;
 import edu.wpi.first.wpilibj.Notifier;
 import frc.robot.util.PhoenixUtil;
@@ -20,7 +21,9 @@ import frc.robot.util.io.motors.pivot.PivotIO;
 import frc.robot.util.io.motors.roller.RollerIO;
 import frc.robot.util.io.sensors.encoder.EncoderIOCANcoder;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 public class MotorIOTalonFX implements AutoCloseable, RollerIO, PivotIO, LinearSystemIO {
   private final TalonFX leader;
@@ -28,6 +31,7 @@ public class MotorIOTalonFX implements AutoCloseable, RollerIO, PivotIO, LinearS
 
   private VelocityVoltage velocityRequest;
   private PositionRequest[] positionRequests;
+  private final ControlRequest[] customRequests;
   private final VoltageOut voltageRequest = new VoltageOut(0);
   private final CoastOut coastRequest = new CoastOut();
   private final StaticBrake brakeRequest = new StaticBrake();
@@ -47,6 +51,11 @@ public class MotorIOTalonFX implements AutoCloseable, RollerIO, PivotIO, LinearS
     void apply(TalonFX motor, Angle angle);
   }
 
+  @FunctionalInterface
+  public interface ControlRequest {
+    void apply(TalonFX motor, double output);
+  }
+
   @SuppressWarnings("resource")
   private MotorIOTalonFX(
       CANBus canbus,
@@ -55,9 +64,11 @@ public class MotorIOTalonFX implements AutoCloseable, RollerIO, PivotIO, LinearS
       int[] followerIds,
       MotorAlignmentValue[] followerAlignments,
       PositionRequest[] positionRequests,
+      ControlRequest[] customRequests,
       EncoderIOCANcoder encoder,
       double primarySignalUpdateFreq,
-      double secondarySignalUpdateFreq) {
+      double secondarySignalUpdateFreq,
+      double optimizedSignalUpdateFreq) {
     // Instantiate motors
     leader = new TalonFX(id, canbus);
     followers = new TalonFX[followerIds.length];
@@ -84,8 +95,8 @@ public class MotorIOTalonFX implements AutoCloseable, RollerIO, PivotIO, LinearS
     BaseStatusSignal.setUpdateFrequencyForAll(
         secondarySignalUpdateFreq, voltage, statorCurrent, temp);
     BaseStatusSignal.setUpdateFrequencyForAll(secondarySignalUpdateFreq, followerTemps);
-    leader.optimizeBusUtilization();
-    ParentDevice.optimizeBusUtilizationForAll(followers);
+    leader.optimizeBusUtilization(optimizedSignalUpdateFreq);
+    ParentDevice.optimizeBusUtilizationForAll(optimizedSignalUpdateFreq, followers);
     PhoenixUtil.registerSignals(canbus, position, velocity, voltage, statorCurrent, temp);
     PhoenixUtil.registerSignals(canbus, followerTemps);
     tryUntilOk(5, () -> leader.setPosition(0));
@@ -97,6 +108,7 @@ public class MotorIOTalonFX implements AutoCloseable, RollerIO, PivotIO, LinearS
       followers[i].setControl(new Follower(leader.getDeviceID(), followerAlignments[i]));
     }
     this.positionRequests = positionRequests;
+    this.customRequests = customRequests;
     // Configure feedback
     if (encoder != null) {
       tryUntilOk(
@@ -119,10 +131,10 @@ public class MotorIOTalonFX implements AutoCloseable, RollerIO, PivotIO, LinearS
    * @param config The config to apply to the motors
    * @param followerIds The CAN IDs of the follower motors
    * @param followerAlignments The alignments of the follower motors relative to the leader
-   * @deprecated Use {@link Builder} instead, which provides a more streamlined setup process with
-   *     more customizability.
+   * @deprecated Use {@link MotorIOTalonFX.Builder} instead, which provides a more streamlined setup
+   *     process with more customizability.
    */
-  @Deprecated
+  @Deprecated(since = "2.1.0")
   public MotorIOTalonFX(
       CANBus canbus,
       int id,
@@ -136,9 +148,11 @@ public class MotorIOTalonFX implements AutoCloseable, RollerIO, PivotIO, LinearS
         followerIds,
         followerAlignments,
         new PositionRequest[0],
+        new ControlRequest[0],
         null,
         100.0,
-        50.0);
+        50.0,
+        4.0);
   }
 
   /**
@@ -147,40 +161,12 @@ public class MotorIOTalonFX implements AutoCloseable, RollerIO, PivotIO, LinearS
    * @param canbus The CAN bus this device is connected on
    * @param id The CAN ID of the leader motor
    * @param config The config to apply to the motors
-   * @deprecated Use {@link Builder} instead, which provides a more streamlined setup process with
-   *     more customizability.
+   * @deprecated Use {@link MotorIOTalonFX.Builder} instead, which provides a more streamlined setup
+   *     process with more customizability.
    */
-  @Deprecated
+  @Deprecated(since = "2.1.0")
   public MotorIOTalonFX(CANBus canbus, int id, TalonFXConfiguration config) {
     this(canbus, id, config, new int[0], new MotorAlignmentValue[0]);
-  }
-
-  /**
-   * Set a custom {@link PositionVoltage} request to use as the position control request.
-   *
-   * @param request Control request to use
-   * @return The modified {@link MotorIOTalonFX} object for method chaining
-   * @deprecated Use {@link Builder#addControlRequest(PositionVoltage)} instead.
-   */
-  @Deprecated(forRemoval = true)
-  public MotorIOTalonFX withControlRequest(PositionVoltage request) {
-    positionRequests =
-        new PositionRequest[] {(leader, angle) -> leader.setControl(request.withPosition(angle))};
-    return this;
-  }
-
-  /**
-   * Set a custom {@link MotionMagicVoltage} request to use as the position control request.
-   *
-   * @param request Control request to use
-   * @return The modified {@link MotorIOTalonFX} object for method chaining
-   * @deprecated Use {@link Builder#addControlRequest(MotionMagicVoltage)} instead.
-   */
-  @Deprecated(forRemoval = true)
-  public MotorIOTalonFX withControlRequest(MotionMagicVoltage request) {
-    positionRequests =
-        new PositionRequest[] {(leader, angle) -> leader.setControl(request.withPosition(angle))};
-    return this;
   }
 
   @Override
@@ -244,6 +230,24 @@ public class MotorIOTalonFX implements AutoCloseable, RollerIO, PivotIO, LinearS
   @Override
   public void setVelocity(double rps) {
     leader.setControl(velocityRequest.withVelocity(rps));
+  }
+
+  /**
+   * This method is designed to allow using other compatible ControlRequest types from the Phoenix 6
+   * API with this motor that are not explicitly offered in the {@link Builder} methods. This method
+   * may also be used to call user-defined callbacks that require the raw motor object.
+   */
+  @Override
+  public void setOutput(int slot, double output) {
+    if (slot < 0 || slot >= customRequests.length) return;
+    customRequests[slot].apply(leader, output);
+  }
+
+  /** This method may be used to call user-defined callbacks that require the raw motor object. */
+  @Override
+  public void runCallback(int slot) {
+    if (slot < 0 || slot >= customRequests.length) return;
+    customRequests[slot].apply(leader, 0);
   }
 
   @Override
@@ -313,16 +317,16 @@ public class MotorIOTalonFX implements AutoCloseable, RollerIO, PivotIO, LinearS
   }
 
   public static class Builder {
-    private record FollowerMotor(int id, MotorAlignmentValue alignment) {}
-
     private final CANBus canbus;
     private final int id;
     private final TalonFXConfiguration config;
-    private final ArrayList<FollowerMotor> followers = new ArrayList<>();
-    private final ArrayList<PositionRequest> positionRequests = new ArrayList<>();
+    private final List<Pair<Integer, MotorAlignmentValue>> followers = new ArrayList<>();
+    private final List<PositionRequest> positionRequests = new ArrayList<>();
+    private final List<ControlRequest> customRequests = new ArrayList<>();
     private EncoderIOCANcoder encoder;
     private double primarySignalUpdateFreq = 100.0;
     private double secondarySignalUpdateFreq = 50.0;
+    private double optimizedSignalUpdateFreq = 4.0;
 
     public Builder(CANBus canbus, int id, TalonFXConfiguration config) {
       this.canbus = canbus;
@@ -330,8 +334,15 @@ public class MotorIOTalonFX implements AutoCloseable, RollerIO, PivotIO, LinearS
       this.config = config;
     }
 
+    /**
+     * Add a follower motor that matches the output of the leader motor.
+     *
+     * @param id The CAN ID of the follower motor.
+     * @param alignment Choose whether the follower motor's direction is the same or the opposite of
+     *     the leader motor.
+     */
     public Builder addFollower(int id, MotorAlignmentValue alignment) {
-      followers.add(new FollowerMotor(id, alignment));
+      followers.add(Pair.of(id, alignment));
       return this;
     }
 
@@ -350,14 +361,56 @@ public class MotorIOTalonFX implements AutoCloseable, RollerIO, PivotIO, LinearS
       return this;
     }
 
+    /**
+     * This method is designed to allow using other compatible ControlRequest types from the Phoenix
+     * 6 API with this motor that are not explicitly offered in the other {@link
+     * Builder#addControlRequest} methods. The slot numbers of custom control requests and callbacks
+     * are zero-indexed in the order they are added.
+     */
+    public Builder addControlRequest(ControlRequest request) {
+      customRequests.add(request);
+      return this;
+    }
+
+    /**
+     * This method may be used to add user-defined callbacks that require the raw motor object. The
+     * slot numbers of custom control requests and callbacks are zero-indexed in the order they are
+     * added.
+     */
+    public Builder addCallback(Consumer<TalonFX> callback) {
+      customRequests.add((leader, output) -> callback.accept(leader));
+      return this;
+    }
+
+    /**
+     * Configure this motor to use a CANCoder as its feedback source. If the motor was already
+     * configured to use the encoder, this method is not necessary.
+     */
     public Builder addCANCoder(EncoderIOCANcoder encoder) {
       this.encoder = encoder;
       return this;
     }
 
-    public Builder setSignalUpdateFrequency(double primarySignalHz, double secondarySignalHz) {
-      this.primarySignalUpdateFreq = primarySignalHz;
-      this.secondarySignalUpdateFreq = secondarySignalHz;
+    /**
+     * Manually set the update frequency of the status signals.
+     *
+     * @param primaryFreqHz Frequency (in hertz) to set the primary signals used in closed loop
+     *     control (position, velocity)
+     * @param secondaryFreqHz Frequency (in hertz) to set the secondary signals used for logging
+     *     motor status (voltage, current, temp)
+     */
+    public Builder setSignalUpdateFrequency(double primaryFreqHz, double secondaryFreqHz) {
+      this.primarySignalUpdateFreq = primaryFreqHz;
+      this.secondarySignalUpdateFreq = secondaryFreqHz;
+      return this;
+    }
+
+    /**
+     * Manually set the update frequency of the optimized status signals. These are signals that are
+     * not being explicitly logged in AdvantageKit, but can be viewed in the hoot logs.
+     */
+    public Builder setOptimizedSignalFrequency(double optimizedFreqHz) {
+      this.optimizedSignalUpdateFreq = optimizedFreqHz;
       return this;
     }
 
@@ -365,8 +418,8 @@ public class MotorIOTalonFX implements AutoCloseable, RollerIO, PivotIO, LinearS
       int[] followerIds = new int[followers.size()];
       MotorAlignmentValue[] followerAlignments = new MotorAlignmentValue[followers.size()];
       for (int i = 0; i < followers.size(); i++) {
-        followerIds[i] = followers.get(i).id;
-        followerAlignments[i] = followers.get(i).alignment;
+        followerIds[i] = followers.get(i).getFirst();
+        followerAlignments[i] = followers.get(i).getSecond();
       }
       return new MotorIOTalonFX(
           canbus,
@@ -375,9 +428,11 @@ public class MotorIOTalonFX implements AutoCloseable, RollerIO, PivotIO, LinearS
           followerIds,
           followerAlignments,
           positionRequests.toArray(new PositionRequest[0]),
+          customRequests.toArray(new ControlRequest[0]),
           encoder,
           primarySignalUpdateFreq,
-          secondarySignalUpdateFreq);
+          secondarySignalUpdateFreq,
+          optimizedSignalUpdateFreq);
     }
   }
 }

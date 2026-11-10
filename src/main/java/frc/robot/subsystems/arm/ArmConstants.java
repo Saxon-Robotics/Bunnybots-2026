@@ -54,7 +54,7 @@ public final class ArmConstants {
           .withMotorOutput(
               new MotorOutputConfigs()
                   .withInverted(InvertedValue.CounterClockwise_Positive)
-                  .withNeutralMode(NeutralModeValue.Coast))
+                  .withNeutralMode(NeutralModeValue.Brake))
           .withFeedback(
               new FeedbackConfigs()
                   .withFeedbackSensorSource(FeedbackSensorSourceValue.FusedCANcoder)

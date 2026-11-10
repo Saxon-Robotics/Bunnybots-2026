@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.util.LoggedTracer;
+import frc.robot.util.LoggedTunableNumber;
 import frc.robot.util.io.motors.MotorIO;
 import frc.robot.util.io.motors.MotorIOTalonFX;
 import frc.robot.util.io.motors.roller.Roller;
@@ -21,6 +22,11 @@ import lombok.Getter;
 import org.littletonrobotics.junction.AutoLogOutput;
 
 public class Gripper extends SubsystemBase {
+  private static final LoggedTunableNumber kP =
+      new LoggedTunableNumber("Arm/kP", GripperConstants.MOTOR_CONFIG.Slot0.kP);
+  private static final LoggedTunableNumber kD =
+      new LoggedTunableNumber("Arm/kD", GripperConstants.MOTOR_CONFIG.Slot0.kD);
+
   private final Roller roller;
 
   private final Alert topDisconnectedAlert =
@@ -41,6 +47,13 @@ public class Gripper extends SubsystemBase {
                   Constants.CANConstants.GRIPPER_TOP,
                   GripperConstants.MOTOR_CONFIG)
               .addFollower(Constants.CANConstants.GRIPPER_BOTTOM, MotorAlignmentValue.Aligned)
+              // for tuning
+              .addControlRequest(
+                  (motor, p) ->
+                      motor.getConfigurator().apply(GripperConstants.MOTOR_CONFIG.Slot0.withKP(p)))
+              .addControlRequest(
+                  (motor, d) ->
+                      motor.getConfigurator().apply(GripperConstants.MOTOR_CONFIG.Slot0.withKD(d)))
               .build();
           case SIM -> new RollerIOSim(
               DCMotor.getKrakenX44(1),
@@ -58,6 +71,14 @@ public class Gripper extends SubsystemBase {
     roller.periodic();
     topDisconnectedAlert.set(!roller.isConnected());
     bottomDisconnectedAlert.set(!roller.getFollowerConnected()[0]);
+
+    if (kP.hasChanged(hashCode())) {
+      roller.getIO().setOutput(0, kP.get());
+    }
+    if (kD.hasChanged(hashCode())) {
+      roller.getIO().setOutput(1, kD.get());
+    }
+
     LoggedTracer.record("Gripper/Periodic");
   }
 

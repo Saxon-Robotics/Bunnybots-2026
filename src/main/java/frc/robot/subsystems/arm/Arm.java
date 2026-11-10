@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 import frc.robot.subsystems.arm.ArmConstants.Setpoint;
 import frc.robot.util.LoggedTracer;
+import frc.robot.util.LoggedTunableNumber;
 import frc.robot.util.io.motors.MotorIO;
 import frc.robot.util.io.motors.MotorIOTalonFX;
 import frc.robot.util.io.motors.pivot.Pivot;
@@ -27,6 +28,11 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Arm extends ExtendedSubsystem {
+  private static final LoggedTunableNumber kP =
+      new LoggedTunableNumber("Arm/kP", ArmConstants.PIVOT_CONFIG.Slot0.kP);
+  private static final LoggedTunableNumber kD =
+      new LoggedTunableNumber("Arm/kD", ArmConstants.PIVOT_CONFIG.Slot0.kD);
+
   private final Pivot pivot;
 
   private final Alert disconnectedAlert =
@@ -48,6 +54,13 @@ public class Arm extends ExtendedSubsystem {
                       Constants.CANConstants.SUPERSTRUCTURE,
                       Constants.CANConstants.ARM,
                       ArmConstants.PIVOT_CONFIG)
+                  // for tuning
+                  .addControlRequest(
+                      (motor, p) ->
+                          motor.getConfigurator().apply(ArmConstants.PIVOT_CONFIG.Slot0.withKP(p)))
+                  .addControlRequest(
+                      (motor, d) ->
+                          motor.getConfigurator().apply(ArmConstants.PIVOT_CONFIG.Slot0.withKD(d)))
                   .build()
               : new PivotIO() {};
           case SIM -> new PivotIOSim(
@@ -94,13 +107,22 @@ public class Arm extends ExtendedSubsystem {
   @Override
   public void periodic() {
     pivot.periodic();
-    if (stowDelay.hasElapsed(ArmConstants.STOW_DELAY)) {
-      stow();
-    }
     if (ArmConstants.ENABLED) {
       disconnectedAlert.set(!pivot.isConnected());
       encoderDisconnectedAlert.set(!pivot.isEncoderConnected());
     }
+
+    if (kP.hasChanged(hashCode())) {
+      pivot.getIO().setOutput(0, kP.get());
+    }
+    if (kD.hasChanged(hashCode())) {
+      pivot.getIO().setOutput(1, kD.get());
+    }
+
+    if (stowDelay.hasElapsed(ArmConstants.STOW_DELAY)) {
+      stow();
+    }
+
     LoggedTracer.record("Arm/Periodic");
   }
 

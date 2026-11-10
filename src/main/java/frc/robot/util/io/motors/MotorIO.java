@@ -38,6 +38,18 @@ public interface MotorIO {
 
   default void setVoltage(double volts) {}
 
+  /**
+   * Send a custom output request to the motor through a user-defined callback. Currently only
+   * supported on TalonFX.
+   */
+  default void setOutput(int slot, double output) {}
+
+  /**
+   * Run a user-defined callback. These can be configured in the MotorIO constructors. Currently
+   * only supported on TalonFX.
+   */
+  default void runCallback(int slot) {}
+
   default void coast() {}
 
   default void brake() {}

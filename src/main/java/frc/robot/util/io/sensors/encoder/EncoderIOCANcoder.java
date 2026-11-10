@@ -14,12 +14,17 @@ public class EncoderIOCANcoder implements EncoderIO {
 
   private final StatusSignal<Angle> position;
 
-  public EncoderIOCANcoder(CANBus canbus, int id, CANcoderConfiguration config) {
+  public EncoderIOCANcoder(
+      CANBus canbus, int id, CANcoderConfiguration config, double frequencyHz) {
     cancoder = new CANcoder(id, canbus);
     tryUntilOk(5, () -> cancoder.getConfigurator().apply(config));
     position = cancoder.getAbsolutePosition();
-    position.setUpdateFrequency(100.0);
+    position.setUpdateFrequency(frequencyHz);
     PhoenixUtil.registerSignals(canbus, position);
+  }
+
+  public EncoderIOCANcoder(CANBus canbus, int id, CANcoderConfiguration config) {
+    this(canbus, id, config, 100.0);
   }
 
   @Override
