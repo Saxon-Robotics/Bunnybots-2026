@@ -23,9 +23,9 @@ import org.littletonrobotics.junction.AutoLogOutput;
 
 public class Gripper extends SubsystemBase {
   private static final LoggedTunableNumber kP =
-      new LoggedTunableNumber("Arm/kP", GripperConstants.MOTOR_CONFIG.Slot0.kP);
+      new LoggedTunableNumber("Gripper/kP", GripperConstants.MOTOR_CONFIG.Slot0.kP);
   private static final LoggedTunableNumber kD =
-      new LoggedTunableNumber("Arm/kD", GripperConstants.MOTOR_CONFIG.Slot0.kD);
+      new LoggedTunableNumber("Gripper/kD", GripperConstants.MOTOR_CONFIG.Slot0.kD);
 
   private final Roller roller;
 
