@@ -2,6 +2,8 @@ package frc.robot.subsystems.objectivetracker;
 
 import static frc.robot.util.sim.HarvestHavocPantryLevel.CARROT_SIZE;
 
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -17,9 +19,12 @@ import frc.robot.util.AutoAlign;
 import frc.robot.util.RobotUtil;
 import frc.robot.util.sim.HarvestHavocPantryLevel;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import lombok.Getter;
+import lombok.Setter;
+import org.littletonrobotics.junction.Logger;
 
 public class ObjectiveTracker extends SubsystemBase {
 
@@ -38,6 +43,13 @@ public class ObjectiveTracker extends SubsystemBase {
   private static final double OBJECT_HEIGHT = 3.0; // placeholder
 
   private static final int PANTRY_CONFIRMATIONS = 3;
+
+  public static final int PANTRY_LEVEL_CAPACITY = 5;
+
+  public static final int STOCKED_UP_PER_LEVEL = 3;
+
+  public static final int CARROTS_PER_CAKE = 3;
+
   private static final double PANTRY_CANDIDATE_TIMEOUT = 1.0;
 
   private static ObjectiveTracker instance;
@@ -72,13 +84,26 @@ public class ObjectiveTracker extends SubsystemBase {
   // pieces vision has seen in the pantry but not confirmed yet
   private final List<PantryCandidate> pantryCandidates = new ArrayList<>();
 
-  // whether we've dumped carrots in oven
-  @Getter private boolean cakeReady;
+  private final int[] pantryCakes = new int[3];
 
-  // RP tracking
-  public final boolean isTrackingRP;
-  private int bakedUpProgress;
-  @Getter private boolean stockedUp;
+  @Getter private int ovenCarrots;
+  @Getter private int cakesCollected;
+
+  @Getter private int ovenCakes;
+
+  private int ovenDumpPieces;
+  private boolean ovenDumpIsCake;
+  private final Debouncer traderEmptyDebounce = new Debouncer(0.1, Debouncer.DebounceType.kRising);
+
+  private int heldScoringIndex;
+
+  private final int[] freeSlots = new int[3];
+  private final int[] pantryCounts = new int[3];
+  private final int[] loggedPantryCakes = new int[3];
+
+  @Getter @Setter private boolean collectingCake;
+
+  private boolean freeSlotsForRed;
 
   private ObjectiveTracker(
       Drive drive, Vision vision, Elevator elevator, Gripper gripper, Trader trader) {
@@ -91,15 +116,16 @@ public class ObjectiveTracker extends SubsystemBase {
     for (int i = 0; i < 3; i++) {
       pantry.add(new ArrayList<>(5));
     }
+    updateFreeSlots();
 
     // set up triggers
     new Trigger(gripper::isLoaded)
         .onTrue(
             Commands.runOnce(
                 () -> {
-                  if (AutoAlign.getLastTarget() == AutoAlign.Target.RAMP) {
+                  if (collectingCake) {
                     gripperHeld = GamePiece.CARROT_CAKE;
-                    cakeReady = false;
+                    cakesCollected++;
                   } else {
                     gripperHeld = GamePiece.CARROT;
                   }
@@ -107,67 +133,139 @@ public class ObjectiveTracker extends SubsystemBase {
         .onFalse(
             Commands.runOnce(
                 () -> {
-                  int scoringIndex = elevator.getSetpoint().scoringIndex;
+                  int scoringIndex = heldScoringIndex;
                   if (scoringIndex > 0 && AutoAlign.getLastTarget() == AutoAlign.Target.PANTRY) {
-                    pantry.get(scoringIndex - 1).add(drive.getPose().getX());
+                    addPantryPiece(scoringIndex - 1, drive.getPose().getX());
+                    if (gripperHeld == GamePiece.CARROT_CAKE) pantryCakes[scoringIndex - 1]++;
                   }
                   gripperHeld = null;
+                  heldScoringIndex = 0;
                 }));
 
     new Trigger(trader::isLoaded)
         .onTrue(
             Commands.runOnce(
                 () -> {
-                  if (AutoAlign.getLastTarget() == AutoAlign.Target.RAMP) {
+                  if (collectingCake) {
                     traderHeld = GamePiece.CARROT_CAKE;
+                    cakesCollected++;
                   } else {
                     traderHeld = GamePiece.CARROT;
                   }
                 }))
-        .onFalse(
-            Commands.runOnce(
-                () -> {
-                  if (drive
-                          .getPose()
-                          .getTranslation()
-                          .getSquaredDistance(
-                              AutoAlign.Target.OVEN
-                                  .getPose(RobotUtil.isRedAlliance())
-                                  .getTranslation())
-                      < NEAR_THRESHOLD) {
-                    traderHeld = null;
-                    cakeReady = true;
-                  }
-                }));
-
-    isTrackingRP = DriverStation.getMatchType() == DriverStation.MatchType.Qualification;
+        .onFalse(Commands.runOnce(() -> traderHeld = null));
   }
 
   @Override
   public void periodic() {
     // updatePantryFromVision();
 
-    // RP checks
-    if (!isTrackingRP) return;
-    if (!stockedUp) stockedUp = checkStockedUp();
+    if (RobotUtil.isRedAlliance() != freeSlotsForRed) updateFreeSlots();
+
+    if (gripper.isLoaded()) {
+      heldScoringIndex = elevator.getSetpoint().scoringIndex;
+    }
+
+    int traderCount = trader.getNumGamePieces();
+    boolean traderEmpty = traderEmptyDebounce.calculate(traderCount == 0);
+    if (isNearOven()) {
+      if (traderCount > 0) {
+        ovenDumpPieces = Math.max(ovenDumpPieces, traderCount);
+        ovenDumpIsCake = traderHeld == GamePiece.CARROT_CAKE;
+      }
+      if (traderEmpty && ovenDumpPieces > 0) {
+        creditOvenDump(ovenDumpPieces);
+      }
+    } else if (ovenDumpPieces > 0) {
+      creditOvenDump(Math.max(0, ovenDumpPieces - traderCount));
+    }
+
+    Logger.recordOutput("ObjectiveTracker/OvenCarrots", ovenCarrots);
+    Logger.recordOutput("ObjectiveTracker/OvenCakes", ovenCakes);
+    Logger.recordOutput("ObjectiveTracker/CakesCollected", cakesCollected);
+    Logger.recordOutput("ObjectiveTracker/CakeReady", isCakeReady());
+    for (int level = 0; level < 3; level++) {
+      pantryCounts[level] = getPantryCount(level);
+      loggedPantryCakes[level] = pantryCakes[level];
+    }
+    Logger.recordOutput("ObjectiveTracker/PantryCounts", pantryCounts);
+    Logger.recordOutput("ObjectiveTracker/PantryCakes", loggedPantryCakes);
+    Logger.recordOutput("ObjectiveTracker/FreeSlots", freeSlots);
+    Logger.recordOutput("ObjectiveTracker/StockedUp", isStockedUp());
+    Logger.recordOutput("ObjectiveTracker/BakedUp", isBakedUp());
+  }
+
+  public void reset() {
+    for (List<Double> level : pantry) level.clear();
+    pantryCandidates.clear();
+    Arrays.fill(pantryCakes, 0);
+    ovenCarrots = 0;
+    cakesCollected = 0;
+    ovenCakes = 0;
+    ovenDumpPieces = 0;
+    ovenDumpIsCake = false;
+    heldScoringIndex = 0;
+    collectingCake = false;
+    updateFreeSlots();
+    traderHeld = trader.isLoaded() ? GamePiece.CARROT : null;
+    gripperHeld = gripper.isLoaded() ? GamePiece.CARROT : null;
+  }
+
+  private boolean isNearOven() {
+    return drive
+            .getPose()
+            .getTranslation()
+            .getSquaredDistance(
+                AutoAlign.Target.OVEN.getPose(RobotUtil.isRedAlliance()).getTranslation())
+        < NEAR_THRESHOLD;
+  }
+
+  public boolean isTrackingRP() {
+    return DriverStation.getMatchType() == DriverStation.MatchType.Qualification;
+  }
+
+  private void creditOvenDump(int pieces) {
+    if (ovenDumpIsCake) {
+      ovenCakes += pieces;
+    } else {
+      ovenCarrots += pieces;
+    }
+    ovenDumpPieces = 0;
+    ovenDumpIsCake = false;
+  }
+
+  public boolean isCakeReady() {
+    return ovenCarrots / CARROTS_PER_CAKE + ovenCakes > cakesCollected;
+  }
+
+  public void forfeitCake() {
+    if (isCakeReady()) cakesCollected++;
   }
 
   /** Returns the open slot on a pantry level closest to the robot, or null if the level is full. */
   public Pose2d getPantryPose(int level, Pose2d robotPose) {
     double robotX = robotPose.getX();
-    double pantryMinX = getPantryCenter().getX() - HarvestHavocPantryLevel.PANTRY_HALF_WIDTH;
-    double pantryMaxX = getPantryCenter().getX() + HarvestHavocPantryLevel.PANTRY_HALF_WIDTH;
+    double pantryCenterX = getPantryCenter().getX();
+    double pantryMinX = pantryCenterX - HarvestHavocPantryLevel.PANTRY_HALF_WIDTH;
+    double pantryMaxX = pantryCenterX + HarvestHavocPantryLevel.PANTRY_HALF_WIDTH;
 
     List<Double> sorted = pantry.get(level);
-    Collections.sort(sorted);
 
-    List<Double> candidates = new ArrayList<>();
-
+    double bestX = Double.NaN;
     if (sorted.isEmpty()) {
-      candidates.add(pantryMinX + EXTENDED_CARROT_SIZE - 0.05);
+      bestX =
+          pickCloser(
+              bestX, pantryMinX + EXTENDED_CARROT_SIZE - 0.05, robotX, pantryMinX, pantryMaxX);
     } else {
-      candidates.add(sorted.get(0) - EXTENDED_CARROT_SIZE);
-      candidates.add(sorted.get(sorted.size() - 1) + EXTENDED_CARROT_SIZE);
+      bestX =
+          pickCloser(bestX, sorted.get(0) - EXTENDED_CARROT_SIZE, robotX, pantryMinX, pantryMaxX);
+      bestX =
+          pickCloser(
+              bestX,
+              sorted.get(sorted.size() - 1) + EXTENDED_CARROT_SIZE,
+              robotX,
+              pantryMinX,
+              pantryMaxX);
     }
 
     for (int i = 0; i < sorted.size() - 1; i++) {
@@ -175,25 +273,57 @@ public class ObjectiveTracker extends SubsystemBase {
       double right = sorted.get(i + 1);
 
       if (right - left >= 2 * EXTENDED_CARROT_SIZE) {
-        candidates.add(left + EXTENDED_CARROT_SIZE);
-        candidates.add(right - EXTENDED_CARROT_SIZE);
+        bestX = pickCloser(bestX, left + EXTENDED_CARROT_SIZE, robotX, pantryMinX, pantryMaxX);
+        bestX = pickCloser(bestX, right - EXTENDED_CARROT_SIZE, robotX, pantryMinX, pantryMaxX);
       }
     }
 
-    Double bestX = null;
-    for (double x : candidates) {
-      if (x < pantryMinX || x > pantryMaxX) {
-        continue;
-      }
-      if (bestX == null || Math.abs(x - robotX) < Math.abs(bestX - robotX)) {
-        bestX = x;
-      }
-    }
-
-    if (bestX == null) return null;
+    if (Double.isNaN(bestX)) return null;
 
     Pose2d pantryPose = AutoAlign.Target.PANTRY.getPose(RobotUtil.isRedAlliance());
     return new Pose2d(bestX, pantryPose.getY(), pantryPose.getRotation());
+  }
+
+  private static double pickCloser(
+      double bestX, double x, double robotX, double pantryMinX, double pantryMaxX) {
+    if (x < pantryMinX || x > pantryMaxX) return bestX;
+    if (Double.isNaN(bestX) || Math.abs(x - robotX) < Math.abs(bestX - robotX)) return x;
+    return bestX;
+  }
+
+  private void addPantryPiece(int level, double x) {
+    double pantryCenterX = getPantryCenter().getX();
+    List<Double> pieces = pantry.get(level);
+    pieces.add(
+        MathUtil.clamp(
+            x,
+            pantryCenterX - HarvestHavocPantryLevel.PANTRY_HALF_WIDTH,
+            pantryCenterX + HarvestHavocPantryLevel.PANTRY_HALF_WIDTH));
+    Collections.sort(pieces);
+    updateFreeSlots();
+  }
+
+  private void updateFreeSlots() {
+    freeSlotsForRed = RobotUtil.isRedAlliance();
+    double pantryCenterX = getPantryCenter().getX();
+    double pantryMinX = pantryCenterX - HarvestHavocPantryLevel.PANTRY_HALF_WIDTH;
+    double pantryMaxX = pantryCenterX + HarvestHavocPantryLevel.PANTRY_HALF_WIDTH;
+    for (int level = 0; level < 3; level++) {
+      List<Double> sorted = pantry.get(level);
+      int slots;
+      if (sorted.isEmpty()) {
+        double first = pantryMinX + EXTENDED_CARROT_SIZE - 0.05;
+        slots = first > pantryMaxX ? 0 : (int) ((pantryMaxX - first) / EXTENDED_CARROT_SIZE) + 1;
+      } else {
+        slots = (int) ((sorted.get(0) - pantryMinX) / EXTENDED_CARROT_SIZE);
+        slots += (int) ((pantryMaxX - sorted.get(sorted.size() - 1)) / EXTENDED_CARROT_SIZE);
+        for (int i = 0; i < sorted.size() - 1; i++) {
+          slots +=
+              Math.max(0, (int) ((sorted.get(i + 1) - sorted.get(i)) / EXTENDED_CARROT_SIZE) - 1);
+        }
+      }
+      freeSlots[level] = Math.max(0, Math.min(slots, PANTRY_LEVEL_CAPACITY - sorted.size()));
+    }
   }
 
   private static Translation2d getPantryCenter() {
@@ -279,18 +409,50 @@ public class ObjectiveTracker extends SubsystemBase {
     }
   }
 
-  public boolean checkStockedUp() {
-    for (List<Double> level : pantry) {
-      if (level.size() < 3) return false;
+  public int getPantryCount(int level) {
+    return pantry.get(level).size();
+  }
+
+  public boolean levelHasCake(int level) {
+    return pantryCakes[level] > 0;
+  }
+
+  public boolean isStockedUp() {
+    for (int level = 0; level < pantry.size(); level++) {
+      if (getPantryCount(level) < STOCKED_UP_PER_LEVEL) return false;
     }
     return true;
   }
 
   public boolean isBakedUp() {
-    return bakedUpProgress > 2;
+    for (int level = 0; level < pantry.size(); level++) {
+      if (!levelHasCake(level)) return false;
+    }
+    return true;
+  }
+
+  public int getFreeSlots(int level) {
+    return freeSlots[level];
   }
 
   public boolean hasPantrySlot(int level) {
-    return pantry.get(level).size() < 5 && getPantryPose(level, drive.getPose()) != null;
+    return freeSlots[level] > 0;
+  }
+
+  public boolean hasAnyPantrySlot() {
+    return hasPantrySlot(0) || hasPantrySlot(1) || hasPantrySlot(2);
+  }
+
+  public boolean levelNeedsCake(int level) {
+    return !levelHasCake(level) && hasPantrySlot(level);
+  }
+
+  public boolean levelNeedsStock(int level) {
+    return getPantryCount(level) < STOCKED_UP_PER_LEVEL && hasPantrySlot(level);
+  }
+
+  public boolean levelOpenForCarrot(int level) {
+    if (levelHasCake(level)) return hasPantrySlot(level);
+    return freeSlots[level] > 1;
   }
 }
