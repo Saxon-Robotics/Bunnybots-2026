@@ -27,7 +27,6 @@ import lombok.Setter;
 import org.littletonrobotics.junction.Logger;
 
 public class ObjectiveTracker extends SubsystemBase {
-
   public enum GamePiece {
     CARROT,
     CARROT_CAKE

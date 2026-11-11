@@ -29,8 +29,6 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 public class Robot extends LoggedRobot {
   private Command m_autonomousCommand;
 
-  private boolean autoRanThisMatch = false;
-
   private final RobotContainer m_robotContainer;
 
   private final CANivoreReader drivebaseReader = new CANivoreReader("Drivebase");
@@ -137,7 +135,6 @@ public class Robot extends LoggedRobot {
   @Override
   public void autonomousInit() {
     ObjectiveTracker.getInstance().reset();
-    autoRanThisMatch = true;
 
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
@@ -163,11 +160,6 @@ public class Robot extends LoggedRobot {
       m_autonomousCommand.cancel();
     }
 
-    if (!autoRanThisMatch && !DriverStation.isFMSAttached()) {
-      ObjectiveTracker.getInstance().reset();
-    }
-    if (!DriverStation.isFMSAttached()) autoRanThisMatch = false;
-
     if (m_robotContainer.isTeleopFullAuto()) {
       CommandScheduler.getInstance().schedule(m_robotContainer.getFullAutoCommand());
     }
@@ -184,7 +176,7 @@ public class Robot extends LoggedRobot {
     // Cancels all running commands at the start of test mode.
     CommandScheduler.getInstance().cancelAll();
 
-    RobotStateHandler.getInstance().enable();
+    ObjectiveTracker.getInstance().reset();
   }
 
   /** This function is called periodically during test mode. */
