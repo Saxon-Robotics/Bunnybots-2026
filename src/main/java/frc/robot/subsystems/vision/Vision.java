@@ -10,6 +10,7 @@ package frc.robot.subsystems.vision;
 import static frc.robot.subsystems.vision.VisionConstants.*;
 
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -21,6 +22,7 @@ import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.vision.VisionIO.PoseObservationType;
 import frc.robot.util.LoggedTracer;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import org.littletonrobotics.junction.Logger;
@@ -29,24 +31,38 @@ public class Vision extends SubsystemBase {
   private final VisionConsumer consumer;
   private final VisionIO[] io;
   private final VisionIOInputsAutoLogged[] inputs;
+  private final ObjectIO[] objIO;
+  private final ObjectIOInputsAutoLogged[] objInputs;
   private final Alert[] disconnectedAlerts;
 
   public Vision(VisionConsumer consumer, VisionIO... io) {
+    this(consumer, io, new ObjectIO[0]);
+  }
+
+  public Vision(VisionConsumer consumer, VisionIO[] io, ObjectIO[] objIO) {
     this.consumer = consumer;
     this.io = io;
+    this.objIO = objIO;
 
     // Initialize inputs
     this.inputs = new VisionIOInputsAutoLogged[io.length];
     for (int i = 0; i < inputs.length; i++) {
       inputs[i] = new VisionIOInputsAutoLogged();
     }
+    this.objInputs = new ObjectIOInputsAutoLogged[objIO.length];
+    for (int i = 0; i < objInputs.length; i++) {
+      objInputs[i] = new ObjectIOInputsAutoLogged();
+    }
 
     // Initialize disconnected alerts
-    this.disconnectedAlerts = new Alert[io.length];
+    this.disconnectedAlerts = new Alert[io.length + objIO.length];
     for (int i = 0; i < inputs.length; i++) {
       disconnectedAlerts[i] =
-          new Alert(
-              "Vision camera " + Integer.toString(i) + " is disconnected.", AlertType.kWarning);
+          new Alert("Vision camera " + i + " is disconnected.", AlertType.kWarning);
+    }
+    for (int i = 0; i < objInputs.length; i++) {
+      disconnectedAlerts[i + io.length] =
+          new Alert("Object detection camera " + i + " is disconnected.", AlertType.kWarning);
     }
   }
 
@@ -59,19 +75,16 @@ public class Vision extends SubsystemBase {
     return inputs[cameraIndex].latestTargetObservation.tx();
   }
 
-  /**
-   * Returns the average pose of the tracked objects to drive towards. TODO: implement this once we
-   * figure out object detection
-   */
-  public Pose2d getObjectPose() {
-    return Pose2d.kZero;
-  }
-
   @Override
   public void periodic() {
     for (int i = 0; i < io.length; i++) {
       io[i].updateInputs(inputs[i]);
-      Logger.processInputs("Vision/Camera" + Integer.toString(i), inputs[i]);
+      Logger.processInputs("Vision/Camera" + i, inputs[i]);
+    }
+
+    for (int i = 0; i < objIO.length; i++) {
+      objIO[i].updateInputs(objInputs[i]);
+      Logger.processInputs("Vision/ObjectDetection/Camera" + i, objInputs[i]);
     }
 
     // Initialize logging values
@@ -94,9 +107,7 @@ public class Vision extends SubsystemBase {
       // Add tag poses
       for (int tagId : inputs[cameraIndex].tagIds) {
         var tagPose = APRIL_TAG_LAYOUT.getTagPose(tagId);
-        if (tagPose.isPresent()) {
-          tagPoses.add(tagPose.get());
-        }
+        tagPose.ifPresent(tagPoses::add);
       }
 
       // Loop over pose observations
@@ -151,16 +162,14 @@ public class Vision extends SubsystemBase {
 
       // Log camera metadata
       Logger.recordOutput(
-          "Vision/Camera" + Integer.toString(cameraIndex) + "/TagPoses",
-          tagPoses.toArray(new Pose3d[0]));
+          "Vision/Camera" + cameraIndex + "/TagPoses", tagPoses.toArray(new Pose3d[0]));
       Logger.recordOutput(
-          "Vision/Camera" + Integer.toString(cameraIndex) + "/RobotPoses",
-          robotPoses.toArray(new Pose3d[0]));
+          "Vision/Camera" + cameraIndex + "/RobotPoses", robotPoses.toArray(new Pose3d[0]));
       Logger.recordOutput(
-          "Vision/Camera" + Integer.toString(cameraIndex) + "/RobotPosesAccepted",
+          "Vision/Camera" + cameraIndex + "/RobotPosesAccepted",
           robotPosesAccepted.toArray(new Pose3d[0]));
       Logger.recordOutput(
-          "Vision/Camera" + Integer.toString(cameraIndex) + "/RobotPosesRejected",
+          "Vision/Camera" + cameraIndex + "/RobotPosesRejected",
           robotPosesRejected.toArray(new Pose3d[0]));
       allTagPoses.addAll(tagPoses);
       allRobotPoses.addAll(robotPoses);
@@ -179,9 +188,88 @@ public class Vision extends SubsystemBase {
     LoggedTracer.record("Vision/AprilTag");
   }
 
+  public List<Pair<ObjectIO.ObjectObservationType, Pose3d>> getGamePiecePoses(Pose2d robotPose) {
+    // Calculate max possible capacity
+    int capacity = 0;
+    for (var input : objInputs) {
+      capacity += input.objectObservations.length;
+    }
+
+    List<Pair<ObjectIO.ObjectObservationType, Pose3d>> gamePiecePosesAccepted =
+        new ArrayList<>(capacity);
+    List<Pose3d> carrotPosesAccepted = new ArrayList<>(capacity);
+    List<Pose3d> cakePosesAccepted = new ArrayList<>(capacity);
+    List<Pose3d> gamePiecePosesRejected = new ArrayList<>(capacity);
+
+    // Combine all foreign pose estimates
+    Pose3d robotPose3d = new Pose3d(robotPose);
+    for (var input : objInputs) {
+      for (var object : input.objectObservations) {
+        if (!object.type().isGamePiece) continue;
+        if (object.ambiguity() <= MAX_OBJ_AMBIGUITY) {
+          ObjectIO.ObjectObservationType objectType = object.type();
+          // Transform from robot relative to global poses
+          Pose3d objectPose = robotPose3d.plus(object.relativePosition());
+          gamePiecePosesAccepted.add(Pair.of(objectType, objectPose));
+          if (objectType == ObjectIO.ObjectObservationType.CARROT) {
+            carrotPosesAccepted.add(objectPose);
+          } else {
+            cakePosesAccepted.add(objectPose);
+          }
+        } else {
+          gamePiecePosesRejected.add(robotPose3d.plus(object.relativePosition()));
+        }
+      }
+    }
+
+    Logger.recordOutput(
+        "Vision/ObjectDetection/CarrotPosesAccepted", carrotPosesAccepted.toArray(new Pose3d[0]));
+    Logger.recordOutput(
+        "Vision/ObjectDetection/CarrotCakePosesAccepted", cakePosesAccepted.toArray(new Pose3d[0]));
+    Logger.recordOutput(
+        "Vision/ObjectDetection/GamePiecePosesRejected",
+        gamePiecePosesRejected.toArray(new Pose3d[0]));
+
+    return gamePiecePosesAccepted;
+  }
+
+  public Pose2d[] getForeignRobotPoses(Pose2d robotPose) {
+    // Calculate max possible capacity
+    int capacity = 0;
+    for (var input : objInputs) {
+      capacity += input.objectObservations.length;
+    }
+
+    List<Pose2d> foreignRobotPosesAccepted = new ArrayList<>(capacity);
+    List<Pose2d> foreignRobotPosesRejected = new ArrayList<>(capacity);
+
+    // Combine all foreign pose estimates
+    Pose3d robotPose3d = new Pose3d(robotPose);
+    for (var input : objInputs) {
+      for (var object : input.objectObservations) {
+        if (object.type() != ObjectIO.ObjectObservationType.FOREIGN_ROBOT) continue;
+        if (object.ambiguity() <= MAX_OBJ_AMBIGUITY) {
+          // Transform from robot relative to global poses
+          foreignRobotPosesAccepted.add(robotPose3d.plus(object.relativePosition()).toPose2d());
+        } else {
+          foreignRobotPosesRejected.add(robotPose3d.plus(object.relativePosition()).toPose2d());
+        }
+      }
+    }
+
+    Logger.recordOutput(
+        "Vision/ObjectDetection/ForeignRobotPosesAccepted",
+        foreignRobotPosesAccepted.toArray(new Pose2d[0]));
+    Logger.recordOutput(
+        "Vision/ObjectDetection/ForeignRobotPosesRejected",
+        foreignRobotPosesRejected.toArray(new Pose2d[0]));
+
+    return foreignRobotPosesAccepted.toArray(new Pose2d[0]);
+  }
+
   @FunctionalInterface
-  public static interface VisionConsumer {
-    public void accept(
+  public interface VisionConsumer {
+    void accept(
         Pose2d visionRobotPoseMeters,
         double timestampSeconds,
         Matrix<N3, N1> visionMeasurementStdDevs);

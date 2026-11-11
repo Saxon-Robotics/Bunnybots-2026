@@ -5,8 +5,7 @@ import static frc.robot.util.sim.HarvestHavocPantryLevel.CARROT_SIZE;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.filter.Debouncer;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -16,6 +15,7 @@ import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.gripper.Gripper;
 import frc.robot.subsystems.trader.Trader;
+import frc.robot.subsystems.vision.ObjectIO;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.util.AutoAlign;
 import frc.robot.util.RobotUtil;
@@ -26,7 +26,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 import lombok.Getter;
 import lombok.Setter;
 import org.littletonrobotics.junction.Logger;
@@ -102,7 +101,7 @@ public class ObjectiveTracker extends SubsystemBase {
   private int heldScoringIndex;
 
   private final int[] freeSlots = new int[3];
-  private final int[] pantryCounts = new int[3];
+  private final int[] pantryLevelCounts = new int[3];
 
   @Getter @Setter private boolean collectingCake;
 
@@ -161,7 +160,8 @@ public class ObjectiveTracker extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // updatePantryFromVision();
+    // uncomment this when ready
+    //    updatePantryFromVision();
 
     if (RobotUtil.isRedAlliance() != freeSlotsForRed) updateFreeSlots();
 
@@ -188,9 +188,9 @@ public class ObjectiveTracker extends SubsystemBase {
     Logger.recordOutput("ObjectiveTracker/CakesCollected", cakesCollected);
     Logger.recordOutput("ObjectiveTracker/CakeReady", isCakeReady());
     for (int level = 0; level < 3; level++) {
-      pantryCounts[level] = getPantryCount(level);
+      pantryLevelCounts[level] = getPantryCount(level);
     }
-    Logger.recordOutput("ObjectiveTracker/PantryCounts", pantryCounts);
+    Logger.recordOutput("ObjectiveTracker/PantryLevelCounts", pantryLevelCounts);
     Logger.recordOutput("ObjectiveTracker/PantryCakes", pantryCakes);
     Logger.recordOutput("ObjectiveTracker/FreeSlots", freeSlots);
     Logger.recordOutput("ObjectiveTracker/StockedUp", isStockedUp());
@@ -335,41 +335,40 @@ public class ObjectiveTracker extends SubsystemBase {
   }
 
   /** Adds game pieces that vision sees in our pantry so other people scoring works */
-  // private void updatePantryFromVision() {
-  //   double now = Timer.getTimestamp();
-  //   pantryCandidates.removeIf(candidate -> now - candidate.lastSeen > PANTRY_CANDIDATE_TIMEOUT);
+  private void updatePantryFromVision() {
+    double now = Timer.getTimestamp();
+    pantryCandidates.removeIf(candidate -> now - candidate.lastSeen > PANTRY_CANDIDATE_TIMEOUT);
 
-  //   Pose2d robotPose = drive.getPose();
-  //   Translation2d pantryCenter = getPantryCenter();
-  //   Set<PantryCandidate> seenThisLoop = new HashSet<>();
+    Pose2d robotPose = drive.getPose();
+    Translation2d pantryCenter = getPantryCenter();
+    Set<PantryCandidate> seenThisLoop = new HashSet<>();
 
-  //   for (Pair<Integer, Translation3d> piece : vision.getGamePiecePositions(robotPose)) { 
-  //     Integer pieceType = piece.getFirst();
-  //     Transform3d pieceTransform = piece.getSecond();
-  //     if (Math.abs(pieceTransform.getY() - pantryCenter.getY()) > PANTRY_DEPTH_TOLERANCE) continue;
+    for (Pair<ObjectIO.ObjectObservationType, Pose3d> piece : vision.getGamePiecePoses(robotPose)) {
+      ObjectIO.ObjectObservationType pieceType = piece.getFirst();
+      Pose3d piecePose = piece.getSecond();
+      if (Math.abs(piecePose.getY() - pantryCenter.getY()) > PANTRY_DEPTH_TOLERANCE) continue;
 
-  //     double x = pieceTransform.getX();
-  //     if (Math.abs(x - pantryCenter.getX()) > HarvestHavocPantryLevel.PANTRY_HALF_WIDTH)
-  // continue;
-  //     if (pieceTransform.toTranslation2d().getDistance(robotPose.getTranslation()) > MAX_OBJ_DISTANCE)
-  //       continue;
+      double x = piecePose.getX();
+      if (Math.abs(x - pantryCenter.getX()) > HarvestHavocPantryLevel.PANTRY_HALF_WIDTH
+          || piecePose.getTranslation().toTranslation2d().getDistance(robotPose.getTranslation())
+              > MAX_OBJ_DISTANCE) continue;
 
-  //     int level = getPantryLevel(pieceTransform.getZ());
-  //     if (level < 0 || isTrackedInPantry(level, x)) continue;
+      int level = getPantryLevel(piecePose.getZ());
+      if (level < 0 || isTrackedInPantry(level, x)) continue;
 
-  //     PantryCandidate candidate = findPantryCandidate(level, x);
-  //     if (candidate == null) {
-  //       candidate = new PantryCandidate(level, x, pieceType);
-  //       pantryCandidates.add(candidate);
-  //     }
-  //     if (seenThisLoop.add(candidate)) candidate.addSighting(x, now);
-  //     if (candidate.sightings >= PANTRY_CONFIRMATIONS && hasPantrySlot(level)) {
-  //       pantry.get(level).add(candidate.x);
-  //       if (candidate.isCarrotCake) pantryCakes[candidate.level] += 1;
-  //       pantryCandidates.remove(candidate);
-  //     }
-  //   }
-  // }
+      PantryCandidate candidate = findPantryCandidate(level, x);
+      if (candidate == null) {
+        candidate = new PantryCandidate(level, x, pieceType);
+        pantryCandidates.add(candidate);
+      }
+      if (seenThisLoop.add(candidate)) candidate.addSighting(x, now);
+      if (candidate.sightings >= PANTRY_CONFIRMATIONS && hasPantrySlot(level)) {
+        pantry.get(level).add(candidate.x);
+        if (candidate.isCarrotCake) pantryCakes[candidate.level] += 1;
+        pantryCandidates.remove(candidate);
+      }
+    }
+  }
 
   /** Returns the pantry level a piece at this height is sitting on, or -1 if none. */
   private static int getPantryLevel(double z) {
@@ -403,10 +402,10 @@ public class ObjectiveTracker extends SubsystemBase {
     int sightings;
     double lastSeen;
 
-    PantryCandidate(int level, double x, int objectId) {
+    PantryCandidate(int level, double x, ObjectIO.ObjectObservationType pieceType) {
       this.level = level;
       this.x = x;
-      this.isCarrotCake = objectId == 0 ? false : true;
+      this.isCarrotCake = pieceType == ObjectIO.ObjectObservationType.CARROT_CAKE;
     }
 
     void addSighting(double newX, double timestamp) {
