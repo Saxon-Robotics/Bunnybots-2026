@@ -91,19 +91,7 @@
                               "noBranch": {
                                 "conditionId": "canCollectDepotBeforePark",
                                 "yesBranch": {
-                                  "conditionId": "gripperLoaded",
-                                  "yesBranch": {
-                                    "leafCommandId": "traderCollectDepot"
-                                  },
-                                  "noBranch": {
-                                    "conditionId": "pantryNeedsStock",
-                                    "yesBranch": {
-                                      "leafCommandId": "collectDepotMixed"
-                                    },
-                                    "noBranch": {
-                                      "leafCommandId": "traderCollectDepot"
-                                    }
-                                  }
+                                  "leafCommandId": "traderCollectDepot"
                                 },
                                 "noBranch": {
                                   "leafCommandId": "park"
@@ -521,19 +509,7 @@
                             "noBranch": {
                               "conditionId": "canCollectDepotBeforePark",
                               "yesBranch": {
-                                "conditionId": "gripperLoaded",
-                                "yesBranch": {
-                                  "leafCommandId": "traderCollectDepot"
-                                },
-                                "noBranch": {
-                                  "conditionId": "pantryNeedsStock",
-                                  "yesBranch": {
-                                    "leafCommandId": "collectDepotMixed"
-                                  },
-                                  "noBranch": {
-                                    "leafCommandId": "traderCollectDepot"
-                                  }
-                                }
+                                "leafCommandId": "traderCollectDepot"
                               },
                               "noBranch": {
                                 "leafCommandId": "park"
@@ -597,19 +573,7 @@
                           "noBranch": {
                             "conditionId": "canCollectDepotBeforePark",
                             "yesBranch": {
-                              "conditionId": "gripperLoaded",
-                              "yesBranch": {
-                                "leafCommandId": "traderCollectDepot"
-                              },
-                              "noBranch": {
-                                "conditionId": "pantryNeedsStock",
-                                "yesBranch": {
-                                  "leafCommandId": "collectDepotMixed"
-                                },
-                                "noBranch": {
-                                  "leafCommandId": "traderCollectDepot"
-                                }
-                              }
+                              "leafCommandId": "traderCollectDepot"
                             },
                             "noBranch": {
                               "leafCommandId": "park"
@@ -681,19 +645,7 @@
                           "noBranch": {
                             "conditionId": "canCollectDepotBeforePark",
                             "yesBranch": {
-                              "conditionId": "gripperLoaded",
-                              "yesBranch": {
-                                "leafCommandId": "traderCollectDepot"
-                              },
-                              "noBranch": {
-                                "conditionId": "pantryNeedsStock",
-                                "yesBranch": {
-                                  "leafCommandId": "collectDepotMixed"
-                                },
-                                "noBranch": {
-                                  "leafCommandId": "traderCollectDepot"
-                                }
-                              }
+                              "leafCommandId": "traderCollectDepot"
                             },
                             "noBranch": {
                               "leafCommandId": "park"
