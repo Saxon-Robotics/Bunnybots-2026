@@ -3,10 +3,12 @@ package frc.robot.subsystems.objectivetracker;
 import static frc.robot.util.sim.HarvestHavocPantryLevel.CARROT_SIZE;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -21,7 +23,10 @@ import frc.robot.util.sim.HarvestHavocPantryLevel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
 import lombok.Getter;
 import lombok.Setter;
 import org.littletonrobotics.junction.Logger;
@@ -98,7 +103,6 @@ public class ObjectiveTracker extends SubsystemBase {
 
   private final int[] freeSlots = new int[3];
   private final int[] pantryCounts = new int[3];
-  private final int[] loggedPantryCakes = new int[3];
 
   @Getter @Setter private boolean collectingCake;
 
@@ -185,10 +189,9 @@ public class ObjectiveTracker extends SubsystemBase {
     Logger.recordOutput("ObjectiveTracker/CakeReady", isCakeReady());
     for (int level = 0; level < 3; level++) {
       pantryCounts[level] = getPantryCount(level);
-      loggedPantryCakes[level] = pantryCakes[level];
     }
     Logger.recordOutput("ObjectiveTracker/PantryCounts", pantryCounts);
-    Logger.recordOutput("ObjectiveTracker/PantryCakes", loggedPantryCakes);
+    Logger.recordOutput("ObjectiveTracker/PantryCakes", pantryCakes);
     Logger.recordOutput("ObjectiveTracker/FreeSlots", freeSlots);
     Logger.recordOutput("ObjectiveTracker/StockedUp", isStockedUp());
     Logger.recordOutput("ObjectiveTracker/BakedUp", isBakedUp());
@@ -340,26 +343,29 @@ public class ObjectiveTracker extends SubsystemBase {
   //   Translation2d pantryCenter = getPantryCenter();
   //   Set<PantryCandidate> seenThisLoop = new HashSet<>();
 
-  //   for (Translation3d piece : vision.getGamePiecePositions(robotPose)) {
-  //     if (Math.abs(piece.getY() - pantryCenter.getY()) > PANTRY_DEPTH_TOLERANCE) continue;
+  //   for (Pair<Integer, Translation3d> piece : vision.getGamePiecePositions(robotPose)) { 
+  //     Integer pieceType = piece.getFirst();
+  //     Transform3d pieceTransform = piece.getSecond();
+  //     if (Math.abs(pieceTransform.getY() - pantryCenter.getY()) > PANTRY_DEPTH_TOLERANCE) continue;
 
-  //     double x = piece.getX();
+  //     double x = pieceTransform.getX();
   //     if (Math.abs(x - pantryCenter.getX()) > HarvestHavocPantryLevel.PANTRY_HALF_WIDTH)
   // continue;
-  //     if (piece.toTranslation2d().getDistance(robotPose.getTranslation()) > MAX_OBJ_DISTANCE)
+  //     if (pieceTransform.toTranslation2d().getDistance(robotPose.getTranslation()) > MAX_OBJ_DISTANCE)
   //       continue;
 
-  //     int level = getPantryLevel(piece.getZ());
+  //     int level = getPantryLevel(pieceTransform.getZ());
   //     if (level < 0 || isTrackedInPantry(level, x)) continue;
 
   //     PantryCandidate candidate = findPantryCandidate(level, x);
   //     if (candidate == null) {
-  //       candidate = new PantryCandidate(level, x);
+  //       candidate = new PantryCandidate(level, x, pieceType);
   //       pantryCandidates.add(candidate);
   //     }
   //     if (seenThisLoop.add(candidate)) candidate.addSighting(x, now);
   //     if (candidate.sightings >= PANTRY_CONFIRMATIONS && hasPantrySlot(level)) {
   //       pantry.get(level).add(candidate.x);
+  //       if (candidate.isCarrotCake) pantryCakes[candidate.level] += 1;
   //       pantryCandidates.remove(candidate);
   //     }
   //   }
@@ -392,13 +398,15 @@ public class ObjectiveTracker extends SubsystemBase {
 
   private static class PantryCandidate {
     final int level;
+    final boolean isCarrotCake;
     double x;
     int sightings;
     double lastSeen;
 
-    PantryCandidate(int level, double x) {
+    PantryCandidate(int level, double x, int objectId) {
       this.level = level;
       this.x = x;
+      this.isCarrotCake = objectId == 0 ? false : true;
     }
 
     void addSighting(double newX, double timestamp) {
