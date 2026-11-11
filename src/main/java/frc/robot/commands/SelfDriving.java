@@ -5,9 +5,11 @@ import static frc.robot.util.AutoAlign.Target.*;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.gripper.Gripper;
+import frc.robot.subsystems.gripper.GripperConstants;
 import frc.robot.subsystems.objectivetracker.ObjectiveTracker;
 import frc.robot.subsystems.objectivetracker.ObjectiveTracker.GamePiece;
 import frc.robot.subsystems.trader.Trader;
@@ -27,21 +29,29 @@ public class SelfDriving {
   private DecisionTree.Node tree = DecisionTree.EMPTY;
 
   public SelfDriving(
-      ObjectiveTracker tracker, Drive drive, Elevator elevator, Gripper gripper, Trader trader) {
-    Command scoreL1 = scorePantry(0, tracker, drive, elevator, gripper).withName("Score L1");
-    Command scoreL2 = scorePantry(1, tracker, drive, elevator, gripper).withName("Score L2");
-    Command scoreL3 = scorePantry(2, tracker, drive, elevator, gripper).withName("Score L3");
+      ObjectiveTracker tracker,
+      Drive drive,
+      Elevator elevator,
+      Arm arm,
+      Gripper gripper,
+      Trader trader) {
+    Command scoreL1 = scorePantry(0, tracker, drive, elevator, arm, gripper).withName("Score L1");
+    Command scoreL2 = scorePantry(1, tracker, drive, elevator, arm, gripper).withName("Score L2");
+    Command scoreL3 = scorePantry(2, tracker, drive, elevator, arm, gripper).withName("Score L3");
     Command scoreOven =
         driveAndAlign(drive, OVEN)
             .andThen(trader.eject().until(() -> !trader.isLoaded()))
             .withName("Score Oven");
-    // todo update
     Command collectRamp =
         driveAndAlign(drive, RAMP)
-            .andThen(gripper.intake().until(gripper::isLoaded))
+            .andThen(SuperstructureCommands.intake(arm, gripper).until(gripper::isLoaded))
             .deadlineFor(elevator.ramp())
             .andThen(elevator.stow())
             .withName("Collect Ramp");
+    Command collectGround =
+        SuperstructureCommands.intakeFromGround(elevator, arm, gripper)
+            .until(gripper::isLoaded)
+            .withName("Collect Ground");
     Command traderCollectDepot =
         driveAndAlign(drive, DEPOT)
             .andThen(Commands.waitUntil(trader::isFull))
@@ -59,6 +69,7 @@ public class SelfDriving {
     DecisionTree.registerCommand("scoreL3", scoreL3);
     DecisionTree.registerCommand("scoreOven", scoreOven);
     DecisionTree.registerCommand("collectRamp", collectRamp);
+    DecisionTree.registerCommand("collectGround", collectGround);
     DecisionTree.registerCommand("traderCollectDepot", traderCollectDepot);
     DecisionTree.registerCommand("elevatorCollectDepot", elevatorCollectDepot);
     DecisionTree.registerCommand("park", park);
@@ -92,7 +103,12 @@ public class SelfDriving {
   }
 
   private Command scorePantry(
-      int level, ObjectiveTracker tracker, Drive drive, Elevator elevator, Gripper gripper) {
+      int level,
+      ObjectiveTracker tracker,
+      Drive drive,
+      Elevator elevator,
+      Arm arm,
+      Gripper gripper) {
     Command raiseElevator =
         switch (level) {
           case 0 -> elevator.l1();
@@ -102,7 +118,9 @@ public class SelfDriving {
         };
     return driveAndAlign(drive, PANTRY, () -> tracker.getPantryPose(level, drive.getPose()))
         .andThen(raiseElevator)
-        .andThen(gripper.eject().until(() -> !gripper.isLoaded()))
+        .andThen(
+            SuperstructureCommands.outtake(elevator, arm, gripper)
+                .withTimeout(GripperConstants.OUTTAKE_TIMEOUT))
         .andThen(elevator.stow());
   }
 

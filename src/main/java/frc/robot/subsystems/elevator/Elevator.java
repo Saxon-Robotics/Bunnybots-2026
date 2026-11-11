@@ -36,7 +36,7 @@ public class Elevator extends ExtendedSubsystem {
   private final Alert rightDisconnectedAlert =
       new Alert("Disconnected elevator motor on the right side.", Alert.AlertType.kError);
 
-  @Getter private Setpoint setpoint = Setpoint.NONE;
+  @Getter private Setpoint setpoint = Setpoint.STOWED;
   private double setpointRad;
   private boolean coastOverride;
 

@@ -31,4 +31,5 @@ public final class GripperConstants {
   // game piece detection
   public static final double VELOCITY_THRESHOLD = 0.5; // placeholder
   public static final double STATOR_THRESHOLD = 10; // placeholder
+  public static final double OUTTAKE_TIMEOUT = 0.75;
 }

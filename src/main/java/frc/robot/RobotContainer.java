@@ -35,6 +35,7 @@ import frc.robot.subsystems.drive.ModuleIOTalonFXReal;
 import frc.robot.subsystems.drive.ModuleIOTalonFXSim;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.gripper.Gripper;
+import frc.robot.subsystems.gripper.GripperConstants;
 import frc.robot.subsystems.objectivetracker.ObjectiveTracker;
 import frc.robot.subsystems.trader.Trader;
 import frc.robot.subsystems.vision.Vision;
@@ -205,6 +206,7 @@ public class RobotContainer {
             ObjectiveTracker.initialize(drive, vision, elevator, gripper, trader),
             drive,
             elevator,
+            arm,
             gripper,
             trader);
     LoggedDashboardChooser<File> strategyChooser =
@@ -317,7 +319,6 @@ public class RobotContainer {
                 -operatorController.getLeftY());
     Command manualElevator = elevator.manualControl(elevatorJoystick).withName("Manual Elevator");
     Command elevatorHoming = elevator.homingSequence().withName("Elevator Homing");
-    Command stowElevator = elevator.stow().withName("Stow Elevator");
     Command rampElevator = elevator.ramp().withName("Ramp Elevator");
     Command l1Elevator = elevator.l1().withName("L1 Elevator");
     Command l2Elevator = elevator.l2().withName("L2 Elevator");
@@ -326,8 +327,11 @@ public class RobotContainer {
     Command disableElevator = elevator.release().withName("Disable Elevator");
 
     /* End effector commands */
-    Command gripperIntake = gripper.intake().withName("Gripper Intake");
-    Command gripperEject = gripper.eject().withName("Gripper Eject");
+    Command groundIntake =
+        SuperstructureCommands.intakeFromGround(elevator, arm, gripper).withName("Ground Intake");
+    Command gripperIntake = SuperstructureCommands.intake(arm, gripper).withName("Gripper Intake");
+    Command gripperEject =
+        SuperstructureCommands.outtake(elevator, arm, gripper).withName("Gripper Eject");
 
     /* Trader commands */
     Command traderEject = trader.eject().withName("Trader Eject");
@@ -360,7 +364,7 @@ public class RobotContainer {
             () -> RobotUtil.requestOperatorRumble(elevatorRumble),
             () -> RobotUtil.stopOperatorRumble(elevatorRumble));
     // controller vibrates when elevator buttons are pressed
-    operatorController.povDown().onTrue(stowElevator).whileTrue(rumbleCommand);
+    operatorController.povDown().onTrue(groundIntake).whileTrue(rumbleCommand);
     operatorController.leftBumper().onTrue(rampElevator).whileTrue(rumbleCommand);
     operatorController.povLeft().onTrue(l1Elevator).whileTrue(rumbleCommand);
     operatorController.povRight().onTrue(l2Elevator).whileTrue(rumbleCommand);
@@ -386,7 +390,7 @@ public class RobotContainer {
       keyboard.button(2).onTrue(l2Elevator);
       keyboard.button(3).onTrue(l3Elevator);
       keyboard.button(4).onTrue(rampElevator);
-      keyboard.button(5).onTrue(stowElevator);
+      keyboard.button(5).onTrue(groundIntake);
       keyboard.button(6).whileTrue(gripperIntake);
       keyboard.button(7).whileTrue(gripperEject);
       keyboard.button(8).whileTrue(traderEject);
@@ -442,11 +446,16 @@ public class RobotContainer {
             .andThen(DriveCommands.alignToTarget(drive, AutoAlign::getLastAPTarget));
 
     Command scorePantry =
-        Commands.sequence(pantryAlign, gripper.eject().until(() -> !gripper.isLoaded()));
+        Commands.sequence(
+            pantryAlign,
+            SuperstructureCommands.outtake(elevator, arm, gripper)
+                .withTimeout(GripperConstants.OUTTAKE_TIMEOUT));
     Command scoreOven =
         Commands.sequence(ovenAlign, trader.eject().until(() -> !trader.isLoaded()));
     Command intakeFromRamp =
-        Commands.sequence(rampAlign, gripper.intake().until(gripper::isLoaded));
+        Commands.sequence(
+            rampAlign, SuperstructureCommands.intake(arm, gripper).until(gripper::isLoaded));
+    Command intakeFromGround = SuperstructureCommands.intakeFromGround(elevator, arm, gripper);
     if (Constants.currentMode == Constants.Mode.SIM) {
       intakeFromRamp =
           intakeFromRamp.alongWith(
@@ -462,6 +471,7 @@ public class RobotContainer {
     NamedCommands.registerCommand("ScorePantry", scorePantry);
     NamedCommands.registerCommand("ScoreOven", scoreOven);
     NamedCommands.registerCommand("IntakeRamp", intakeFromRamp);
+    NamedCommands.registerCommand("IntakeGround", intakeFromGround);
 
     FollowPath.registerEventTrigger("ElevatorStow", elevator.stow());
     FollowPath.registerEventTrigger("ElevatorRamp", elevator.ramp());
@@ -494,7 +504,6 @@ public class RobotContainer {
       Command manualElevatorUp = elevator.manualControl(() -> 0.8).withName("Manual Elevator");
       Command manualElevatorDown = elevator.manualControl(() -> -0.7).withName("Manual Elevator");
       Command elevatorHoming = elevator.homingSequence().withName("Elevator Homing");
-      Command stowElevator = elevator.stow().withName("Stow Elevator");
       Command rampElevator = elevator.ramp().withName("Ramp Elevator");
       Command l1Elevator = elevator.l1().withName("L1 Elevator");
       Command l2Elevator = elevator.l2().withName("L2 Elevator");
@@ -502,8 +511,10 @@ public class RobotContainer {
       Command disableElevator = elevator.release().withName("Disable Elevator");
 
       /* End effector commands */
+      Command groundIntake =
+          SuperstructureCommands.intakeFromGround(elevator, arm, gripper).withName("Ground Intake");
       Command gripperIntake =
-          SuperstructureCommands.intake(elevator, arm, gripper).withName("Gripper Intake");
+          SuperstructureCommands.intake(arm, gripper).withName("Gripper Intake");
       Command gripperEject =
           SuperstructureCommands.outtake(elevator, arm, gripper).withName("Gripper Eject");
       Command deployTongue = arm.tongue().withName("Tongue Deploy");
@@ -525,7 +536,7 @@ public class RobotContainer {
       guitarHeroController
           .green()
           .and(guitarHeroControls)
-          .onTrue(stowElevator.onlyIf(neutralStrumBar));
+          .onTrue(groundIntake.onlyIf(neutralStrumBar));
       guitarHeroController
           .red()
           .and(guitarHeroControls)
