@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.subsystems.objectivetracker.ObjectiveTracker;
 import frc.robot.util.CANivoreReader;
 import frc.robot.util.Elastic;
 import frc.robot.util.LoggedTracer;
@@ -132,6 +133,8 @@ public class Robot extends LoggedRobot {
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
+    ObjectiveTracker.getInstance().reset();
+
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
     // schedule the autonomous command (example)
@@ -172,7 +175,7 @@ public class Robot extends LoggedRobot {
     // Cancels all running commands at the start of test mode.
     CommandScheduler.getInstance().cancelAll();
 
-    RobotStateHandler.getInstance().enable();
+    ObjectiveTracker.getInstance().reset();
   }
 
   /** This function is called periodically during test mode. */

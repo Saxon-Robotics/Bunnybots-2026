@@ -18,6 +18,7 @@ import frc.robot.util.io.motors.MotorIOTalonFX;
 import frc.robot.util.io.motors.roller.Roller;
 import frc.robot.util.io.motors.roller.RollerIO;
 import frc.robot.util.io.motors.roller.RollerIOSim;
+import frc.robot.util.sim.SimulationManager;
 import lombok.Getter;
 import org.littletonrobotics.junction.AutoLogOutput;
 
@@ -38,6 +39,8 @@ public class Gripper extends SubsystemBase {
   @Getter
   @AutoLogOutput(key = "Gripper/HasGamePiece")
   private boolean isLoaded;
+
+  private boolean spunUp;
 
   public Gripper() {
     RollerIO io =
@@ -84,15 +87,27 @@ public class Gripper extends SubsystemBase {
 
   public Command intake() {
     return startRun(
-            () -> roller.runVelocity(-GripperConstants.RPS),
             () -> {
-              if (loadedDebounce.calculate(
-                  roller.getVelocityRPS() < GripperConstants.VELOCITY_THRESHOLD
-                      && roller.getStatorCurrentAmps() > GripperConstants.STATOR_THRESHOLD)) {
+              spunUp = false;
+              roller.runVelocity(-GripperConstants.RPS);
+            },
+            () -> {
+              if (loadedDebounce.calculate(hasGamePiece())) {
                 isLoaded = true;
               }
             })
         .finallyDo(roller::stop);
+  }
+
+  private boolean hasGamePiece() {
+    if (Constants.currentMode == Constants.Mode.SIM) {
+      return SimulationManager.getInstance().isGripperLoaded();
+    }
+    double speed = Math.abs(roller.getVelocityRPS());
+    if (speed > GripperConstants.SPUN_UP_RPS) spunUp = true;
+    return spunUp
+        && speed < GripperConstants.VELOCITY_THRESHOLD
+        && Math.abs(roller.getStatorCurrentAmps()) > GripperConstants.STATOR_THRESHOLD;
   }
 
   public Command eject() {

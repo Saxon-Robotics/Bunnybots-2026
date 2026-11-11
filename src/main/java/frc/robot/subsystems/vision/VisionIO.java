@@ -37,8 +37,7 @@ public interface VisionIO {
   enum PoseObservationType {
     MEGATAG_1,
     MEGATAG_2,
-    PHOTONVISION,
-    EAGLEEYE
+    PHOTONVISION
   }
 
   default void updateInputs(VisionIOInputs inputs) {}

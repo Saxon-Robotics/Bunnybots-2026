@@ -88,19 +88,20 @@ public class AutoAlign {
   }
 
   private static Target getTarget(Target target, Pose2d robotPose, boolean isRedAlliance) {
-    if (target == Target.DEPOT) {
-      if (robotPose
-              .getTranslation()
-              .getSquaredDistance(Target.SIDE_DEPOT.getPose(isRedAlliance).getTranslation())
-          > robotPose
-              .getTranslation()
-              .getSquaredDistance(Target.REAR_DEPOT.getPose(isRedAlliance).getTranslation())) {
-        target = Target.REAR_DEPOT;
-      } else {
-        target = Target.SIDE_DEPOT;
-      }
-    }
+    target = resolve(target, robotPose, isRedAlliance);
     lastTarget = target;
     return target;
+  }
+
+  public static Target resolve(Target target, Pose2d robotPose, boolean isRedAlliance) {
+    if (target != Target.DEPOT) return target;
+    return robotPose
+                .getTranslation()
+                .getSquaredDistance(Target.SIDE_DEPOT.getPose(isRedAlliance).getTranslation())
+            > robotPose
+                .getTranslation()
+                .getSquaredDistance(Target.REAR_DEPOT.getPose(isRedAlliance).getTranslation())
+        ? Target.REAR_DEPOT
+        : Target.SIDE_DEPOT;
   }
 }

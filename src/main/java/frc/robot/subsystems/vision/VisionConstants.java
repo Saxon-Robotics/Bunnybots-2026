@@ -68,6 +68,7 @@ public final class VisionConstants {
   // Basic filtering thresholds
   public static final double MAX_AMBIGUITY = 0.175;
   public static final double MAX_Z_ERROR = 0.75;
+  public static final double MAX_OBJ_AMBIGUITY = 0.3;
 
   // Standard deviation baselines, for 1-meter distance and 1 tag
   // (Adjusted automatically based on distance and # of tags)

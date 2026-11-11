@@ -1,0 +1,987 @@
+{
+  "conditionId": "timeToPark",
+  "yesBranch": {
+    "leafCommandId": "park"
+  },
+  "noBranch": {
+    "conditionId": "gripperLoaded",
+    "yesBranch": {
+      "conditionId": "canScorePantryBeforePark",
+      "yesBranch": {
+        "conditionId": "gripperHasCake",
+        "yesBranch": {
+          "conditionId": "pantryL3NeedsCake",
+          "yesBranch": {
+            "leafCommandId": "scoreL3"
+          },
+          "noBranch": {
+            "conditionId": "pantryL2NeedsCake",
+            "yesBranch": {
+              "leafCommandId": "scoreL2"
+            },
+            "noBranch": {
+              "conditionId": "pantryL1NeedsCake",
+              "yesBranch": {
+                "leafCommandId": "scoreL1"
+              },
+              "noBranch": {
+                "conditionId": "pantryL3NeedsStock",
+                "yesBranch": {
+                  "leafCommandId": "scoreL3"
+                },
+                "noBranch": {
+                  "conditionId": "pantryL2NeedsStock",
+                  "yesBranch": {
+                    "leafCommandId": "scoreL2"
+                  },
+                  "noBranch": {
+                    "conditionId": "pantryL1NeedsStock",
+                    "yesBranch": {
+                      "leafCommandId": "scoreL1"
+                    },
+                    "noBranch": {
+                      "conditionId": "pantryL3Open",
+                      "yesBranch": {
+                        "leafCommandId": "scoreL3"
+                      },
+                      "noBranch": {
+                        "conditionId": "pantryL2Open",
+                        "yesBranch": {
+                          "leafCommandId": "scoreL2"
+                        },
+                        "noBranch": {
+                          "conditionId": "pantryL1Open",
+                          "yesBranch": {
+                            "leafCommandId": "scoreL1"
+                          },
+                          "noBranch": {
+                            "conditionId": "traderLoaded",
+                            "yesBranch": {
+                              "conditionId": "holdForDinner",
+                              "yesBranch": {
+                                "conditionId": "atPieceLimit",
+                                "yesBranch": {
+                                  "leafCommandId": "park"
+                                },
+                                "noBranch": {
+                                  "conditionId": "canCollectDepotBeforePark",
+                                  "yesBranch": {
+                                    "leafCommandId": "traderCollectDepot"
+                                  },
+                                  "noBranch": {
+                                    "leafCommandId": "park"
+                                  }
+                                }
+                              },
+                              "noBranch": {
+                                "conditionId": "canScoreOvenBeforePark",
+                                "yesBranch": {
+                                  "leafCommandId": "scoreOven"
+                                },
+                                "noBranch": {
+                                  "leafCommandId": "park"
+                                }
+                              }
+                            },
+                            "noBranch": {
+                              "conditionId": "isAuto",
+                              "yesBranch": {
+                                "leafCommandId": "stageCenter"
+                              },
+                              "noBranch": {
+                                "conditionId": "canCollectDepotBeforePark",
+                                "yesBranch": {
+                                  "leafCommandId": "traderCollectDepot"
+                                },
+                                "noBranch": {
+                                  "leafCommandId": "park"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "noBranch": {
+          "conditionId": "pantryL3NeedsStock",
+          "yesBranch": {
+            "conditionId": "pantryL3CarrotOk",
+            "yesBranch": {
+              "leafCommandId": "scoreL3"
+            },
+            "noBranch": {
+              "conditionId": "pantryL2NeedsStock",
+              "yesBranch": {
+                "conditionId": "pantryL2CarrotOk",
+                "yesBranch": {
+                  "leafCommandId": "scoreL2"
+                },
+                "noBranch": {
+                  "conditionId": "pantryL1NeedsStock",
+                  "yesBranch": {
+                    "conditionId": "pantryL1CarrotOk",
+                    "yesBranch": {
+                      "leafCommandId": "scoreL1"
+                    },
+                    "noBranch": {
+                      "conditionId": "pantryL3CarrotOk",
+                      "yesBranch": {
+                        "leafCommandId": "scoreL3"
+                      },
+                      "noBranch": {
+                        "conditionId": "pantryL2CarrotOk",
+                        "yesBranch": {
+                          "leafCommandId": "scoreL2"
+                        },
+                        "noBranch": {
+                          "conditionId": "pantryL1CarrotOk",
+                          "yesBranch": {
+                            "leafCommandId": "scoreL1"
+                          },
+                          "noBranch": {
+                            "conditionId": "traderLoaded",
+                            "yesBranch": {
+                              "conditionId": "holdForDinner",
+                              "yesBranch": {
+                                "conditionId": "atPieceLimit",
+                                "yesBranch": {
+                                  "leafCommandId": "park"
+                                },
+                                "noBranch": {
+                                  "conditionId": "canCollectDepotBeforePark",
+                                  "yesBranch": {
+                                    "leafCommandId": "traderCollectDepot"
+                                  },
+                                  "noBranch": {
+                                    "leafCommandId": "park"
+                                  }
+                                }
+                              },
+                              "noBranch": {
+                                "conditionId": "canScoreOvenBeforePark",
+                                "yesBranch": {
+                                  "leafCommandId": "scoreOven"
+                                },
+                                "noBranch": {
+                                  "leafCommandId": "park"
+                                }
+                              }
+                            },
+                            "noBranch": {
+                              "conditionId": "isAuto",
+                              "yesBranch": {
+                                "leafCommandId": "stageCenter"
+                              },
+                              "noBranch": {
+                                "conditionId": "canCollectDepotBeforePark",
+                                "yesBranch": {
+                                  "conditionId": "gripperLoaded",
+                                  "yesBranch": {
+                                    "leafCommandId": "traderCollectDepot"
+                                  },
+                                  "noBranch": {
+                                    "conditionId": "pantryNeedsStock",
+                                    "yesBranch": {
+                                      "leafCommandId": "collectDepotMixed"
+                                    },
+                                    "noBranch": {
+                                      "leafCommandId": "traderCollectDepot"
+                                    }
+                                  }
+                                },
+                                "noBranch": {
+                                  "leafCommandId": "park"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "noBranch": {
+                    "conditionId": "pantryL3CarrotOk",
+                    "yesBranch": {
+                      "leafCommandId": "scoreL3"
+                    },
+                    "noBranch": {
+                      "conditionId": "pantryL2CarrotOk",
+                      "yesBranch": {
+                        "leafCommandId": "scoreL2"
+                      },
+                      "noBranch": {
+                        "conditionId": "pantryL1CarrotOk",
+                        "yesBranch": {
+                          "leafCommandId": "scoreL1"
+                        },
+                        "noBranch": {
+                          "conditionId": "traderLoaded",
+                          "yesBranch": {
+                            "conditionId": "holdForDinner",
+                            "yesBranch": {
+                              "conditionId": "atPieceLimit",
+                              "yesBranch": {
+                                "leafCommandId": "park"
+                              },
+                              "noBranch": {
+                                "conditionId": "canCollectDepotBeforePark",
+                                "yesBranch": {
+                                  "leafCommandId": "traderCollectDepot"
+                                },
+                                "noBranch": {
+                                  "leafCommandId": "park"
+                                }
+                              }
+                            },
+                            "noBranch": {
+                              "conditionId": "canScoreOvenBeforePark",
+                              "yesBranch": {
+                                "leafCommandId": "scoreOven"
+                              },
+                              "noBranch": {
+                                "leafCommandId": "park"
+                              }
+                            }
+                          },
+                          "noBranch": {
+                            "conditionId": "isAuto",
+                            "yesBranch": {
+                              "leafCommandId": "stageCenter"
+                            },
+                            "noBranch": {
+                              "conditionId": "canCollectDepotBeforePark",
+                              "yesBranch": {
+                                "conditionId": "gripperLoaded",
+                                "yesBranch": {
+                                  "leafCommandId": "traderCollectDepot"
+                                },
+                                "noBranch": {
+                                  "conditionId": "pantryNeedsStock",
+                                  "yesBranch": {
+                                    "leafCommandId": "collectDepotMixed"
+                                  },
+                                  "noBranch": {
+                                    "leafCommandId": "traderCollectDepot"
+                                  }
+                                }
+                              },
+                              "noBranch": {
+                                "leafCommandId": "park"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "noBranch": {
+                "conditionId": "pantryL1NeedsStock",
+                "yesBranch": {
+                  "conditionId": "pantryL1CarrotOk",
+                  "yesBranch": {
+                    "leafCommandId": "scoreL1"
+                  },
+                  "noBranch": {
+                    "conditionId": "pantryL3CarrotOk",
+                    "yesBranch": {
+                      "leafCommandId": "scoreL3"
+                    },
+                    "noBranch": {
+                      "conditionId": "pantryL2CarrotOk",
+                      "yesBranch": {
+                        "leafCommandId": "scoreL2"
+                      },
+                      "noBranch": {
+                        "conditionId": "pantryL1CarrotOk",
+                        "yesBranch": {
+                          "leafCommandId": "scoreL1"
+                        },
+                        "noBranch": {
+                          "conditionId": "traderLoaded",
+                          "yesBranch": {
+                            "conditionId": "holdForDinner",
+                            "yesBranch": {
+                              "conditionId": "atPieceLimit",
+                              "yesBranch": {
+                                "leafCommandId": "park"
+                              },
+                              "noBranch": {
+                                "conditionId": "canCollectDepotBeforePark",
+                                "yesBranch": {
+                                  "leafCommandId": "traderCollectDepot"
+                                },
+                                "noBranch": {
+                                  "leafCommandId": "park"
+                                }
+                              }
+                            },
+                            "noBranch": {
+                              "conditionId": "canScoreOvenBeforePark",
+                              "yesBranch": {
+                                "leafCommandId": "scoreOven"
+                              },
+                              "noBranch": {
+                                "leafCommandId": "park"
+                              }
+                            }
+                          },
+                          "noBranch": {
+                            "conditionId": "isAuto",
+                            "yesBranch": {
+                              "leafCommandId": "stageCenter"
+                            },
+                            "noBranch": {
+                              "conditionId": "canCollectDepotBeforePark",
+                              "yesBranch": {
+                                "conditionId": "gripperLoaded",
+                                "yesBranch": {
+                                  "leafCommandId": "traderCollectDepot"
+                                },
+                                "noBranch": {
+                                  "conditionId": "pantryNeedsStock",
+                                  "yesBranch": {
+                                    "leafCommandId": "collectDepotMixed"
+                                  },
+                                  "noBranch": {
+                                    "leafCommandId": "traderCollectDepot"
+                                  }
+                                }
+                              },
+                              "noBranch": {
+                                "leafCommandId": "park"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "noBranch": {
+                  "conditionId": "pantryL3CarrotOk",
+                  "yesBranch": {
+                    "leafCommandId": "scoreL3"
+                  },
+                  "noBranch": {
+                    "conditionId": "pantryL2CarrotOk",
+                    "yesBranch": {
+                      "leafCommandId": "scoreL2"
+                    },
+                    "noBranch": {
+                      "conditionId": "pantryL1CarrotOk",
+                      "yesBranch": {
+                        "leafCommandId": "scoreL1"
+                      },
+                      "noBranch": {
+                        "conditionId": "traderLoaded",
+                        "yesBranch": {
+                          "conditionId": "holdForDinner",
+                          "yesBranch": {
+                            "conditionId": "atPieceLimit",
+                            "yesBranch": {
+                              "leafCommandId": "park"
+                            },
+                            "noBranch": {
+                              "conditionId": "canCollectDepotBeforePark",
+                              "yesBranch": {
+                                "leafCommandId": "traderCollectDepot"
+                              },
+                              "noBranch": {
+                                "leafCommandId": "park"
+                              }
+                            }
+                          },
+                          "noBranch": {
+                            "conditionId": "canScoreOvenBeforePark",
+                            "yesBranch": {
+                              "leafCommandId": "scoreOven"
+                            },
+                            "noBranch": {
+                              "leafCommandId": "park"
+                            }
+                          }
+                        },
+                        "noBranch": {
+                          "conditionId": "isAuto",
+                          "yesBranch": {
+                            "leafCommandId": "stageCenter"
+                          },
+                          "noBranch": {
+                            "conditionId": "canCollectDepotBeforePark",
+                            "yesBranch": {
+                              "conditionId": "gripperLoaded",
+                              "yesBranch": {
+                                "leafCommandId": "traderCollectDepot"
+                              },
+                              "noBranch": {
+                                "conditionId": "pantryNeedsStock",
+                                "yesBranch": {
+                                  "leafCommandId": "collectDepotMixed"
+                                },
+                                "noBranch": {
+                                  "leafCommandId": "traderCollectDepot"
+                                }
+                              }
+                            },
+                            "noBranch": {
+                              "leafCommandId": "park"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "noBranch": {
+            "conditionId": "pantryL2NeedsStock",
+            "yesBranch": {
+              "conditionId": "pantryL2CarrotOk",
+              "yesBranch": {
+                "leafCommandId": "scoreL2"
+              },
+              "noBranch": {
+                "conditionId": "pantryL1NeedsStock",
+                "yesBranch": {
+                  "conditionId": "pantryL1CarrotOk",
+                  "yesBranch": {
+                    "leafCommandId": "scoreL1"
+                  },
+                  "noBranch": {
+                    "conditionId": "pantryL3CarrotOk",
+                    "yesBranch": {
+                      "leafCommandId": "scoreL3"
+                    },
+                    "noBranch": {
+                      "conditionId": "pantryL2CarrotOk",
+                      "yesBranch": {
+                        "leafCommandId": "scoreL2"
+                      },
+                      "noBranch": {
+                        "conditionId": "pantryL1CarrotOk",
+                        "yesBranch": {
+                          "leafCommandId": "scoreL1"
+                        },
+                        "noBranch": {
+                          "conditionId": "traderLoaded",
+                          "yesBranch": {
+                            "conditionId": "holdForDinner",
+                            "yesBranch": {
+                              "conditionId": "atPieceLimit",
+                              "yesBranch": {
+                                "leafCommandId": "park"
+                              },
+                              "noBranch": {
+                                "conditionId": "canCollectDepotBeforePark",
+                                "yesBranch": {
+                                  "leafCommandId": "traderCollectDepot"
+                                },
+                                "noBranch": {
+                                  "leafCommandId": "park"
+                                }
+                              }
+                            },
+                            "noBranch": {
+                              "conditionId": "canScoreOvenBeforePark",
+                              "yesBranch": {
+                                "leafCommandId": "scoreOven"
+                              },
+                              "noBranch": {
+                                "leafCommandId": "park"
+                              }
+                            }
+                          },
+                          "noBranch": {
+                            "conditionId": "isAuto",
+                            "yesBranch": {
+                              "leafCommandId": "stageCenter"
+                            },
+                            "noBranch": {
+                              "conditionId": "canCollectDepotBeforePark",
+                              "yesBranch": {
+                                "leafCommandId": "traderCollectDepot"
+                              },
+                              "noBranch": {
+                                "leafCommandId": "park"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "noBranch": {
+                  "conditionId": "pantryL3CarrotOk",
+                  "yesBranch": {
+                    "leafCommandId": "scoreL3"
+                  },
+                  "noBranch": {
+                    "conditionId": "pantryL2CarrotOk",
+                    "yesBranch": {
+                      "leafCommandId": "scoreL2"
+                    },
+                    "noBranch": {
+                      "conditionId": "pantryL1CarrotOk",
+                      "yesBranch": {
+                        "leafCommandId": "scoreL1"
+                      },
+                      "noBranch": {
+                        "conditionId": "traderLoaded",
+                        "yesBranch": {
+                          "conditionId": "holdForDinner",
+                          "yesBranch": {
+                            "conditionId": "atPieceLimit",
+                            "yesBranch": {
+                              "leafCommandId": "park"
+                            },
+                            "noBranch": {
+                              "conditionId": "canCollectDepotBeforePark",
+                              "yesBranch": {
+                                "leafCommandId": "traderCollectDepot"
+                              },
+                              "noBranch": {
+                                "leafCommandId": "park"
+                              }
+                            }
+                          },
+                          "noBranch": {
+                            "conditionId": "canScoreOvenBeforePark",
+                            "yesBranch": {
+                              "leafCommandId": "scoreOven"
+                            },
+                            "noBranch": {
+                              "leafCommandId": "park"
+                            }
+                          }
+                        },
+                        "noBranch": {
+                          "conditionId": "isAuto",
+                          "yesBranch": {
+                            "leafCommandId": "stageCenter"
+                          },
+                          "noBranch": {
+                            "conditionId": "canCollectDepotBeforePark",
+                            "yesBranch": {
+                              "leafCommandId": "traderCollectDepot"
+                            },
+                            "noBranch": {
+                              "leafCommandId": "park"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "noBranch": {
+              "conditionId": "pantryL1NeedsStock",
+              "yesBranch": {
+                "conditionId": "pantryL1CarrotOk",
+                "yesBranch": {
+                  "leafCommandId": "scoreL1"
+                },
+                "noBranch": {
+                  "conditionId": "pantryL3CarrotOk",
+                  "yesBranch": {
+                    "leafCommandId": "scoreL3"
+                  },
+                  "noBranch": {
+                    "conditionId": "pantryL2CarrotOk",
+                    "yesBranch": {
+                      "leafCommandId": "scoreL2"
+                    },
+                    "noBranch": {
+                      "conditionId": "pantryL1CarrotOk",
+                      "yesBranch": {
+                        "leafCommandId": "scoreL1"
+                      },
+                      "noBranch": {
+                        "conditionId": "traderLoaded",
+                        "yesBranch": {
+                          "conditionId": "holdForDinner",
+                          "yesBranch": {
+                            "conditionId": "atPieceLimit",
+                            "yesBranch": {
+                              "leafCommandId": "park"
+                            },
+                            "noBranch": {
+                              "conditionId": "canCollectDepotBeforePark",
+                              "yesBranch": {
+                                "leafCommandId": "traderCollectDepot"
+                              },
+                              "noBranch": {
+                                "leafCommandId": "park"
+                              }
+                            }
+                          },
+                          "noBranch": {
+                            "conditionId": "canScoreOvenBeforePark",
+                            "yesBranch": {
+                              "leafCommandId": "scoreOven"
+                            },
+                            "noBranch": {
+                              "leafCommandId": "park"
+                            }
+                          }
+                        },
+                        "noBranch": {
+                          "conditionId": "isAuto",
+                          "yesBranch": {
+                            "leafCommandId": "stageCenter"
+                          },
+                          "noBranch": {
+                            "conditionId": "canCollectDepotBeforePark",
+                            "yesBranch": {
+                              "leafCommandId": "traderCollectDepot"
+                            },
+                            "noBranch": {
+                              "leafCommandId": "park"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "noBranch": {
+                "conditionId": "pantryL3CarrotOk",
+                "yesBranch": {
+                  "leafCommandId": "scoreL3"
+                },
+                "noBranch": {
+                  "conditionId": "pantryL2CarrotOk",
+                  "yesBranch": {
+                    "leafCommandId": "scoreL2"
+                  },
+                  "noBranch": {
+                    "conditionId": "pantryL1CarrotOk",
+                    "yesBranch": {
+                      "leafCommandId": "scoreL1"
+                    },
+                    "noBranch": {
+                      "conditionId": "traderLoaded",
+                      "yesBranch": {
+                        "conditionId": "holdForDinner",
+                        "yesBranch": {
+                          "conditionId": "atPieceLimit",
+                          "yesBranch": {
+                            "leafCommandId": "park"
+                          },
+                          "noBranch": {
+                            "conditionId": "canCollectDepotBeforePark",
+                            "yesBranch": {
+                              "leafCommandId": "traderCollectDepot"
+                            },
+                            "noBranch": {
+                              "leafCommandId": "park"
+                            }
+                          }
+                        },
+                        "noBranch": {
+                          "conditionId": "canScoreOvenBeforePark",
+                          "yesBranch": {
+                            "leafCommandId": "scoreOven"
+                          },
+                          "noBranch": {
+                            "leafCommandId": "park"
+                          }
+                        }
+                      },
+                      "noBranch": {
+                        "conditionId": "isAuto",
+                        "yesBranch": {
+                          "leafCommandId": "stageCenter"
+                        },
+                        "noBranch": {
+                          "conditionId": "canCollectDepotBeforePark",
+                          "yesBranch": {
+                            "conditionId": "gripperLoaded",
+                            "yesBranch": {
+                              "leafCommandId": "traderCollectDepot"
+                            },
+                            "noBranch": {
+                              "conditionId": "pantryNeedsStock",
+                              "yesBranch": {
+                                "leafCommandId": "collectDepotMixed"
+                              },
+                              "noBranch": {
+                                "leafCommandId": "traderCollectDepot"
+                              }
+                            }
+                          },
+                          "noBranch": {
+                            "leafCommandId": "park"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "noBranch": {
+        "leafCommandId": "park"
+      }
+    },
+    "noBranch": {
+      "conditionId": "cakeReady",
+      "yesBranch": {
+        "conditionId": "anyPantryOpen",
+        "yesBranch": {
+          "conditionId": "atPieceLimit",
+          "yesBranch": {
+            "conditionId": "traderLoaded",
+            "yesBranch": {
+              "conditionId": "holdForDinner",
+              "yesBranch": {
+                "conditionId": "atPieceLimit",
+                "yesBranch": {
+                  "leafCommandId": "park"
+                },
+                "noBranch": {
+                  "conditionId": "canCollectDepotBeforePark",
+                  "yesBranch": {
+                    "leafCommandId": "traderCollectDepot"
+                  },
+                  "noBranch": {
+                    "leafCommandId": "park"
+                  }
+                }
+              },
+              "noBranch": {
+                "conditionId": "canScoreOvenBeforePark",
+                "yesBranch": {
+                  "leafCommandId": "scoreOven"
+                },
+                "noBranch": {
+                  "leafCommandId": "park"
+                }
+              }
+            },
+            "noBranch": {
+              "conditionId": "isAuto",
+              "yesBranch": {
+                "leafCommandId": "stageCenter"
+              },
+              "noBranch": {
+                "conditionId": "canCollectDepotBeforePark",
+                "yesBranch": {
+                  "conditionId": "gripperLoaded",
+                  "yesBranch": {
+                    "leafCommandId": "traderCollectDepot"
+                  },
+                  "noBranch": {
+                    "conditionId": "pantryNeedsStock",
+                    "yesBranch": {
+                      "leafCommandId": "collectDepotMixed"
+                    },
+                    "noBranch": {
+                      "leafCommandId": "traderCollectDepot"
+                    }
+                  }
+                },
+                "noBranch": {
+                  "leafCommandId": "park"
+                }
+              }
+            }
+          },
+          "noBranch": {
+            "conditionId": "canCollectRampBeforePark",
+            "yesBranch": {
+              "leafCommandId": "collectRamp"
+            },
+            "noBranch": {
+              "conditionId": "traderLoaded",
+              "yesBranch": {
+                "conditionId": "holdForDinner",
+                "yesBranch": {
+                  "conditionId": "atPieceLimit",
+                  "yesBranch": {
+                    "leafCommandId": "park"
+                  },
+                  "noBranch": {
+                    "conditionId": "canCollectDepotBeforePark",
+                    "yesBranch": {
+                      "leafCommandId": "traderCollectDepot"
+                    },
+                    "noBranch": {
+                      "leafCommandId": "park"
+                    }
+                  }
+                },
+                "noBranch": {
+                  "conditionId": "canScoreOvenBeforePark",
+                  "yesBranch": {
+                    "leafCommandId": "scoreOven"
+                  },
+                  "noBranch": {
+                    "leafCommandId": "park"
+                  }
+                }
+              },
+              "noBranch": {
+                "conditionId": "isAuto",
+                "yesBranch": {
+                  "leafCommandId": "stageCenter"
+                },
+                "noBranch": {
+                  "conditionId": "canCollectDepotBeforePark",
+                  "yesBranch": {
+                    "conditionId": "gripperLoaded",
+                    "yesBranch": {
+                      "leafCommandId": "traderCollectDepot"
+                    },
+                    "noBranch": {
+                      "conditionId": "pantryNeedsStock",
+                      "yesBranch": {
+                        "leafCommandId": "collectDepotMixed"
+                      },
+                      "noBranch": {
+                        "leafCommandId": "traderCollectDepot"
+                      }
+                    }
+                  },
+                  "noBranch": {
+                    "leafCommandId": "park"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "noBranch": {
+          "conditionId": "traderLoaded",
+          "yesBranch": {
+            "conditionId": "holdForDinner",
+            "yesBranch": {
+              "conditionId": "atPieceLimit",
+              "yesBranch": {
+                "leafCommandId": "park"
+              },
+              "noBranch": {
+                "conditionId": "canCollectDepotBeforePark",
+                "yesBranch": {
+                  "leafCommandId": "traderCollectDepot"
+                },
+                "noBranch": {
+                  "leafCommandId": "park"
+                }
+              }
+            },
+            "noBranch": {
+              "conditionId": "canScoreOvenBeforePark",
+              "yesBranch": {
+                "leafCommandId": "scoreOven"
+              },
+              "noBranch": {
+                "leafCommandId": "park"
+              }
+            }
+          },
+          "noBranch": {
+            "conditionId": "isAuto",
+            "yesBranch": {
+              "leafCommandId": "stageCenter"
+            },
+            "noBranch": {
+              "conditionId": "canCollectDepotBeforePark",
+              "yesBranch": {
+                "conditionId": "gripperLoaded",
+                "yesBranch": {
+                  "leafCommandId": "traderCollectDepot"
+                },
+                "noBranch": {
+                  "conditionId": "pantryNeedsStock",
+                  "yesBranch": {
+                    "leafCommandId": "collectDepotMixed"
+                  },
+                  "noBranch": {
+                    "leafCommandId": "traderCollectDepot"
+                  }
+                }
+              },
+              "noBranch": {
+                "leafCommandId": "park"
+              }
+            }
+          }
+        }
+      },
+      "noBranch": {
+        "conditionId": "traderLoaded",
+        "yesBranch": {
+          "conditionId": "holdForDinner",
+          "yesBranch": {
+            "conditionId": "atPieceLimit",
+            "yesBranch": {
+              "leafCommandId": "park"
+            },
+            "noBranch": {
+              "conditionId": "canCollectDepotBeforePark",
+              "yesBranch": {
+                "leafCommandId": "traderCollectDepot"
+              },
+              "noBranch": {
+                "leafCommandId": "park"
+              }
+            }
+          },
+          "noBranch": {
+            "conditionId": "canScoreOvenBeforePark",
+            "yesBranch": {
+              "leafCommandId": "scoreOven"
+            },
+            "noBranch": {
+              "leafCommandId": "park"
+            }
+          }
+        },
+        "noBranch": {
+          "conditionId": "isAuto",
+          "yesBranch": {
+            "leafCommandId": "stageCenter"
+          },
+          "noBranch": {
+            "conditionId": "canCollectDepotBeforePark",
+            "yesBranch": {
+              "conditionId": "gripperLoaded",
+              "yesBranch": {
+                "leafCommandId": "traderCollectDepot"
+              },
+              "noBranch": {
+                "conditionId": "pantryNeedsStock",
+                "yesBranch": {
+                  "leafCommandId": "collectDepotMixed"
+                },
+                "noBranch": {
+                  "leafCommandId": "traderCollectDepot"
+                }
+              }
+            },
+            "noBranch": {
+              "leafCommandId": "park"
+            }
+          }
+        }
+      }
+    }
+  }
+}
