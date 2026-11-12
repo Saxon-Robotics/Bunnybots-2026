@@ -9,10 +9,10 @@ import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.util.LoggedTracer;
-import frc.robot.util.LoggedTunableNumber;
 import frc.robot.util.io.motors.MotorIO;
 import frc.robot.util.io.motors.MotorIOTalonFX;
 import frc.robot.util.io.motors.roller.Roller;
@@ -23,11 +23,6 @@ import lombok.Getter;
 import org.littletonrobotics.junction.AutoLogOutput;
 
 public class Gripper extends SubsystemBase {
-  private static final LoggedTunableNumber kP =
-      new LoggedTunableNumber("Gripper/kP", GripperConstants.MOTOR_CONFIG.Slot0.kP);
-  private static final LoggedTunableNumber kD =
-      new LoggedTunableNumber("Gripper/kD", GripperConstants.MOTOR_CONFIG.Slot0.kD);
-
   private final Roller roller;
 
   private final Alert topDisconnectedAlert =
@@ -40,6 +35,8 @@ public class Gripper extends SubsystemBase {
   @AutoLogOutput(key = "Gripper/HasGamePiece")
   private boolean isLoaded;
 
+  private boolean idle;
+  private boolean movingHold;
   private boolean spunUp;
 
   public Gripper() {
@@ -50,13 +47,6 @@ public class Gripper extends SubsystemBase {
                   Constants.CANConstants.GRIPPER_TOP,
                   GripperConstants.MOTOR_CONFIG)
               .addFollower(Constants.CANConstants.GRIPPER_BOTTOM, MotorAlignmentValue.Aligned)
-              // for tuning
-              .addControlRequest(
-                  (motor, p) ->
-                      motor.getConfigurator().apply(GripperConstants.MOTOR_CONFIG.Slot0.withKP(p)))
-              .addControlRequest(
-                  (motor, d) ->
-                      motor.getConfigurator().apply(GripperConstants.MOTOR_CONFIG.Slot0.withKD(d)))
               .build();
           case SIM -> new RollerIOSim(
               DCMotor.getKrakenX44(1),
@@ -75,19 +65,18 @@ public class Gripper extends SubsystemBase {
     topDisconnectedAlert.set(!roller.isConnected());
     bottomDisconnectedAlert.set(!roller.getFollowerConnected()[0]);
 
-    if (kP.hasChanged(hashCode())) {
-      roller.getIO().setOutput(0, kP.get());
-    }
-    if (kD.hasChanged(hashCode())) {
-      roller.getIO().setOutput(1, kD.get());
-    }
-
     LoggedTracer.record("Gripper/Periodic");
+  }
+
+  private void stop() {
+    roller.stop();
+    idle = true;
   }
 
   public Command intake() {
     return startRun(
             () -> {
+              idle = false;
               spunUp = false;
               roller.runVelocity(-GripperConstants.RPS);
             },
@@ -96,7 +85,37 @@ public class Gripper extends SubsystemBase {
                 isLoaded = true;
               }
             })
-        .finallyDo(roller::stop);
+        .finallyDo(this::stop);
+  }
+
+  public Command holdStatic() {
+    return Commands.waitUntil(() -> idle && !movingHold)
+        .andThen(
+            startEnd(
+                () -> roller.runVoltage(GripperConstants.STATIC_HOLDING_VOLTAGE), roller::stop));
+  }
+
+  public Command holdMoving() {
+    return Commands.waitUntil(() -> idle)
+        .andThen(
+            startEnd(
+                () -> {
+                  movingHold = true;
+                  roller.runVoltage(GripperConstants.MOVING_HOLDING_VOLTAGE);
+                },
+                roller::stop));
+  }
+
+  public Command eject() {
+    return startEnd(
+        () -> {
+          idle = false;
+          roller.runVoltage(GripperConstants.VOLTAGE);
+        },
+        () -> {
+          stop();
+          isLoaded = false;
+        });
   }
 
   private boolean hasGamePiece() {
@@ -108,15 +127,6 @@ public class Gripper extends SubsystemBase {
     return spunUp
         && speed < GripperConstants.VELOCITY_THRESHOLD
         && Math.abs(roller.getStatorCurrentAmps()) > GripperConstants.STATOR_THRESHOLD;
-  }
-
-  public Command eject() {
-    return startEnd(
-        () -> roller.runVoltage(GripperConstants.VOLTAGE),
-        () -> {
-          roller.stop();
-          isLoaded = false;
-        });
   }
 
   public double getVelocityRPS() {

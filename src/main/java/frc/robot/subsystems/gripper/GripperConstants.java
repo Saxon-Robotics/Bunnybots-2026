@@ -10,6 +10,8 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 public final class GripperConstants {
   public static final double RPS = 50;
   public static final double VOLTAGE = 7.0;
+  public static final double STATIC_HOLDING_VOLTAGE = -0.5;
+  public static final double MOVING_HOLDING_VOLTAGE = -1.5;
 
   public static final double MOI = 0.002;
 

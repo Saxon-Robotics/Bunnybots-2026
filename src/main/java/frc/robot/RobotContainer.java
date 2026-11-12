@@ -342,6 +342,8 @@ public class RobotContainer {
     // elevator override
     new Trigger(() -> elevatorJoystick.getAsDouble() != 0.0).whileTrue(manualElevator);
 
+    SuperstructureCommands.setupTriggers(arm, gripper);
+
     /* driver controls */
     driverController.x().whileTrue(lockWheels);
     driverController.y().onTrue(zeroGyro);
