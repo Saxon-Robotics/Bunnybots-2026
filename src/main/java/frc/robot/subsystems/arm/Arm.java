@@ -89,7 +89,7 @@ public class Arm extends ExtendedSubsystem {
         };
 
     pivot =
-        new Pivot("Arm", pivotIO, encoderIO, () -> !coastOverride)
+        new Pivot("Arm", pivotIO, encoderIO)
             .enableVisualization(
                 () -> new Translation3d(0.3, 0, 0.1 + elevatorHeightMeters.getAsDouble()),
                 () -> Rotation3d.kZero);
@@ -105,8 +105,20 @@ public class Arm extends ExtendedSubsystem {
   }
 
   @Override
+  public void enable() {
+    pivot.stop();
+  }
+
+  @Override
+  public void disable() {
+    pivot.stop();
+  }
+
+  @Override
   public void periodic() {
     pivot.periodic();
+    Logger.recordOutput("Arm/AbsolutePositionDeg", pivot.getAbsolutePosition().in(Degrees));
+
     if (ArmConstants.ENABLED) {
       disconnectedAlert.set(!pivot.isConnected());
       encoderDisconnectedAlert.set(!pivot.isEncoderConnected());

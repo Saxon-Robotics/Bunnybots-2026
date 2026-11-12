@@ -9,7 +9,7 @@ import edu.wpi.first.units.measure.Angle;
 import frc.robot.Constants;
 
 public final class ArmConstants {
-  public static final boolean ENABLED = false;
+  public static final boolean ENABLED = true;
 
   public static final double SETPOINT_TOLERANCE = 2.5; // deg
   public static final double STOW_DELAY = 1.0;
@@ -17,7 +17,7 @@ public final class ArmConstants {
   // physical constraints
   public static final double GEAR_RATIO = 64;
   public static final double RADIUS = Units.inchesToMeters(18.6); // m
-  public static final double MASS = Units.lbsToKilograms(15.0); // kg
+  public static final double MASS = Units.lbsToKilograms(16.0); // kg
   public static final double MIN_ANGLE_RAD = 0.0;
   public static final double MAX_ANGLE_RAD = Math.toRadians(100);
 
@@ -26,15 +26,15 @@ public final class ArmConstants {
 
   public enum Setpoint {
     NONE(Rotations.of(0)),
-    STOWED(Rotations.of(0)),
+    STOWED(Rotations.of(90)),
     // intake
-    RAMP(Degrees.of(0)),
-    GROUND(Degrees.of(90)),
+    RAMP(Degrees.of(90)),
+    GROUND(Degrees.of(-5)),
     // outtake
-    OVEN(Degrees.of(30)),
-    PANTRY(Degrees.of(45)),
+    OVEN(Degrees.of(70)),
+    PANTRY(Degrees.of(60)),
     // tung
-    TONGUE(Degrees.of(30));
+    TONGUE(Degrees.of(45));
 
     public final Angle angle;
 
@@ -53,7 +53,7 @@ public final class ArmConstants {
                   .withSupplyCurrentLimitEnable(true))
           .withMotorOutput(
               new MotorOutputConfigs()
-                  .withInverted(InvertedValue.CounterClockwise_Positive)
+                  .withInverted(InvertedValue.Clockwise_Positive)
                   .withNeutralMode(NeutralModeValue.Brake))
           .withFeedback(
               new FeedbackConfigs()
@@ -62,13 +62,13 @@ public final class ArmConstants {
                   .withRotorToSensorRatio(GEAR_RATIO))
           .withSlot0(
               new Slot0Configs()
-                  .withKP(142.248)
+                  .withKP(20)
                   .withKI(0)
-                  .withKD(2.487)
+                  .withKD(0.0)
                   .withKS(0)
                   .withKV(7.540)
-                  .withKA(0.096)
-                  .withKG(0.316)
+                  .withKA(0.083)
+                  .withKG(0.275)
                   .withGravityType(GravityTypeValue.Arm_Cosine))
           .withMotionMagic(
               new MotionMagicConfigs()
@@ -80,5 +80,6 @@ public final class ArmConstants {
           .withMagnetSensor(
               new MagnetSensorConfigs()
                   .withSensorDirection(SensorDirectionValue.CounterClockwise_Positive)
-                  .withMagnetOffset(Degrees.of(0)));
+                  .withMagnetOffset(Radians.zero())
+                  .withAbsoluteSensorDiscontinuityPoint(0.7));
 }

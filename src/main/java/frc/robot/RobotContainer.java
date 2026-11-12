@@ -364,7 +364,7 @@ public class RobotContainer {
             () -> RobotUtil.requestOperatorRumble(elevatorRumble),
             () -> RobotUtil.stopOperatorRumble(elevatorRumble));
     // controller vibrates when elevator buttons are pressed
-    operatorController.povDown().onTrue(groundIntake).whileTrue(rumbleCommand);
+    operatorController.povDown().whileTrue(groundIntake).whileTrue(rumbleCommand);
     operatorController.leftBumper().onTrue(rampElevator).whileTrue(rumbleCommand);
     operatorController.povLeft().onTrue(l1Elevator).whileTrue(rumbleCommand);
     operatorController.povRight().onTrue(l2Elevator).whileTrue(rumbleCommand);
@@ -536,7 +536,7 @@ public class RobotContainer {
       guitarHeroController
           .green()
           .and(guitarHeroControls)
-          .onTrue(groundIntake.onlyIf(neutralStrumBar));
+          .whileTrue(groundIntake.onlyIf(neutralStrumBar));
       guitarHeroController
           .red()
           .and(guitarHeroControls)
