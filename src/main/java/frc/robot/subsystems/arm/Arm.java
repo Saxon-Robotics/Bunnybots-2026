@@ -2,6 +2,7 @@ package frc.robot.subsystems.arm;
 
 import static edu.wpi.first.units.Units.*;
 
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -54,6 +55,7 @@ public class Arm extends ExtendedSubsystem {
                       Constants.CANConstants.SUPERSTRUCTURE,
                       Constants.CANConstants.ARM,
                       ArmConstants.PIVOT_CONFIG)
+                  .addControlRequest(new MotionMagicVoltage(0))
                   // for tuning
                   .addControlRequest(
                       (motor, p) ->

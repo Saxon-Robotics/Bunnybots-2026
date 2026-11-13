@@ -25,8 +25,8 @@ public final class ArmConstants {
   public static final double MAX_PIVOT_ACCELERATION = 10;
 
   public enum Setpoint {
-    NONE(Rotations.of(0)),
-    STOWED(Rotations.of(90)),
+    NONE(Degrees.of(0)),
+    STOWED(Degrees.of(99)),
     // intake
     RAMP(Degrees.of(90)),
     GROUND(Degrees.of(-5)),
@@ -62,7 +62,7 @@ public final class ArmConstants {
                   .withRotorToSensorRatio(GEAR_RATIO))
           .withSlot0(
               new Slot0Configs()
-                  .withKP(20)
+                  .withKP(30)
                   .withKI(0)
                   .withKD(0.0)
                   .withKS(0)
@@ -80,6 +80,6 @@ public final class ArmConstants {
           .withMagnetSensor(
               new MagnetSensorConfigs()
                   .withSensorDirection(SensorDirectionValue.CounterClockwise_Positive)
-                  .withMagnetOffset(Radians.zero())
+                  .withMagnetOffset(0.107421875)
                   .withAbsoluteSensorDiscontinuityPoint(0.7));
 }
