@@ -47,7 +47,7 @@
   "path_groups": [],
   "linked_targets": [],
   "paths": {
-    "s-pantrytocarrot.json": {
+    "s_PantryToCarrot.json": {
       "display_name": "s_PantryToCarrot",
       "editor_metadata": {
         "ranged_constraints": [
@@ -80,7 +80,7 @@
         ]
       }
     },
-    "pantrytooven.json": {
+    "PantryToOven.json": {
       "display_name": "PantryToOven",
       "editor_metadata": null
     },

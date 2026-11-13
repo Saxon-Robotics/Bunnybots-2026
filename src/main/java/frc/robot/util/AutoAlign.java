@@ -66,8 +66,8 @@ public class AutoAlign {
   /** Set and retrieve the goal of an {@link AutoAlign.Target}. */
   public static Pose2d setTarget(Target target, Pose2d robotPose) {
     boolean isRedAlliance = RobotUtil.isRedAlliance();
-    target = getTarget(target, robotPose, isRedAlliance);
-
+    target = resolve(target, robotPose, isRedAlliance);
+    lastTarget = target;
     lastTargetPose = target.getPose(isRedAlliance);
     lastAPTarget = new APTarget(lastTargetPose);
     Logger.recordOutput("AutoAlign/Target", target);
@@ -81,16 +81,14 @@ public class AutoAlign {
    */
   public static void setTargetPose(Target target, Pose2d targetPose) {
     lastTarget = target;
-    lastTargetPose = targetPose;
+    if (targetPose != null) {
+      lastTargetPose = targetPose;
+    } else {
+      lastTargetPose = target.getPose(RobotUtil.isRedAlliance());
+    }
     lastAPTarget = new APTarget(lastTargetPose);
     Logger.recordOutput("AutoAlign/Target", lastTarget);
     Logger.recordOutput("AutoAlign/TargetPose", lastTargetPose);
-  }
-
-  private static Target getTarget(Target target, Pose2d robotPose, boolean isRedAlliance) {
-    target = resolve(target, robotPose, isRedAlliance);
-    lastTarget = target;
-    return target;
   }
 
   public static Target resolve(Target target, Pose2d robotPose, boolean isRedAlliance) {

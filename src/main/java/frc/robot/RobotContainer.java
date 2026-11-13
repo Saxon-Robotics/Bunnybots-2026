@@ -19,10 +19,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.ControlScheme;
 import frc.robot.Constants.ControllerConstants;
-import frc.robot.commands.BLineAutos;
-import frc.robot.commands.DriveCommands;
-import frc.robot.commands.SelfDriving;
-import frc.robot.commands.SuperstructureCommands;
+import frc.robot.commands.*;
 import frc.robot.generated.TunerConstants;
 import frc.robot.lib.BLine.FollowPath;
 import frc.robot.subsystems.arm.Arm;
@@ -471,6 +468,9 @@ public class RobotContainer {
     }
 
     NamedCommands.registerCommand("ScorePantry", scorePantry);
+    NamedCommands.registerCommand("ScoreL1", Autos.scorePantry(0, drive, elevator, arm, gripper));
+    NamedCommands.registerCommand("ScoreL2", Autos.scorePantry(1, drive, elevator, arm, gripper));
+    NamedCommands.registerCommand("ScoreL3", Autos.scorePantry(2, drive, elevator, arm, gripper));
     NamedCommands.registerCommand("ScoreOven", scoreOven);
     NamedCommands.registerCommand("IntakeRamp", intakeFromRamp);
     NamedCommands.registerCommand("IntakeGround", intakeFromGround);
