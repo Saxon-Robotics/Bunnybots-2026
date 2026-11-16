@@ -17,6 +17,7 @@ import org.littletonrobotics.junction.Logger;
 public class Pivot extends Motor<PivotIO, PivotIOInputsAutoLogged> {
   private Supplier<Translation3d> translationOffset;
   private Supplier<Rotation3d> rotationOffset;
+  private int pitchSign;
 
   public Pivot(String name, PivotIO io, EncoderIO encoderIO, BooleanSupplier brakeMode) {
     super(name, io, new PivotIOInputsAutoLogged(), encoderIO, brakeMode);
@@ -34,13 +35,16 @@ public class Pivot extends Motor<PivotIO, PivotIOInputsAutoLogged> {
   /**
    * Set up visualization for this mechanism.
    *
+   * @param inverted Pivot inverted state. Use this to negate the pitch (Y) axis of the pivot's
+   *     rotation.
    * @param offset Pivot offset. The pivot will move rotationally in the pitch (Y) axis. This can be
    *     changed by adding a yaw or roll transform. If this is set to null, visualization will be
    *     disabled.
    * @return The modified {@link Pivot} object for method chaining.
    */
-  public Pivot enableVisualization(Transform3d offset) {
+  public Pivot enableVisualization(boolean inverted, Transform3d offset) {
     if (offset == null) return this;
+    this.pitchSign = inverted ? -1 : 1;
     this.translationOffset = offset::getTranslation;
     this.rotationOffset = offset::getRotation;
     return this;
@@ -49,6 +53,8 @@ public class Pivot extends Motor<PivotIO, PivotIOInputsAutoLogged> {
   /**
    * Set up visualization for this mechanism with dynamic offsets.
    *
+   * @param inverted Pivot inverted state. Use this to negate the pitch (Y) axis of the pivot's
+   *     rotation.
    * @param translation Pivot translational offset. If this is set to null, visualization will be
    *     disabled.
    * @param rotation Pivot rotational offset. The pivot will move in the pitch (Y) axis. This can be
@@ -57,11 +63,12 @@ public class Pivot extends Motor<PivotIO, PivotIOInputsAutoLogged> {
    * @return The modified {@link Pivot} object for method chaining.
    */
   public Pivot enableVisualization(
-      Supplier<Translation3d> translation, Supplier<Rotation3d> rotation) {
+      boolean inverted, Supplier<Translation3d> translation, Supplier<Rotation3d> rotation) {
     if (translation == null) return this;
     if (rotation == null) {
       rotation = () -> Rotation3d.kZero;
     }
+    this.pitchSign = inverted ? -1 : 1;
     this.translationOffset = translation;
     this.rotationOffset = rotation;
     return this;
@@ -81,7 +88,7 @@ public class Pivot extends Motor<PivotIO, PivotIOInputsAutoLogged> {
               translationOffset.get(),
               rotationOffset
                   .get()
-                  .rotateBy(new Rotation3d(0, Math.toRadians(getPositionDeg()), 0))));
+                  .rotateBy(new Rotation3d(0, pitchSign * Math.toRadians(getPositionDeg()), 0))));
     }
   }
 

@@ -73,7 +73,7 @@ public class Arm extends ExtendedSubsystem {
                   ArmConstants.RADIUS,
                   ArmConstants.MIN_ANGLE_RAD,
                   ArmConstants.MAX_ANGLE_RAD,
-                  0),
+                  ArmConstants.MAX_ANGLE_RAD),
               ArmConstants.PIVOT_CONFIG.Slot0.kP,
               ArmConstants.PIVOT_CONFIG.Slot0.kD,
               0);
@@ -90,11 +90,14 @@ public class Arm extends ExtendedSubsystem {
           default -> inputs -> {};
         };
 
+    Rotation3d pivotOffset = new Rotation3d(0, ArmConstants.MAX_ANGLE_RAD, 0);
+
     pivot =
         new Pivot("Arm", pivotIO, encoderIO)
             .enableVisualization(
+                true,
                 () -> new Translation3d(0.3, 0, 0.1 + elevatorHeightMeters.getAsDouble()),
-                () -> Rotation3d.kZero);
+                () -> pivotOffset);
 
     if (!ArmConstants.ENABLED) {
       new Alert(
@@ -180,7 +183,7 @@ public class Arm extends ExtendedSubsystem {
   }
 
   public double getPositionDeg() {
-    return pivot.getAbsolutePosition().in(Degrees);
+    return pivot.getPositionDeg();
   }
 
   @AutoLogOutput(key = "Arm/AtSetpoint")

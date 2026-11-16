@@ -389,7 +389,7 @@ public class RobotContainer {
       keyboard.button(2).onTrue(l2Elevator);
       keyboard.button(3).onTrue(l3Elevator);
       keyboard.button(4).onTrue(rampElevator);
-      keyboard.button(5).onTrue(groundIntake);
+      keyboard.button(5).whileTrue(groundIntake);
       keyboard.button(6).whileTrue(gripperIntake);
       keyboard.button(7).whileTrue(gripperEject);
       keyboard.button(8).whileTrue(traderEject);
