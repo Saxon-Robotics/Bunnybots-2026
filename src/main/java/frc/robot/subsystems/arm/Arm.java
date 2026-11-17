@@ -2,7 +2,6 @@ package frc.robot.subsystems.arm;
 
 import static edu.wpi.first.units.Units.*;
 
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -55,7 +54,6 @@ public class Arm extends ExtendedSubsystem {
                       Constants.CANConstants.SUPERSTRUCTURE,
                       Constants.CANConstants.ARM,
                       ArmConstants.PIVOT_CONFIG)
-                  .addControlRequest(new MotionMagicVoltage(0))
                   // for tuning
                   .addControlRequest(
                       (motor, p) ->
@@ -111,11 +109,13 @@ public class Arm extends ExtendedSubsystem {
 
   @Override
   public void enable() {
+    coastOverride = false;
     pivot.stop();
   }
 
   @Override
   public void disable() {
+    coastOverride = true;
     pivot.stop();
   }
 
@@ -180,6 +180,17 @@ public class Arm extends ExtendedSubsystem {
 
   public Command tongue() {
     return startEnd(() -> runSetpoint(Setpoint.TONGUE), this::stow);
+  }
+
+  public Command release() {
+    return startEnd(
+            () -> {
+              coastOverride = true;
+              pivot.stop();
+            },
+            () -> coastOverride = false)
+        .withInterruptBehavior(Command.InterruptionBehavior.kCancelIncoming)
+        .ignoringDisable(true);
   }
 
   public double getPositionDeg() {

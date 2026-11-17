@@ -9,9 +9,9 @@ import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.subsystems.arm.Arm;
 import frc.robot.util.LoggedTracer;
 import frc.robot.util.io.motors.MotorIO;
 import frc.robot.util.io.motors.MotorIOTalonFX;
@@ -35,8 +35,7 @@ public class Gripper extends SubsystemBase {
   @AutoLogOutput(key = "Gripper/HasGamePiece")
   private boolean isLoaded;
 
-  private boolean idle;
-  private boolean movingHold;
+  private boolean idleHold;
   private boolean spunUp;
 
   public Gripper() {
@@ -68,15 +67,9 @@ public class Gripper extends SubsystemBase {
     LoggedTracer.record("Gripper/Periodic");
   }
 
-  private void stop() {
-    roller.stop();
-    idle = true;
-  }
-
   public Command intake() {
     return startRun(
             () -> {
-              idle = false;
               spunUp = false;
               roller.runVelocity(-GripperConstants.RPS);
             },
@@ -85,36 +78,35 @@ public class Gripper extends SubsystemBase {
                 isLoaded = true;
               }
             })
-        .finallyDo(this::stop);
-  }
-
-  public Command holdStatic() {
-    return Commands.waitUntil(() -> idle && !movingHold)
-        .andThen(
-            startEnd(
-                () -> roller.runVoltage(GripperConstants.STATIC_HOLDING_VOLTAGE), roller::stop));
-  }
-
-  public Command holdMoving() {
-    return Commands.waitUntil(() -> idle)
-        .andThen(
-            startEnd(
-                () -> {
-                  movingHold = true;
-                  roller.runVoltage(GripperConstants.MOVING_HOLDING_VOLTAGE);
-                },
-                roller::stop));
+        .finallyDo(roller::stop);
   }
 
   public Command eject() {
     return startEnd(
+        () -> roller.runVoltage(GripperConstants.VOLTAGE),
         () -> {
-          idle = false;
-          roller.runVoltage(GripperConstants.VOLTAGE);
+          roller.stop();
+          isLoaded = false;
+        });
+  }
+
+  public Command hold(Arm arm) {
+    return runEnd(
+        () -> {
+          if (isLoaded) {
+            roller.runVoltage(
+                arm.hasReachedSetpoint()
+                    ? GripperConstants.STATIC_HOLDING_VOLTAGE
+                    : GripperConstants.MOVING_HOLDING_VOLTAGE);
+            idleHold = true;
+          } else if (idleHold) {
+            roller.stop();
+            idleHold = false;
+          }
         },
         () -> {
-          stop();
-          isLoaded = false;
+          roller.stop();
+          idleHold = false;
         });
   }
 

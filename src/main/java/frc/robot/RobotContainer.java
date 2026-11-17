@@ -35,10 +35,7 @@ import frc.robot.subsystems.gripper.Gripper;
 import frc.robot.subsystems.gripper.GripperConstants;
 import frc.robot.subsystems.objectivetracker.ObjectiveTracker;
 import frc.robot.subsystems.trader.Trader;
-import frc.robot.subsystems.vision.Vision;
-import frc.robot.subsystems.vision.VisionConstants;
-import frc.robot.subsystems.vision.VisionIO;
-import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
+import frc.robot.subsystems.vision.*;
 import frc.robot.util.AutoAlign;
 import frc.robot.util.BetterAutoChooser;
 import frc.robot.util.RobotUtil;
@@ -102,15 +99,17 @@ public class RobotContainer {
                 new ModuleIOTalonFXReal(TunerConstants.BackLeft, false),
                 new ModuleIOTalonFXReal(TunerConstants.BackRight, false),
                 pose -> {});
-        vision = new Vision(drive, new VisionIO() {});
-        //                new VisionIOPhotonVision(
-        //                    VisionConstants.CAMERA_0_NAME, VisionConstants.CAMERA_0_OFFSET),
-        //                new VisionIOPhotonVision(
-        //                    VisionConstants.CAMERA_1_NAME, VisionConstants.CAMERA_1_OFFSET),
-        //                new VisionIOPhotonVision(
-        //                    VisionConstants.CAMERA_2_NAME, VisionConstants.CAMERA_2_OFFSET),
-        //                new VisionIOPhotonVision(
-        //                    VisionConstants.CAMERA_3_NAME, VisionConstants.CAMERA_3_OFFSET));
+        vision =
+            new Vision(
+                drive,
+                new VisionIOPhotonVision(
+                    VisionConstants.CAMERA_0_NAME, VisionConstants.CAMERA_0_OFFSET),
+                new VisionIOPhotonVision(
+                    VisionConstants.CAMERA_1_NAME, VisionConstants.CAMERA_1_OFFSET),
+                new VisionIOPhotonVision(
+                    VisionConstants.CAMERA_2_NAME, VisionConstants.CAMERA_2_OFFSET),
+                new VisionIOPhotonVision(
+                    VisionConstants.CAMERA_3_NAME, VisionConstants.CAMERA_3_OFFSET));
         elevator = new Elevator();
         arm = new Arm(elevator::getPositionMeters);
         gripper = new Gripper();
@@ -335,11 +334,10 @@ public class RobotContainer {
     Command traderReverse = trader.reverse().withName("Trader Reverse");
 
     drive.setDefaultCommand(defaultDriveCommand);
+    gripper.setDefaultCommand(gripper.hold(arm).withName("Gripper Default Hold"));
 
     // elevator override
     new Trigger(() -> elevatorJoystick.getAsDouble() != 0.0).whileTrue(manualElevator);
-
-    SuperstructureCommands.setupTriggers(arm, gripper);
 
     /* driver controls */
     driverController.x().whileTrue(lockWheels);
@@ -520,6 +518,7 @@ public class RobotContainer {
       Command gripperEject =
           SuperstructureCommands.outtake(elevator, arm, gripper).withName("Gripper Eject");
       Command deployTongue = arm.tongue().withName("Tongue Deploy");
+      Command disableArm = arm.release().withName("Arm Disable");
 
       /* Trader commands */
       Command traderReverse = trader.reverse().withName("Trader Reverse");
@@ -594,6 +593,7 @@ public class RobotContainer {
           .and(guitarHeroControls)
           .and(downStrumBar)
           .whileTrue(traderEject);
+      guitarHeroController.yellow().and(guitarHeroControls).and(upStrumBar).whileTrue(disableArm);
     }
   }
 

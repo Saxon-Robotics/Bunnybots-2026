@@ -20,7 +20,6 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.subsystems.vision.VisionIO.PoseObservationType;
 import frc.robot.util.LoggedTracer;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -144,10 +143,10 @@ public class Vision extends SubsystemBase {
             Math.pow(observation.averageTagDistance(), 2.0) / observation.tagCount();
         double linearStdDev = LINEAR_STD_DEV_BASELINE * stdDevFactor;
         double angularStdDev = ANGULAR_STD_DEV_BASELINE * stdDevFactor;
-        if (observation.type() == PoseObservationType.MEGATAG_2) {
-          linearStdDev *= LINEAR_STD_DEV_MEGATAG_2_FACTOR;
-          angularStdDev *= ANGULAR_STD_DEV_MEGATAG_2_FACTOR;
-        }
+        //        if (observation.type() == PoseObservationType.MEGATAG_2) {
+        //          linearStdDev *= LINEAR_STD_DEV_MEGATAG_2_FACTOR;
+        //          angularStdDev *= ANGULAR_STD_DEV_MEGATAG_2_FACTOR;
+        //        }
         if (cameraIndex < CAMERA_STD_DEV_FACTORS.length) {
           linearStdDev *= CAMERA_STD_DEV_FACTORS[cameraIndex];
           angularStdDev *= CAMERA_STD_DEV_FACTORS[cameraIndex];

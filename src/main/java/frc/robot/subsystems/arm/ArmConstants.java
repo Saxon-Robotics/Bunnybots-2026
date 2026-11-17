@@ -26,10 +26,10 @@ public final class ArmConstants {
 
   public enum Setpoint {
     NONE(Degrees.of(0)),
-    STOWED(Degrees.of(99)),
+    STOWED(Degrees.of(100)),
     // intake
-    RAMP(Degrees.of(90)),
-    GROUND(Degrees.of(-5)),
+    RAMP(STOWED.angle),
+    GROUND(Degrees.of(0)),
     // outtake
     OVEN(Degrees.of(70)),
     PANTRY(Degrees.of(60)),
@@ -65,10 +65,10 @@ public final class ArmConstants {
                   .withKP(30)
                   .withKI(0)
                   .withKD(0.0)
-                  .withKS(0)
-                  .withKV(7.540)
-                  .withKA(0.083)
-                  .withKG(0.275)
+                  .withKS(0.06)
+                  //                  .withKV(7.540)
+                  //                  .withKA(0.083)
+                  .withKG(0.24)
                   .withGravityType(GravityTypeValue.Arm_Cosine))
           .withMotionMagic(
               new MotionMagicConfigs()
