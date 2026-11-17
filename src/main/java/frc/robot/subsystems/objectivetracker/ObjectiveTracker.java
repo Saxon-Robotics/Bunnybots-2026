@@ -174,6 +174,9 @@ public class ObjectiveTracker extends SubsystemBase {
 
     updateTraderPieces();
 
+    Logger.recordOutput(
+        "ObjectiveTracker/TraderPieces",
+        traderPieces.stream().map(GamePiece::name).toArray(String[]::new));
     Logger.recordOutput("ObjectiveTracker/OvenCarrots", ovenCarrots);
     Logger.recordOutput("ObjectiveTracker/OvenCakes", ovenCakes);
     Logger.recordOutput("ObjectiveTracker/CakesCollected", cakesCollected);
@@ -201,7 +204,7 @@ public class ObjectiveTracker extends SubsystemBase {
 
     traderPieces.clear();
     pendingTraderCount = trader.getNumGamePieces();
-    pendingTraderCountSince = Timer.getFPGATimestamp();
+    pendingTraderCountSince = Timer.getTimestamp();
     for (int i = 0; i < pendingTraderCount; i++) {
       traderPieces.add(GamePiece.CARROT);
     }
@@ -209,7 +212,7 @@ public class ObjectiveTracker extends SubsystemBase {
   }
 
   private void updateTraderPieces() {
-    double now = Timer.getFPGATimestamp();
+    double now = Timer.getTimestamp();
     int rawCount = trader.getNumGamePieces();
     if (rawCount != pendingTraderCount) {
       pendingTraderCount = rawCount;
@@ -386,7 +389,7 @@ public class ObjectiveTracker extends SubsystemBase {
       }
       if (seenThisLoop.add(candidate)) candidate.addSighting(x, now);
       if (candidate.sightings >= PANTRY_CONFIRMATIONS && hasPantrySlot(level)) {
-        pantry.get(level).add(candidate.x);
+        addPantryPiece(level, candidate.x);
         if (candidate.isCarrotCake) pantryCakes[candidate.level] += 1;
         pantryCandidates.remove(candidate);
       }
