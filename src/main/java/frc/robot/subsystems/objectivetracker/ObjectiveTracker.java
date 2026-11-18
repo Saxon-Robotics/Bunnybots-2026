@@ -97,6 +97,7 @@ public class ObjectiveTracker extends SubsystemBase {
   @Getter private int ovenCakes;
 
   private final Queue<GamePiece> traderPieces = new ArrayDeque<>(3);
+  private String[] traderPieceNames = new String[0];
   private static final double TRADER_COUNT_DEBOUNCE_SEC = 0.1;
   private int pendingTraderCount;
   private double pendingTraderCountSince;
@@ -174,9 +175,7 @@ public class ObjectiveTracker extends SubsystemBase {
 
     updateTraderPieces();
 
-    Logger.recordOutput(
-        "ObjectiveTracker/TraderPieces",
-        traderPieces.stream().map(GamePiece::name).toArray(String[]::new));
+    Logger.recordOutput("ObjectiveTracker/TraderPieces", traderPieceNames);
     Logger.recordOutput("ObjectiveTracker/OvenCarrots", ovenCarrots);
     Logger.recordOutput("ObjectiveTracker/OvenCakes", ovenCakes);
     Logger.recordOutput("ObjectiveTracker/CakesCollected", cakesCollected);
@@ -208,6 +207,7 @@ public class ObjectiveTracker extends SubsystemBase {
     for (int i = 0; i < pendingTraderCount; i++) {
       traderPieces.add(GamePiece.CARROT);
     }
+    refreshTraderPieceNames();
     gripperHeld = gripper.isLoaded() ? GamePiece.CARROT : null;
   }
 
@@ -221,6 +221,7 @@ public class ObjectiveTracker extends SubsystemBase {
     if (now - pendingTraderCountSince < TRADER_COUNT_DEBOUNCE_SEC) return;
 
     int diff = pendingTraderCount - traderPieces.size();
+    if (diff == 0) return;
     if (diff < 0) {
       boolean nearOven = isNearOven();
       for (int i = 0; i < -diff; i++) {
@@ -239,6 +240,11 @@ public class ObjectiveTracker extends SubsystemBase {
         if (type == GamePiece.CARROT_CAKE) cakesCollected++;
       }
     }
+    refreshTraderPieceNames();
+  }
+
+  private void refreshTraderPieceNames() {
+    traderPieceNames = traderPieces.stream().map(GamePiece::name).toArray(String[]::new);
   }
 
   private boolean isNearOven() {
@@ -375,9 +381,10 @@ public class ObjectiveTracker extends SubsystemBase {
       if (Math.abs(piecePose.getY() - pantryCenter.getY()) > PANTRY_DEPTH_TOLERANCE) continue;
 
       double x = piecePose.getX();
+      double dx = x - robotPose.getX();
+      double dy = piecePose.getY() - robotPose.getY();
       if (Math.abs(x - pantryCenter.getX()) > HarvestHavocPantryLevel.PANTRY_HALF_WIDTH
-          || piecePose.getTranslation().toTranslation2d().getDistance(robotPose.getTranslation())
-              > MAX_OBJ_DISTANCE) continue;
+          || dx * dx + dy * dy > MAX_OBJ_DISTANCE * MAX_OBJ_DISTANCE) continue;
 
       int level = getPantryLevel(piecePose.getZ());
       if (level < 0 || isTrackedInPantry(level, x)) continue;
