@@ -11,7 +11,7 @@ import frc.robot.Constants;
 public final class ArmConstants {
   public static final boolean ENABLED = true;
 
-  public static final double SETPOINT_TOLERANCE = 2.5; // deg
+  public static final double SETPOINT_TOLERANCE = 5.5; // deg
   public static final double STOW_DELAY = 1.0;
 
   // physical constraints
