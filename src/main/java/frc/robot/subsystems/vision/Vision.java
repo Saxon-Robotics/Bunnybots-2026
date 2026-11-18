@@ -33,6 +33,12 @@ public class Vision extends SubsystemBase {
   private final ObjectIO[] objIO;
   private final ObjectIOInputsAutoLogged[] objInputs;
   private final Alert[] disconnectedAlerts;
+  private final String[] cameraKeys;
+  private final String[] tagPosesKeys;
+  private final String[] robotPosesKeys;
+  private final String[] robotPosesAcceptedKeys;
+  private final String[] robotPosesRejectedKeys;
+  private final String[] objCameraKeys;
 
   public Vision(VisionConsumer consumer, VisionIO... io) {
     this(consumer, io, new ObjectIO[0]);
@@ -51,6 +57,23 @@ public class Vision extends SubsystemBase {
     this.objInputs = new ObjectIOInputsAutoLogged[objIO.length];
     for (int i = 0; i < objInputs.length; i++) {
       objInputs[i] = new ObjectIOInputsAutoLogged();
+    }
+
+    this.cameraKeys = new String[io.length];
+    this.tagPosesKeys = new String[io.length];
+    this.robotPosesKeys = new String[io.length];
+    this.robotPosesAcceptedKeys = new String[io.length];
+    this.robotPosesRejectedKeys = new String[io.length];
+    for (int i = 0; i < io.length; i++) {
+      cameraKeys[i] = "Vision/Camera" + i;
+      tagPosesKeys[i] = cameraKeys[i] + "/TagPoses";
+      robotPosesKeys[i] = cameraKeys[i] + "/RobotPoses";
+      robotPosesAcceptedKeys[i] = cameraKeys[i] + "/RobotPosesAccepted";
+      robotPosesRejectedKeys[i] = cameraKeys[i] + "/RobotPosesRejected";
+    }
+    this.objCameraKeys = new String[objIO.length];
+    for (int i = 0; i < objIO.length; i++) {
+      objCameraKeys[i] = "Vision/ObjectDetection/Camera" + i;
     }
 
     // Initialize disconnected alerts
@@ -78,12 +101,12 @@ public class Vision extends SubsystemBase {
   public void periodic() {
     for (int i = 0; i < io.length; i++) {
       io[i].updateInputs(inputs[i]);
-      Logger.processInputs("Vision/Camera" + i, inputs[i]);
+      Logger.processInputs(cameraKeys[i], inputs[i]);
     }
 
     for (int i = 0; i < objIO.length; i++) {
       objIO[i].updateInputs(objInputs[i]);
-      Logger.processInputs("Vision/ObjectDetection/Camera" + i, objInputs[i]);
+      Logger.processInputs(objCameraKeys[i], objInputs[i]);
     }
 
     // Initialize logging values
@@ -160,16 +183,12 @@ public class Vision extends SubsystemBase {
       }
 
       // Log camera metadata
+      Logger.recordOutput(tagPosesKeys[cameraIndex], tagPoses.toArray(new Pose3d[0]));
+      Logger.recordOutput(robotPosesKeys[cameraIndex], robotPoses.toArray(new Pose3d[0]));
       Logger.recordOutput(
-          "Vision/Camera" + cameraIndex + "/TagPoses", tagPoses.toArray(new Pose3d[0]));
+          robotPosesAcceptedKeys[cameraIndex], robotPosesAccepted.toArray(new Pose3d[0]));
       Logger.recordOutput(
-          "Vision/Camera" + cameraIndex + "/RobotPoses", robotPoses.toArray(new Pose3d[0]));
-      Logger.recordOutput(
-          "Vision/Camera" + cameraIndex + "/RobotPosesAccepted",
-          robotPosesAccepted.toArray(new Pose3d[0]));
-      Logger.recordOutput(
-          "Vision/Camera" + cameraIndex + "/RobotPosesRejected",
-          robotPosesRejected.toArray(new Pose3d[0]));
+          robotPosesRejectedKeys[cameraIndex], robotPosesRejected.toArray(new Pose3d[0]));
       allTagPoses.addAll(tagPoses);
       allRobotPoses.addAll(robotPoses);
       allRobotPosesAccepted.addAll(robotPosesAccepted);
@@ -184,7 +203,7 @@ public class Vision extends SubsystemBase {
     Logger.recordOutput(
         "Vision/Summary/RobotPosesRejected", allRobotPosesRejected.toArray(new Pose3d[0]));
 
-    LoggedTracer.record("Vision/AprilTag");
+    LoggedTracer.record("LoggedTracer/Vision/AprilTagMS");
   }
 
   public List<Pair<ObjectIO.ObjectObservationType, Pose3d>> getGamePiecePoses(Pose2d robotPose) {

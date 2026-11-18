@@ -133,6 +133,12 @@ public class Drive extends ExtendedSubsystem implements Vision.VisionConsumer {
   static final Lock odometryLock = new ReentrantLock();
   private final GyroIO gyroIO;
   private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
+  private static final String[] MODULE_TRACER_KEYS = {
+    "LoggedTracer/Drive/Module0/PeriodicMS",
+    "LoggedTracer/Drive/Module1/PeriodicMS",
+    "LoggedTracer/Drive/Module2/PeriodicMS",
+    "LoggedTracer/Drive/Module3/PeriodicMS"
+  };
   private final Module[] modules = new Module[4]; // FL, FR, BL, BR
   private final SysIdRoutine sysId;
   private final Alert gyroDisconnectedAlert =
@@ -242,10 +248,10 @@ public class Drive extends ExtendedSubsystem implements Vision.VisionConsumer {
     odometryLock.lock(); // Prevents odometry updates while reading data
     gyroIO.updateInputs(gyroInputs);
     Logger.processInputs("Drive/Gyro", gyroInputs);
-    LoggedTracer.record("Drive/Gyro/Update");
+    LoggedTracer.record("LoggedTracer/Drive/Gyro/UpdateMS");
     for (int i = 0; i < modules.length; i++) {
       modules[i].periodic();
-      LoggedTracer.record("Drive/Module" + i + "/Periodic");
+      LoggedTracer.record(MODULE_TRACER_KEYS[i]);
     }
     odometryLock.unlock();
 
@@ -254,17 +260,10 @@ public class Drive extends ExtendedSubsystem implements Vision.VisionConsumer {
         modules[0].getOdometryTimestamps(); // All signals are sampled together
     int sampleCount = sampleTimestamps.length;
     for (int i = 0; i < sampleCount; i++) {
-      // Read wheel positions and deltas from each module
+      // Read wheel positions from each module
       SwerveModulePosition[] modulePositions = new SwerveModulePosition[4];
-      SwerveModulePosition[] moduleDeltas = new SwerveModulePosition[4];
       for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
         modulePositions[moduleIndex] = modules[moduleIndex].getOdometryPositions()[i];
-        moduleDeltas[moduleIndex] =
-            new SwerveModulePosition(
-                modulePositions[moduleIndex].distanceMeters
-                    - lastModulePositions[moduleIndex].distanceMeters,
-                modulePositions[moduleIndex].angle);
-        lastModulePositions[moduleIndex] = modulePositions[moduleIndex];
       }
 
       // Update gyro angle
@@ -273,8 +272,20 @@ public class Drive extends ExtendedSubsystem implements Vision.VisionConsumer {
         rawGyroRotation = gyroInputs.odometryYawPositions[i];
       } else {
         // Use the angle delta from the kinematics and module deltas
+        SwerveModulePosition[] moduleDeltas = new SwerveModulePosition[4];
+        for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
+          moduleDeltas[moduleIndex] =
+              new SwerveModulePosition(
+                  modulePositions[moduleIndex].distanceMeters
+                      - lastModulePositions[moduleIndex].distanceMeters,
+                  modulePositions[moduleIndex].angle);
+        }
         Twist2d twist = kinematics.toTwist2d(moduleDeltas);
         rawGyroRotation = rawGyroRotation.plus(new Rotation2d(twist.dtheta));
+      }
+
+      for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
+        lastModulePositions[moduleIndex] = modulePositions[moduleIndex];
       }
 
       // Apply update
@@ -287,7 +298,7 @@ public class Drive extends ExtendedSubsystem implements Vision.VisionConsumer {
     // Update robot pose in Field2d
     field.setRobotPose(getPose());
 
-    LoggedTracer.record("Drive/Periodic");
+    LoggedTracer.record("LoggedTracer/Drive/PeriodicMS");
   }
 
   /**

@@ -18,10 +18,12 @@ public class Pivot extends Motor<PivotIO, PivotIOInputsAutoLogged> {
   private Supplier<Translation3d> translationOffset;
   private Supplier<Rotation3d> rotationOffset;
   private int pitchSign;
+  private final String robotComponentsKey;
 
   public Pivot(String name, PivotIO io, EncoderIO encoderIO, BooleanSupplier brakeMode) {
     super(name, io, new PivotIOInputsAutoLogged(), encoderIO, brakeMode);
     io.configure(true, false);
+    this.robotComponentsKey = name + "/RobotComponents";
   }
 
   public Pivot(String name, PivotIO io, EncoderIO encoderIO) {
@@ -83,7 +85,7 @@ public class Pivot extends Motor<PivotIO, PivotIOInputsAutoLogged> {
 
     if (translationOffset != null) {
       Logger.recordOutput(
-          name + "/RobotComponents",
+          robotComponentsKey,
           new Pose3d(
               translationOffset.get(),
               rotationOffset

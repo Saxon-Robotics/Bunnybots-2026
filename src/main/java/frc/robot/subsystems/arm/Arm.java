@@ -140,7 +140,7 @@ public class Arm extends ExtendedSubsystem {
       stow();
     }
 
-    LoggedTracer.record("Arm/Periodic");
+    LoggedTracer.record("LoggedTracer/Arm/PeriodicMS");
   }
 
   private void runSetpoint(Setpoint setpoint) {

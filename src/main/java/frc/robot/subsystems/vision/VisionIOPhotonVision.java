@@ -16,12 +16,15 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 import org.photonvision.PhotonCamera;
 
 /** IO implementation for real PhotonVision hardware. */
 public class VisionIOPhotonVision implements VisionIO {
   protected final PhotonCamera camera;
   protected final Transform3d robotToCamera;
+  private final Supplier<Transform3d> robotToCameraSupplier;
+  private final Transform3d fixedCameraToRobot;
 
   /**
    * Creates a new VisionIOPhotonVision.
@@ -32,11 +35,26 @@ public class VisionIOPhotonVision implements VisionIO {
   public VisionIOPhotonVision(String name, Transform3d robotToCamera) {
     camera = new PhotonCamera(name);
     this.robotToCamera = robotToCamera;
+    this.robotToCameraSupplier = null;
+    this.fixedCameraToRobot = robotToCamera.inverse();
+  }
+
+  public VisionIOPhotonVision(String name, Supplier<Transform3d> robotToCameraSupplier) {
+    camera = new PhotonCamera(name);
+    this.robotToCamera = robotToCameraSupplier.get();
+    this.robotToCameraSupplier = robotToCameraSupplier;
+    this.fixedCameraToRobot = null;
+  }
+
+  protected Transform3d getRobotToCamera() {
+    return robotToCameraSupplier == null ? robotToCamera : robotToCameraSupplier.get();
   }
 
   @Override
   public void updateInputs(VisionIOInputs inputs) {
     inputs.connected = camera.isConnected();
+    Transform3d cameraToRobot =
+        robotToCameraSupplier == null ? fixedCameraToRobot : robotToCameraSupplier.get().inverse();
 
     // Read new camera observations
     Set<Short> tagIds = new HashSet<>();
@@ -60,7 +78,7 @@ public class VisionIOPhotonVision implements VisionIO {
 
         // Calculate robot pose
         Transform3d fieldToCamera = multitagResult.estimatedPose.best;
-        Transform3d fieldToRobot = fieldToCamera.plus(robotToCamera.inverse());
+        Transform3d fieldToRobot = fieldToCamera.plus(cameraToRobot);
         Pose3d robotPose = new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation());
 
         // Calculate average tag distance
@@ -92,7 +110,7 @@ public class VisionIOPhotonVision implements VisionIO {
               new Transform3d(tagPose.get().getTranslation(), tagPose.get().getRotation());
           Transform3d cameraToTarget = target.bestCameraToTarget;
           Transform3d fieldToCamera = fieldToTarget.plus(cameraToTarget.inverse());
-          Transform3d fieldToRobot = fieldToCamera.plus(robotToCamera.inverse());
+          Transform3d fieldToRobot = fieldToCamera.plus(cameraToRobot);
           Pose3d robotPose = new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation());
 
           // Add tag ID
@@ -136,12 +154,17 @@ public class VisionIOPhotonVision implements VisionIO {
       super(name, robotToCamera);
     }
 
+    public ObjectIOPhotonVision(String name, Supplier<Transform3d> robotToCameraSupplier) {
+      super(name, robotToCameraSupplier);
+    }
+
     @Override
     public void updateInputs(VisionIOInputs inputs) {}
 
     @Override
     public void updateInputs(ObjectIOInputs inputs) {
       inputs.connected = camera.isConnected();
+      Transform3d currentRobotToCamera = getRobotToCamera();
 
       // Read new camera observations
       List<ObjectObservation> objectObservations = new LinkedList<>();
@@ -160,7 +183,7 @@ public class VisionIOPhotonVision implements VisionIO {
         // Update object observations
         for (var target : result.targets) {
           Transform3d cameraToTarget = target.bestCameraToTarget;
-          Transform3d robotToTarget = robotToCamera.plus(cameraToTarget);
+          Transform3d robotToTarget = currentRobotToCamera.plus(cameraToTarget);
           objectObservations.add(
               new ObjectObservation(
                   result.getTimestampSeconds(),

@@ -11,6 +11,8 @@ import static frc.robot.subsystems.vision.VisionConstants.APRIL_TAG_LAYOUT;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform3d;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 import org.photonvision.simulation.PhotonCameraSim;
@@ -21,6 +23,7 @@ import org.photonvision.simulation.VisionSystemSim;
 public class VisionIOPhotonVisionSim extends VisionIOPhotonVision {
   private static VisionSystemSim visionSim;
   private static long lastUpdateTimestamp = -1;
+  private static final List<Runnable> movingCameraAdjusters = new ArrayList<>();
 
   private final Supplier<Pose2d> poseSupplier;
   private final PhotonCameraSim cameraSim;
@@ -35,7 +38,18 @@ public class VisionIOPhotonVisionSim extends VisionIOPhotonVision {
       String name, Transform3d robotToCamera, Supplier<Pose2d> poseSupplier) {
     super(name, robotToCamera);
     this.poseSupplier = poseSupplier;
+    this.cameraSim = createCameraSim();
+  }
 
+  public VisionIOPhotonVisionSim(
+      String name, Supplier<Transform3d> robotToCameraSupplier, Supplier<Pose2d> poseSupplier) {
+    super(name, robotToCameraSupplier);
+    this.poseSupplier = poseSupplier;
+    this.cameraSim = createCameraSim();
+    movingCameraAdjusters.add(() -> visionSim.adjustCamera(cameraSim, robotToCameraSupplier.get()));
+  }
+
+  private PhotonCameraSim createCameraSim() {
     // Initialize vision sim
     if (visionSim == null) {
       visionSim = new VisionSystemSim("main");
@@ -44,11 +58,12 @@ public class VisionIOPhotonVisionSim extends VisionIOPhotonVision {
 
     // Add sim camera
     var cameraProperties = new SimCameraProperties();
-    cameraSim = new PhotonCameraSim(camera, cameraProperties, APRIL_TAG_LAYOUT);
+    var cameraSim = new PhotonCameraSim(camera, cameraProperties, APRIL_TAG_LAYOUT);
     cameraSim.enableRawStream(false);
     cameraSim.enableProcessedStream(false);
     cameraSim.enableDrawWireframe(false);
     visionSim.addCamera(cameraSim, robotToCamera);
+    return cameraSim;
   }
 
   @Override
@@ -60,6 +75,9 @@ public class VisionIOPhotonVisionSim extends VisionIOPhotonVision {
   private static void updateVisionSim(Supplier<Pose2d> poseSupplier) {
     long timestamp = Logger.getTimestamp();
     if (timestamp != lastUpdateTimestamp) {
+      for (Runnable adjuster : movingCameraAdjusters) {
+        adjuster.run();
+      }
       visionSim.update(poseSupplier.get());
       lastUpdateTimestamp = timestamp;
     }

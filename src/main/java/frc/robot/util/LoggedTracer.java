@@ -22,9 +22,9 @@ public class LoggedTracer {
   }
 
   /** Save the time elapsed since the last reset or record. */
-  public static void record(String epochName) {
+  public static void record(String key) {
     double now = Timer.getFPGATimestamp();
-    Logger.recordOutput("LoggedTracer/" + epochName + "MS", (now - startTime) * 1000.0);
+    Logger.recordOutput(key, (now - startTime) * 1000.0);
     startTime = now;
   }
 }

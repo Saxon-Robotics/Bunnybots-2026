@@ -24,6 +24,7 @@ public class Module {
   private final ModuleIO io;
   private final ModuleIOInputsAutoLogged inputs = new ModuleIOInputsAutoLogged();
   private final int index;
+  private final String inputsKey;
   private final SwerveModuleConstants<
           TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>
       constants;
@@ -41,6 +42,7 @@ public class Module {
           constants) {
     this.io = io;
     this.index = index;
+    this.inputsKey = "Drive/Module" + Integer.toString(index);
     this.constants = constants;
     driveDisconnectedAlert =
         new Alert(
@@ -59,7 +61,7 @@ public class Module {
 
   public void periodic() {
     io.updateInputs(inputs);
-    Logger.processInputs("Drive/Module" + Integer.toString(index), inputs);
+    Logger.processInputs(inputsKey, inputs);
 
     // Calculate positions for odometry
     int sampleCount = inputs.odometryTimestamps.length; // All signals are sampled together

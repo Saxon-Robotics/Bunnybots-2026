@@ -96,7 +96,7 @@ public class Elevator extends ExtendedSubsystem {
     //              / 9);
     //    }
 
-    LoggedTracer.record("Elevator/Periodic");
+    LoggedTracer.record("LoggedTracer/Elevator/PeriodicMS");
   }
 
   private void runSetpoint(Setpoint setpoint) {
