@@ -21,7 +21,6 @@ import frc.robot.Constants.ControlScheme;
 import frc.robot.Constants.ControllerConstants;
 import frc.robot.commands.*;
 import frc.robot.generated.TunerConstants;
-import frc.robot.lib.BLine.FollowPath;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
@@ -452,7 +451,10 @@ public class RobotContainer {
     Command intakeFromRamp =
         Commands.sequence(
             rampAlign, SuperstructureCommands.intake(arm, gripper).until(gripper::isLoaded));
-    Command intakeFromGround = SuperstructureCommands.intakeFromGround(elevator, arm, gripper);
+    Command intakeFromGround =
+        SuperstructureCommands.intakeFromGround(elevator, arm, gripper)
+            .until(gripper::isLoaded)
+            .withTimeout(GripperConstants.AUTO_INTAKE_TIMEOUT);
     if (Constants.currentMode == Constants.Mode.SIM) {
       intakeFromRamp =
           intakeFromRamp.alongWith(
@@ -473,11 +475,13 @@ public class RobotContainer {
     NamedCommands.registerCommand("IntakeRamp", intakeFromRamp);
     NamedCommands.registerCommand("IntakeGround", intakeFromGround);
 
-    FollowPath.registerEventTrigger("ElevatorStow", elevator.stow());
-    FollowPath.registerEventTrigger("ElevatorRamp", elevator.ramp());
-    FollowPath.registerEventTrigger("ElevatorL1", elevator.l1());
-    FollowPath.registerEventTrigger("ElevatorL2", elevator.l2());
-    FollowPath.registerEventTrigger("ElevatorL3", elevator.l3());
+    // Elevator moves live in the PathPlanner autos, not as BLine event triggers: BLine schedules
+    // event commands separately, and since the auto group holds the elevator that cancels the auto.
+    NamedCommands.registerCommand("ElevatorStow", elevator.stow());
+    NamedCommands.registerCommand("ElevatorRamp", elevator.ramp());
+    NamedCommands.registerCommand("ElevatorL1", elevator.l1());
+    NamedCommands.registerCommand("ElevatorL2", elevator.l2());
+    NamedCommands.registerCommand("ElevatorL3", elevator.l3());
   }
 
   private void addBLinePaths() {

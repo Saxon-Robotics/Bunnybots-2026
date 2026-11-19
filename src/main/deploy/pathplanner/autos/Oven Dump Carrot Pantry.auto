@@ -43,6 +43,12 @@
         {
           "type": "named",
           "data": {
+            "name": "ElevatorStow"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
             "name": "PantryToWait"
           }
         }
