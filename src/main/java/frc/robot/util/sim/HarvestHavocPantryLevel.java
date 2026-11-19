@@ -17,7 +17,7 @@ public class HarvestHavocPantryLevel extends Goal {
   public static final double PANTRY_HALF_WIDTH = 1.194;
 
   public static final Translation2d bluePantry =
-      new Translation2d(-7.928 - PANTRY_HALF_WIDTH, 4.03).plus(Constants.FieldConstants.ORIGIN);
+      new Translation2d(-7.928 + PANTRY_HALF_WIDTH, 4.03).plus(Constants.FieldConstants.ORIGIN);
   public static final Translation2d redPantry =
       new Translation2d(5.54 + PANTRY_HALF_WIDTH, 4.03).plus(Constants.FieldConstants.ORIGIN);
 
