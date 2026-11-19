@@ -78,7 +78,7 @@ public class SimulationManager {
     this.driveSimulation = driveSimulation;
     this.chassisSpeeds = chassisSpeeds;
 
-    Rectangle gripperShape = new Rectangle(0.45, 0.7);
+    Rectangle gripperShape = new Rectangle(0.6, 0.7);
     Rectangle traderShape = new Rectangle(0.3, 0.7);
     gripperShape.translate(gripperShape.getWidth() / 2, 0);
     traderShape.translate(-traderShape.getWidth() / 2, 0);

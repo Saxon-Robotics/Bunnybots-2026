@@ -444,8 +444,8 @@ public class RobotContainer {
     Command scorePantry =
         Commands.sequence(
             pantryAlign,
-            SuperstructureCommands.outtake(elevator, arm, gripper)
-                .withTimeout(GripperConstants.OUTTAKE_TIMEOUT));
+            SuperstructureCommands.timedOuttake(
+                elevator, arm, gripper, GripperConstants.OUTTAKE_TIMEOUT));
     Command scoreOven =
         Commands.sequence(ovenAlign, trader.eject().until(() -> !trader.isLoaded()));
     Command intakeFromRamp =
@@ -475,8 +475,6 @@ public class RobotContainer {
     NamedCommands.registerCommand("IntakeRamp", intakeFromRamp);
     NamedCommands.registerCommand("IntakeGround", intakeFromGround);
 
-    // Elevator moves live in the PathPlanner autos, not as BLine event triggers: BLine schedules
-    // event commands separately, and since the auto group holds the elevator that cancels the auto.
     NamedCommands.registerCommand("ElevatorStow", elevator.stow());
     NamedCommands.registerCommand("ElevatorRamp", elevator.ramp());
     NamedCommands.registerCommand("ElevatorL1", elevator.l1());

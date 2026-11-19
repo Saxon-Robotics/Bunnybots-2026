@@ -7,6 +7,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.util.Units;
 import java.util.List;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.gamepieces.GamePiece;
@@ -97,22 +98,25 @@ public class Arena2026Bunnybots extends SimulatedArena {
     super.addCustomSimulation(redOvenCake);
   }
 
+  private static final double CARROT_COLUMN_X = Units.feetToMeters(7);
+  private static final double CARROT_SPACING_Y = Units.feetToMeters(3.5);
+  private static final double TABLE_CAKE_X = Units.inchesToMeters(25.7);
+
   @Override
   public void placeGamePiecesOnField() {
-    //    Translation2d[] bluePositions = new Translation2d[] {
-    //        new Translation2d(1.219, 5.855), new Translation2d(1.219, 4.026), new
-    // Translation2d(1.219, 2.197),
-    //    };
-    //    for (Translation2d position : bluePositions) super.addGamePiece(new
-    // ReefscapeCoralAlgaeStack(position));
-    //
-    //    Translation2d[] redPositions = Arrays.stream(bluePositions)
-    //        .map(bluePosition ->
-    //            new Translation2d(FieldMirroringUtils.FIELD_WIDTH - bluePosition.getX(),
-    // bluePosition.getY()))
-    //        .toArray(Translation2d[]::new);
-    //    for (Translation2d position : redPositions) super.addGamePiece(new
-    // ReefscapeCoralAlgaeStack(position));
+    for (double side : new double[] {-1, 1}) {
+      double x = side * CARROT_COLUMN_X;
+      for (int i = -2; i <= 2; i++) {
+        Translation2d position = new Translation2d(x, i * CARROT_SPACING_Y).plus(ORIGIN);
+        super.addGamePiece(
+            Math.abs(i) == 2
+                ? HarvestHavocCarrotOnField.standing(position)
+                : HarvestHavocCarrotOnField.lyingAlongY(position));
+      }
+      super.addGamePiece(
+          HarvestHavocCarrotOnField.cakeOnDinnerTable(
+              new Translation2d(side * TABLE_CAKE_X, 0).plus(ORIGIN)));
+    }
 
     setupValueForMatchBreakdown("CarrotScoredInOven");
     setupValueForMatchBreakdown("Auto/CarrotScoredInAuto");
