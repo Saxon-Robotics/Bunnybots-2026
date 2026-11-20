@@ -32,9 +32,9 @@ public final class ArmConstants {
     GROUND(Degrees.of(0)),
     // outtake
     OVEN(Degrees.of(70)),
-    PANTRY(Degrees.of(60)),
+    PANTRY(Degrees.of(70)),
     // tung
-    TONGUE(Degrees.of(45));
+    TONGUE(Degrees.of(60));
 
     public final Angle angle;
 
