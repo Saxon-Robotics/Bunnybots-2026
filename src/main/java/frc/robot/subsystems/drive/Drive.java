@@ -133,13 +133,13 @@ public class Drive extends ExtendedSubsystem implements Vision.VisionConsumer {
   static final Lock odometryLock = new ReentrantLock();
   private final GyroIO gyroIO;
   private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
+  private final Module[] modules = new Module[4]; // FL, FR, BL, BR
   private static final String[] MODULE_TRACER_KEYS = {
     "LoggedTracer/Drive/Module0/PeriodicMS",
     "LoggedTracer/Drive/Module1/PeriodicMS",
     "LoggedTracer/Drive/Module2/PeriodicMS",
     "LoggedTracer/Drive/Module3/PeriodicMS"
   };
-  private final Module[] modules = new Module[4]; // FL, FR, BL, BR
   private final SysIdRoutine sysId;
   private final Alert gyroDisconnectedAlert =
       new Alert("Disconnected gyro, using kinematics as fallback.", AlertType.kError);
@@ -147,16 +147,22 @@ public class Drive extends ExtendedSubsystem implements Vision.VisionConsumer {
   private final SwerveDriveKinematics kinematics =
       new SwerveDriveKinematics(getModuleTranslations());
   private Rotation2d rawGyroRotation = new Rotation2d();
+  private final SwerveModulePosition[] modulePositions = {
+    new SwerveModulePosition(),
+    new SwerveModulePosition(),
+    new SwerveModulePosition(),
+    new SwerveModulePosition()
+  };
   private final SwerveModulePosition[] lastModulePositions = // For delta tracking
-      new SwerveModulePosition[] {
-        new SwerveModulePosition(),
-        new SwerveModulePosition(),
-        new SwerveModulePosition(),
-        new SwerveModulePosition()
-      };
+      {
+    new SwerveModulePosition(),
+    new SwerveModulePosition(),
+    new SwerveModulePosition(),
+    new SwerveModulePosition()
+  };
   private final SwerveDrivePoseEstimator poseEstimator =
       new SwerveDrivePoseEstimator(
-          kinematics, rawGyroRotation, lastModulePositions, new Pose2d(3, 3, new Rotation2d()));
+          kinematics, rawGyroRotation, modulePositions, new Pose2d(3, 3, new Rotation2d()));
   public final Field2d field = new Field2d();
 
   private final Consumer<Pose2d> resetSimulationPoseCallBack;
@@ -261,8 +267,8 @@ public class Drive extends ExtendedSubsystem implements Vision.VisionConsumer {
     int sampleCount = sampleTimestamps.length;
     for (int i = 0; i < sampleCount; i++) {
       // Read wheel positions from each module
-      SwerveModulePosition[] modulePositions = new SwerveModulePosition[4];
       for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
+        lastModulePositions[moduleIndex] = modulePositions[moduleIndex];
         modulePositions[moduleIndex] = modules[moduleIndex].getOdometryPositions()[i];
       }
 
@@ -271,21 +277,9 @@ public class Drive extends ExtendedSubsystem implements Vision.VisionConsumer {
         // Use the real gyro angle
         rawGyroRotation = gyroInputs.odometryYawPositions[i];
       } else {
-        // Use the angle delta from the kinematics and module deltas
-        SwerveModulePosition[] moduleDeltas = new SwerveModulePosition[4];
-        for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
-          moduleDeltas[moduleIndex] =
-              new SwerveModulePosition(
-                  modulePositions[moduleIndex].distanceMeters
-                      - lastModulePositions[moduleIndex].distanceMeters,
-                  modulePositions[moduleIndex].angle);
-        }
-        Twist2d twist = kinematics.toTwist2d(moduleDeltas);
+        // Use the angle delta from the kinematics and module positions
+        Twist2d twist = kinematics.toTwist2d(lastModulePositions, modulePositions);
         rawGyroRotation = rawGyroRotation.plus(new Rotation2d(twist.dtheta));
-      }
-
-      for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
-        lastModulePositions[moduleIndex] = modulePositions[moduleIndex];
       }
 
       // Apply update

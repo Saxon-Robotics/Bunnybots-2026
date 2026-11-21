@@ -183,12 +183,12 @@ public class Vision extends SubsystemBase {
       }
 
       // Log camera metadata
-      Logger.recordOutput(tagPosesKeys[cameraIndex], tagPoses.toArray(new Pose3d[0]));
-      Logger.recordOutput(robotPosesKeys[cameraIndex], robotPoses.toArray(new Pose3d[0]));
-      Logger.recordOutput(
-          robotPosesAcceptedKeys[cameraIndex], robotPosesAccepted.toArray(new Pose3d[0]));
-      Logger.recordOutput(
-          robotPosesRejectedKeys[cameraIndex], robotPosesRejected.toArray(new Pose3d[0]));
+      //      Logger.recordOutput(tagPosesKeys[cameraIndex], tagPoses.toArray(new Pose3d[0]));
+      //      Logger.recordOutput(robotPosesKeys[cameraIndex], robotPoses.toArray(new Pose3d[0]));
+      //      Logger.recordOutput(
+      //          robotPosesAcceptedKeys[cameraIndex], robotPosesAccepted.toArray(new Pose3d[0]));
+      //      Logger.recordOutput(
+      //          robotPosesRejectedKeys[cameraIndex], robotPosesRejected.toArray(new Pose3d[0]));
       allTagPoses.addAll(tagPoses);
       allRobotPoses.addAll(robotPoses);
       allRobotPosesAccepted.addAll(robotPosesAccepted);
@@ -241,11 +241,13 @@ public class Vision extends SubsystemBase {
     }
 
     Logger.recordOutput(
-        "Vision/ObjectDetection/CarrotPosesAccepted", carrotPosesAccepted.toArray(new Pose3d[0]));
+        "Vision/ObjectDetection/Summary/CarrotPosesAccepted",
+        carrotPosesAccepted.toArray(new Pose3d[0]));
     Logger.recordOutput(
-        "Vision/ObjectDetection/CarrotCakePosesAccepted", cakePosesAccepted.toArray(new Pose3d[0]));
+        "Vision/ObjectDetection/Summary/CarrotCakePosesAccepted",
+        cakePosesAccepted.toArray(new Pose3d[0]));
     Logger.recordOutput(
-        "Vision/ObjectDetection/GamePiecePosesRejected",
+        "Vision/ObjectDetection/Summary/GamePiecePosesRejected",
         gamePiecePosesRejected.toArray(new Pose3d[0]));
 
     return gamePiecePosesAccepted;

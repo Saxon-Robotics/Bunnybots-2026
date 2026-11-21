@@ -16,15 +16,12 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Supplier;
 import org.photonvision.PhotonCamera;
 
 /** IO implementation for real PhotonVision hardware. */
 public class VisionIOPhotonVision implements VisionIO {
   protected final PhotonCamera camera;
-  protected final Transform3d robotToCamera;
-  private final Supplier<Transform3d> robotToCameraSupplier;
-  private final Transform3d fixedCameraToRobot;
+  protected final Transform3d cameraToRobot;
 
   /**
    * Creates a new VisionIOPhotonVision.
@@ -34,27 +31,12 @@ public class VisionIOPhotonVision implements VisionIO {
    */
   public VisionIOPhotonVision(String name, Transform3d robotToCamera) {
     camera = new PhotonCamera(name);
-    this.robotToCamera = robotToCamera;
-    this.robotToCameraSupplier = null;
-    this.fixedCameraToRobot = robotToCamera.inverse();
-  }
-
-  public VisionIOPhotonVision(String name, Supplier<Transform3d> robotToCameraSupplier) {
-    camera = new PhotonCamera(name);
-    this.robotToCamera = robotToCameraSupplier.get();
-    this.robotToCameraSupplier = robotToCameraSupplier;
-    this.fixedCameraToRobot = null;
-  }
-
-  protected Transform3d getRobotToCamera() {
-    return robotToCameraSupplier == null ? robotToCamera : robotToCameraSupplier.get();
+    this.cameraToRobot = robotToCamera.inverse();
   }
 
   @Override
   public void updateInputs(VisionIOInputs inputs) {
     inputs.connected = camera.isConnected();
-    Transform3d cameraToRobot =
-        robotToCameraSupplier == null ? fixedCameraToRobot : robotToCameraSupplier.get().inverse();
 
     // Read new camera observations
     Set<Short> tagIds = new HashSet<>();
@@ -140,66 +122,6 @@ public class VisionIOPhotonVision implements VisionIO {
     int i = 0;
     for (int id : tagIds) {
       inputs.tagIds[i++] = id;
-    }
-  }
-
-  public static class ObjectIOPhotonVision extends VisionIOPhotonVision implements ObjectIO {
-    /**
-     * Creates a new VisionIOPhotonVision.
-     *
-     * @param name The configured name of the camera.
-     * @param robotToCamera The 3D position of the camera relative to the robot.
-     */
-    public ObjectIOPhotonVision(String name, Transform3d robotToCamera) {
-      super(name, robotToCamera);
-    }
-
-    public ObjectIOPhotonVision(String name, Supplier<Transform3d> robotToCameraSupplier) {
-      super(name, robotToCameraSupplier);
-    }
-
-    @Override
-    public void updateInputs(VisionIOInputs inputs) {}
-
-    @Override
-    public void updateInputs(ObjectIOInputs inputs) {
-      inputs.connected = camera.isConnected();
-      Transform3d currentRobotToCamera = getRobotToCamera();
-
-      // Read new camera observations
-      List<ObjectObservation> objectObservations = new LinkedList<>();
-      for (var result : camera.getAllUnreadResults()) {
-        // Update latest target observation
-        if (result.hasTargets()) {
-          inputs.latestTargetObservation =
-              new TargetObservation(
-                  Rotation2d.fromDegrees(result.getBestTarget().getYaw()),
-                  Rotation2d.fromDegrees(result.getBestTarget().getPitch()));
-        } else {
-          inputs.latestTargetObservation =
-              new TargetObservation(Rotation2d.kZero, Rotation2d.kZero);
-        }
-
-        // Update object observations
-        for (var target : result.targets) {
-          Transform3d cameraToTarget = target.bestCameraToTarget;
-          Transform3d robotToTarget = currentRobotToCamera.plus(cameraToTarget);
-          objectObservations.add(
-              new ObjectObservation(
-                  result.getTimestampSeconds(),
-                  robotToTarget,
-                  target.poseAmbiguity,
-                  switch (target.objDetectId) {
-                    case 0 -> ObjectObservationType.CARROT;
-                    case 1 -> ObjectObservationType.CARROT_CAKE;
-                    case 2 -> ObjectObservationType.FOREIGN_ROBOT;
-                    default -> ObjectObservationType.INVALID;
-                  }));
-        }
-      }
-
-      // Save observations to inputs object
-      inputs.objectObservations = objectObservations.toArray(new ObjectObservation[0]);
     }
   }
 }
