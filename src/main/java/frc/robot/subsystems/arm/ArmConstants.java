@@ -80,6 +80,6 @@ public final class ArmConstants {
           .withMagnetSensor(
               new MagnetSensorConfigs()
                   .withSensorDirection(SensorDirectionValue.CounterClockwise_Positive)
-                  .withMagnetOffset(0.107421875)
+                  .withMagnetOffset(0.26220703125)
                   .withAbsoluteSensorDiscontinuityPoint(0.7));
 }

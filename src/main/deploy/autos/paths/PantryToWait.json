@@ -13,11 +13,6 @@
       }
     },
     {
-      "type": "event_trigger",
-      "t_ratio": 0.16524,
-      "lib_key": "ElevatorStow"
-    },
-    {
       "type": "waypoint",
       "translation_target": {
         "x_meters": 5.66354,
