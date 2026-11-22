@@ -24,12 +24,12 @@ public class SimulationManager {
   private static final String CARROT = HarvestHavocCarrotOnField.HARVEST_HAVOC_CARROT_INFO.type();
   private static final String CAKE = HarvestHavocCarrotOnField.HARVEST_HAVOC_CAKE_INFO.type();
 
-  private static final Translation3d ELEVATOR_TO_CARROT = new Translation3d(0.3, 0.08, 0.425);
+  private static final Translation3d ELEVATOR_TO_CARROT = new Translation3d(0.309, 0.001, 0.454);
   private static final Translation3d[] TRADER_SLOTS =
       new Translation3d[] {
-        new Translation3d(-0.3, 0.1, 0.31),
-        new Translation3d(-0.1, 0.1, 0.35),
-        new Translation3d(-0.18, 0.1, 0.51)
+        new Translation3d(-0.291, 0.021, 0.339),
+        new Translation3d(-0.091, 0.021, 0.379),
+        new Translation3d(-0.171, 0.021, 0.539)
       };
 
   @Getter private static SimulationManager instance;

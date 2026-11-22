@@ -16,7 +16,7 @@ public class HarvestHavocCarrotOnField extends GamePieceOnFieldSimulation {
   public static GamePieceOnFieldSimulation.GamePieceInfo HARVEST_HAVOC_CARROT_INFO =
       new GamePieceOnFieldSimulation.GamePieceInfo(
           "Carrot",
-          new Rectangle(Units.inchesToMeters(6), Units.inchesToMeters(18)),
+          new Rectangle(Units.inchesToMeters(18), Units.inchesToMeters(6)),
           Inches.of(6),
           Kilograms.of(0.294),
           2.8,
@@ -26,7 +26,7 @@ public class HarvestHavocCarrotOnField extends GamePieceOnFieldSimulation {
   public static GamePieceOnFieldSimulation.GamePieceInfo HARVEST_HAVOC_CAKE_INFO =
       new GamePieceOnFieldSimulation.GamePieceInfo(
           "CakedUpCarrot",
-          new Rectangle(Units.inchesToMeters(6), Units.inchesToMeters(18)),
+          new Rectangle(Units.inchesToMeters(18), Units.inchesToMeters(6)),
           Inches.of(6),
           Kilograms.of(0.294),
           2.8,
@@ -63,41 +63,39 @@ public class HarvestHavocCarrotOnField extends GamePieceOnFieldSimulation {
   private final boolean customRender;
   private final double renderZ;
   private final double renderPitch;
-  private final double renderYawOffset;
 
   public HarvestHavocCarrotOnField(boolean isCake, Pose2d initialPose) {
     super(getInfo(isCake), initialPose);
     customRender = false;
     renderZ = 0;
     renderPitch = 0;
-    renderYawOffset = 0;
   }
 
   private HarvestHavocCarrotOnField(
       GamePieceOnFieldSimulation.GamePieceInfo info,
       double z,
-      Translation2d position,
-      double renderPitch,
-      double renderYawOffset) {
-    super(info, () -> z, new Pose2d(position, Rotation2d.kZero), new Translation2d());
+      Pose2d initialPose,
+      double renderPitch) {
+    super(info, () -> z, initialPose, new Translation2d());
     customRender = true;
     renderZ = z;
     this.renderPitch = renderPitch;
-    this.renderYawOffset = renderYawOffset;
   }
 
   public static HarvestHavocCarrotOnField lyingAlongY(Translation2d position) {
     return new HarvestHavocCarrotOnField(
         HARVEST_HAVOC_CARROT_INFO,
         HARVEST_HAVOC_CARROT_INFO.gamePieceHeight().in(Meters) / 2,
-        position,
-        0,
-        Math.PI / 2);
+        new Pose2d(position, Rotation2d.kCCW_90deg),
+        0);
   }
 
   public static HarvestHavocCarrotOnField standing(Translation2d position) {
     return new HarvestHavocCarrotOnField(
-        STANDING_CARROT_INFO, STANDING_HALF_HEIGHT, position, Math.PI / 2, 0);
+        STANDING_CARROT_INFO,
+        STANDING_HALF_HEIGHT,
+        new Pose2d(position, Rotation2d.kZero),
+        Math.PI / 2);
   }
 
   public static HarvestHavocCarrotOnField cakeOnDinnerTable(Translation2d position) {
@@ -105,9 +103,8 @@ public class HarvestHavocCarrotOnField extends GamePieceOnFieldSimulation {
         new HarvestHavocCarrotOnField(
             STANDING_CAKE_INFO,
             DINNER_TABLE_HEIGHT + STANDING_HALF_HEIGHT,
-            position,
-            Math.PI / 2,
-            0);
+            new Pose2d(position, Rotation2d.kZero),
+            Math.PI / 2);
     cake.getFixture(0).setSensor(true);
     return cake;
   }
@@ -120,6 +117,6 @@ public class HarvestHavocCarrotOnField extends GamePieceOnFieldSimulation {
         pose.getX(),
         pose.getY(),
         renderZ,
-        new Rotation3d(0, renderPitch, pose.getRotation().getRadians() + renderYawOffset));
+        new Rotation3d(0, renderPitch, pose.getRotation().getRadians()));
   }
 }
