@@ -134,12 +134,6 @@ public class Drive extends ExtendedSubsystem implements Vision.VisionConsumer {
   private final GyroIO gyroIO;
   private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
   private final Module[] modules = new Module[4]; // FL, FR, BL, BR
-  private static final String[] MODULE_TRACER_KEYS = {
-    "LoggedTracer/Drive/Module0/PeriodicMS",
-    "LoggedTracer/Drive/Module1/PeriodicMS",
-    "LoggedTracer/Drive/Module2/PeriodicMS",
-    "LoggedTracer/Drive/Module3/PeriodicMS"
-  };
   private final SysIdRoutine sysId;
   private final Alert gyroDisconnectedAlert =
       new Alert("Disconnected gyro, using kinematics as fallback.", AlertType.kError);
@@ -255,10 +249,10 @@ public class Drive extends ExtendedSubsystem implements Vision.VisionConsumer {
     gyroIO.updateInputs(gyroInputs);
     Logger.processInputs("Drive/Gyro", gyroInputs);
     LoggedTracer.record("LoggedTracer/Drive/Gyro/UpdateMS");
-    for (int i = 0; i < modules.length; i++) {
-      modules[i].periodic();
-      LoggedTracer.record(MODULE_TRACER_KEYS[i]);
+    for (Module module : modules) {
+      module.periodic();
     }
+    LoggedTracer.record("LoggedTracer/Drive/Modules/UpdateMS");
     odometryLock.unlock();
 
     // Update odometry

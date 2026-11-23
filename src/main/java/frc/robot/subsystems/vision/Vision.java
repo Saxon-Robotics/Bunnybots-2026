@@ -21,7 +21,6 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.util.LoggedTracer;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import org.littletonrobotics.junction.Logger;
@@ -103,11 +102,13 @@ public class Vision extends SubsystemBase {
       io[i].updateInputs(inputs[i]);
       Logger.processInputs(cameraKeys[i], inputs[i]);
     }
+    LoggedTracer.record("LoggedTracer/Vision/AprilTag/UpdateMS");
 
     for (int i = 0; i < objIO.length; i++) {
       objIO[i].updateInputs(objInputs[i]);
       Logger.processInputs(objCameraKeys[i], objInputs[i]);
     }
+    LoggedTracer.record("LoggedTracer/Vision/ObjectDetection/UpdateMS");
 
     // Initialize logging values
     List<Pose3d> allTagPoses = new LinkedList<>();
@@ -182,7 +183,7 @@ public class Vision extends SubsystemBase {
             VecBuilder.fill(linearStdDev, linearStdDev, angularStdDev));
       }
 
-      // Log camera metadata
+      // Log camera metadata (currently disabled to save memory)
       //      Logger.recordOutput(tagPosesKeys[cameraIndex], tagPoses.toArray(new Pose3d[0]));
       //      Logger.recordOutput(robotPosesKeys[cameraIndex], robotPoses.toArray(new Pose3d[0]));
       //      Logger.recordOutput(
@@ -203,21 +204,14 @@ public class Vision extends SubsystemBase {
     Logger.recordOutput(
         "Vision/Summary/RobotPosesRejected", allRobotPosesRejected.toArray(new Pose3d[0]));
 
-    LoggedTracer.record("LoggedTracer/Vision/AprilTagMS");
+    LoggedTracer.record("LoggedTracer/Vision/AprilTag/PeriodicMS");
   }
 
   public List<Pair<ObjectIO.ObjectObservationType, Pose3d>> getGamePiecePoses(Pose2d robotPose) {
-    // Calculate max possible capacity
-    int capacity = 0;
-    for (var input : objInputs) {
-      capacity += input.objectObservations.length;
-    }
-
-    List<Pair<ObjectIO.ObjectObservationType, Pose3d>> gamePiecePosesAccepted =
-        new ArrayList<>(capacity);
-    List<Pose3d> carrotPosesAccepted = new ArrayList<>(capacity);
-    List<Pose3d> cakePosesAccepted = new ArrayList<>(capacity);
-    List<Pose3d> gamePiecePosesRejected = new ArrayList<>(capacity);
+    List<Pair<ObjectIO.ObjectObservationType, Pose3d>> gamePiecePosesAccepted = new LinkedList<>();
+    List<Pose3d> carrotPosesAccepted = new LinkedList<>();
+    List<Pose3d> cakePosesAccepted = new LinkedList<>();
+    List<Pose3d> gamePiecePosesRejected = new LinkedList<>();
 
     // Combine all foreign pose estimates
     Pose3d robotPose3d = new Pose3d(robotPose);
@@ -250,18 +244,14 @@ public class Vision extends SubsystemBase {
         "Vision/ObjectDetection/Summary/GamePiecePosesRejected",
         gamePiecePosesRejected.toArray(new Pose3d[0]));
 
+    LoggedTracer.record("LoggedTracer/Vision/ObjectDetection/RetrievalMS");
+
     return gamePiecePosesAccepted;
   }
 
   public Pose2d[] getForeignRobotPoses(Pose2d robotPose) {
-    // Calculate max possible capacity
-    int capacity = 0;
-    for (var input : objInputs) {
-      capacity += input.objectObservations.length;
-    }
-
-    List<Pose2d> foreignRobotPosesAccepted = new ArrayList<>(capacity);
-    List<Pose2d> foreignRobotPosesRejected = new ArrayList<>(capacity);
+    List<Pose2d> foreignRobotPosesAccepted = new LinkedList<>();
+    List<Pose2d> foreignRobotPosesRejected = new LinkedList<>();
 
     // Combine all foreign pose estimates
     Pose3d robotPose3d = new Pose3d(robotPose);
@@ -283,6 +273,8 @@ public class Vision extends SubsystemBase {
     Logger.recordOutput(
         "Vision/ObjectDetection/ForeignRobotPosesRejected",
         foreignRobotPosesRejected.toArray(new Pose2d[0]));
+
+    LoggedTracer.record("LoggedTracer/Vision/RobotDetection/RetrievalMS");
 
     return foreignRobotPosesAccepted.toArray(new Pose2d[0]);
   }
