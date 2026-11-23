@@ -7,17 +7,12 @@ import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.gripper.Gripper;
 import frc.robot.subsystems.gripper.GripperConstants;
-import frc.robot.subsystems.objectivetracker.ObjectiveTracker;
 import frc.robot.util.AutoAlign;
 
 public class Autos {
   public static Command scorePantry(
       int level, Drive drive, Elevator elevator, Arm arm, Gripper gripper) {
-    return Commands.runOnce(
-            () ->
-                AutoAlign.setTargetPose(
-                    AutoAlign.Target.PANTRY,
-                    ObjectiveTracker.getInstance().getPantryPose(level, drive.getPose())))
+    return Commands.runOnce(() -> AutoAlign.setTarget(AutoAlign.Target.PANTRY, drive.getPose()))
         .andThen(DriveCommands.alignToTarget(drive, AutoAlign::getLastAPTarget))
         .andThen(
             switch (level) {
@@ -27,7 +22,8 @@ public class Autos {
               default -> Commands.none();
             })
         .andThen(
-            SuperstructureCommands.timedOuttake(
-                elevator, arm, gripper, GripperConstants.OUTTAKE_TIMEOUT));
+            SuperstructureCommands.outtake(elevator, arm, gripper)
+                .withTimeout(GripperConstants.OUTTAKE_TIMEOUT))
+        .andThen(elevator.stow());
   }
 }

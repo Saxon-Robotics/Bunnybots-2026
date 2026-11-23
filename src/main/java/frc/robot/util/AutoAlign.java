@@ -8,7 +8,7 @@ import lombok.Getter;
 import org.littletonrobotics.junction.Logger;
 
 public class AutoAlign {
-  private static final double BUMPER_THICKNESS = 5.5;
+  private static final double BUMPER_THICKNESS = 3.5;
   private static final Translation2d ROBOT_OFFSET =
       new Translation2d(
           Units.inchesToMeters(29.5 + BUMPER_THICKNESS) / 2.0,
@@ -19,7 +19,7 @@ public class AutoAlign {
     PANTRY(
         FieldConstants.BLUE_PANTRY,
         FieldConstants.RED_PANTRY,
-        new Translation2d(-ROBOT_OFFSET.getX(), 0)),
+        new Translation2d(-ROBOT_OFFSET.getY() - 0.1, 0)),
     OVEN(
         FieldConstants.BLUE_OVEN,
         FieldConstants.RED_OVEN,

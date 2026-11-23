@@ -45,7 +45,7 @@ public final class VisionConstants {
           new Rotation3d(
               Units.degreesToRadians(0.0), // roll
               Units.degreesToRadians(0.0), // pitch
-              Units.degreesToRadians(50))); // yaw
+              Units.degreesToRadians(40))); // yaw
   public static final Transform3d CAMERA_2_OFFSET =
       new Transform3d(
           Units.inchesToMeters(3.128), // x, forward
@@ -54,7 +54,7 @@ public final class VisionConstants {
           new Rotation3d(
               Units.degreesToRadians(0.0), // roll
               Units.degreesToRadians(0.0), // pitch
-              Units.degreesToRadians(-50))); // yaw
+              Units.degreesToRadians(-40))); // yaw
   public static final Transform3d CAMERA_3_OFFSET =
       new Transform3d(
           Units.inchesToMeters(-14.095), // x, forward

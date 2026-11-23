@@ -11,7 +11,7 @@ import frc.robot.Constants;
 public final class ArmConstants {
   public static final boolean ENABLED = true;
 
-  public static final double SETPOINT_TOLERANCE = 2.5; // deg
+  public static final double SETPOINT_TOLERANCE = 5.5; // deg
   public static final double STOW_DELAY = 1.0;
 
   // physical constraints
@@ -32,9 +32,9 @@ public final class ArmConstants {
     GROUND(Degrees.of(0)),
     // outtake
     OVEN(Degrees.of(70)),
-    PANTRY(Degrees.of(60)),
+    PANTRY(Degrees.of(70)),
     // tung
-    TONGUE(Degrees.of(45));
+    TONGUE(Degrees.of(60));
 
     public final Angle angle;
 
@@ -80,6 +80,6 @@ public final class ArmConstants {
           .withMagnetSensor(
               new MagnetSensorConfigs()
                   .withSensorDirection(SensorDirectionValue.CounterClockwise_Positive)
-                  .withMagnetOffset(0.107421875)
+                  .withMagnetOffset(0.26220703125)
                   .withAbsoluteSensorDiscontinuityPoint(0.7));
 }
