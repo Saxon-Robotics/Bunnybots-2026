@@ -100,7 +100,7 @@ public class Trader extends SubsystemBase {
     } else {
       numGamePieces = 0;
     }
-    LoggedTracer.record("Trader/Periodic");
+    LoggedTracer.record("LoggedTracer/Trader/PeriodicMS");
   }
 
   public Command eject() {

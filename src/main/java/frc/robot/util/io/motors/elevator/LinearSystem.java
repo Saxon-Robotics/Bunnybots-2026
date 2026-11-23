@@ -18,6 +18,7 @@ public class LinearSystem extends Motor<LinearSystemIO, LinearSystemIOInputsAuto
   private final Function<Distance, Angle> distanceToAngle;
   private final Function<Angle, Distance> angleToDistance;
   private final Pose3d[] visualizedComponents;
+  private final String robotComponentsKey;
 
   private LinearSystem(
       String name,
@@ -32,6 +33,7 @@ public class LinearSystem extends Motor<LinearSystemIO, LinearSystemIOInputsAuto
     this.distanceToAngle = distanceToAngle;
     this.angleToDistance = angleToDistance;
     this.visualizedComponents = new Pose3d[numStages];
+    this.robotComponentsKey = name + "/RobotComponents";
   }
 
   /** {@inheritDoc} */
@@ -48,7 +50,7 @@ public class LinearSystem extends Motor<LinearSystemIO, LinearSystemIOInputsAuto
       }
       visualizedComponents[visualizedComponents.length - 1] =
           new Pose3d(0, 0, carriagePosition, Rotation3d.kZero);
-      Logger.recordOutput(name + "/RobotComponents", visualizedComponents);
+      Logger.recordOutput(robotComponentsKey, visualizedComponents);
     }
   }
 

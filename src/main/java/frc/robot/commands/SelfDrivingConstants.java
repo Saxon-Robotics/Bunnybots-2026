@@ -16,7 +16,7 @@ public final class SelfDrivingConstants {
   public static final double DEPOT_COLLECT_SECONDS = 4.0;
 
   public static final double OVEN_EJECT_TIMEOUT_SECONDS = 3.0;
-  public static final double OVEN_CREDIT_SECONDS = 0.15;
+  public static final double OVEN_CREDIT_SECONDS = 0.125;
   public static final double RAMP_INTAKE_TIMEOUT_SECONDS = 4.0;
   public static final double DEPOT_WAIT_TIMEOUT_SECONDS = 10.0;
 

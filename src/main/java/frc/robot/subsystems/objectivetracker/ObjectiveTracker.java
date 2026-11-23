@@ -4,7 +4,6 @@ import static frc.robot.util.sim.HarvestHavocPantryLevel.CARROT_SIZE;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Pair;
-import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
@@ -20,11 +19,13 @@ import frc.robot.subsystems.vision.Vision;
 import frc.robot.util.AutoAlign;
 import frc.robot.util.RobotUtil;
 import frc.robot.util.sim.HarvestHavocPantryLevel;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
@@ -37,6 +38,9 @@ public class ObjectiveTracker extends SubsystemBase {
   }
 
   private static final double NEAR_THRESHOLD = 0.6;
+  // how far past the pantry's ends and off the scoring line a gripper release still counts
+  private static final double PANTRY_SCORE_X_MARGIN = 0.3;
+  private static final double PANTRY_SCORE_Y_TOLERANCE = 0.75;
   private static final double EXTENDED_CARROT_SIZE = CARROT_SIZE + 0.1;
 
   private static final double PANTRY_LEVEL_TOLERANCE = 0.15;
@@ -77,8 +81,6 @@ public class ObjectiveTracker extends SubsystemBase {
   private final Gripper gripper;
   private final Trader trader;
 
-  // not gonna track number of pieces because that's annoying
-  @Getter private GamePiece traderHeld;
   @Getter private GamePiece gripperHeld;
 
   // x positions of each game piece in pantry
@@ -94,9 +96,11 @@ public class ObjectiveTracker extends SubsystemBase {
 
   @Getter private int ovenCakes;
 
-  private int ovenDumpPieces;
-  private boolean ovenDumpIsCake;
-  private final Debouncer traderEmptyDebounce = new Debouncer(0.1, Debouncer.DebounceType.kRising);
+  private final Queue<GamePiece> traderPieces = new ArrayDeque<>(3);
+  private String[] traderPieceNames = new String[0];
+  private static final double TRADER_COUNT_DEBOUNCE_SEC = 0.1;
+  private int pendingTraderCount;
+  private double pendingTraderCountSince;
 
   private int heldScoringIndex;
 
@@ -125,37 +129,37 @@ public class ObjectiveTracker extends SubsystemBase {
         .onTrue(
             Commands.runOnce(
                 () -> {
-                  if (collectingCake) {
-                    gripperHeld = GamePiece.CARROT_CAKE;
-                    cakesCollected++;
-                  } else {
-                    gripperHeld = GamePiece.CARROT;
-                  }
+                  gripperHeld = currentPickupType();
+                  if (gripperHeld == GamePiece.CARROT_CAKE) cakesCollected++;
                 }))
         .onFalse(
             Commands.runOnce(
                 () -> {
                   int scoringIndex = heldScoringIndex;
-                  if (scoringIndex > 0 && AutoAlign.getLastTarget() == AutoAlign.Target.PANTRY) {
+                  if (scoringIndex > 0 && isNearPantry()) {
                     addPantryPiece(scoringIndex - 1, drive.getPose().getX());
                     if (gripperHeld == GamePiece.CARROT_CAKE) pantryCakes[scoringIndex - 1]++;
                   }
                   gripperHeld = null;
                   heldScoringIndex = 0;
                 }));
+  }
 
-    new Trigger(trader::isLoaded)
-        .onTrue(
-            Commands.runOnce(
-                () -> {
-                  if (collectingCake) {
-                    traderHeld = GamePiece.CARROT_CAKE;
-                    cakesCollected++;
-                  } else {
-                    traderHeld = GamePiece.CARROT;
-                  }
-                }))
-        .onFalse(Commands.runOnce(() -> traderHeld = null));
+  /**
+   * What a piece picked up right now is assumed to be: a cake if the robot is closer to the ramp
+   * than to either depot, otherwise a carrot.
+   */
+  private GamePiece currentPickupType() {
+    if (collectingCake) return GamePiece.CARROT_CAKE;
+    boolean isRed = RobotUtil.isRedAlliance();
+    Translation2d robot = drive.getPose().getTranslation();
+    double rampDist =
+        robot.getSquaredDistance(AutoAlign.Target.RAMP.getPose(isRed).getTranslation());
+    double depotDist =
+        Math.min(
+            robot.getSquaredDistance(AutoAlign.Target.SIDE_DEPOT.getPose(isRed).getTranslation()),
+            robot.getSquaredDistance(AutoAlign.Target.REAR_DEPOT.getPose(isRed).getTranslation()));
+    return rampDist < depotDist ? GamePiece.CARROT_CAKE : GamePiece.CARROT;
   }
 
   @Override
@@ -169,20 +173,9 @@ public class ObjectiveTracker extends SubsystemBase {
       heldScoringIndex = elevator.getSetpoint().scoringIndex;
     }
 
-    int traderCount = trader.getNumGamePieces();
-    boolean traderEmpty = traderEmptyDebounce.calculate(traderCount == 0);
-    if (isNearOven()) {
-      if (traderCount > 0) {
-        ovenDumpPieces = Math.max(ovenDumpPieces, traderCount);
-        ovenDumpIsCake = traderHeld == GamePiece.CARROT_CAKE;
-      }
-      if (traderEmpty && ovenDumpPieces > 0) {
-        creditOvenDump(ovenDumpPieces);
-      }
-    } else if (ovenDumpPieces > 0) {
-      creditOvenDump(Math.max(0, ovenDumpPieces - traderCount));
-    }
+    updateTraderPieces();
 
+    Logger.recordOutput("ObjectiveTracker/TraderPieces", traderPieceNames);
     Logger.recordOutput("ObjectiveTracker/OvenCarrots", ovenCarrots);
     Logger.recordOutput("ObjectiveTracker/OvenCakes", ovenCakes);
     Logger.recordOutput("ObjectiveTracker/CakesCollected", cakesCollected);
@@ -204,13 +197,54 @@ public class ObjectiveTracker extends SubsystemBase {
     ovenCarrots = 0;
     cakesCollected = 0;
     ovenCakes = 0;
-    ovenDumpPieces = 0;
-    ovenDumpIsCake = false;
     heldScoringIndex = 0;
     collectingCake = false;
     updateFreeSlots();
-    traderHeld = trader.isLoaded() ? GamePiece.CARROT : null;
+
+    traderPieces.clear();
+    pendingTraderCount = trader.getNumGamePieces();
+    pendingTraderCountSince = Timer.getTimestamp();
+    for (int i = 0; i < pendingTraderCount; i++) {
+      traderPieces.add(GamePiece.CARROT);
+    }
+    refreshTraderPieceNames();
     gripperHeld = gripper.isLoaded() ? GamePiece.CARROT : null;
+  }
+
+  private void updateTraderPieces() {
+    double now = Timer.getTimestamp();
+    int rawCount = trader.getNumGamePieces();
+    if (rawCount != pendingTraderCount) {
+      pendingTraderCount = rawCount;
+      pendingTraderCountSince = now;
+    }
+    if (now - pendingTraderCountSince < TRADER_COUNT_DEBOUNCE_SEC) return;
+
+    int diff = pendingTraderCount - traderPieces.size();
+    if (diff == 0) return;
+    if (diff < 0) {
+      boolean nearOven = isNearOven();
+      for (int i = 0; i < -diff; i++) {
+        GamePiece piece = traderPieces.remove();
+        if (!nearOven) continue;
+        if (piece == GamePiece.CARROT_CAKE) {
+          ovenCakes++;
+        } else {
+          ovenCarrots++;
+        }
+      }
+    } else if (diff > 0) {
+      GamePiece type = currentPickupType();
+      for (int i = 0; i < diff; i++) {
+        traderPieces.add(type);
+        if (type == GamePiece.CARROT_CAKE) cakesCollected++;
+      }
+    }
+    refreshTraderPieceNames();
+  }
+
+  private void refreshTraderPieceNames() {
+    traderPieceNames = traderPieces.stream().map(GamePiece::name).toArray(String[]::new);
   }
 
   private boolean isNearOven() {
@@ -222,18 +256,16 @@ public class ObjectiveTracker extends SubsystemBase {
         < NEAR_THRESHOLD;
   }
 
-  public boolean isTrackingRP() {
-    return DriverStation.getMatchType() == DriverStation.MatchType.Qualification;
+  private boolean isNearPantry() {
+    Translation2d robot = drive.getPose().getTranslation();
+    double scoringY = AutoAlign.Target.PANTRY.getPose(RobotUtil.isRedAlliance()).getY();
+    return Math.abs(robot.getX() - getPantryCenter().getX())
+            < HarvestHavocPantryLevel.PANTRY_HALF_WIDTH + PANTRY_SCORE_X_MARGIN
+        && Math.abs(robot.getY() - scoringY) < PANTRY_SCORE_Y_TOLERANCE;
   }
 
-  private void creditOvenDump(int pieces) {
-    if (ovenDumpIsCake) {
-      ovenCakes += pieces;
-    } else {
-      ovenCarrots += pieces;
-    }
-    ovenDumpPieces = 0;
-    ovenDumpIsCake = false;
+  public boolean isTrackingRP() {
+    return DriverStation.getMatchType() == DriverStation.MatchType.Qualification;
   }
 
   public boolean isCakeReady() {
@@ -349,9 +381,10 @@ public class ObjectiveTracker extends SubsystemBase {
       if (Math.abs(piecePose.getY() - pantryCenter.getY()) > PANTRY_DEPTH_TOLERANCE) continue;
 
       double x = piecePose.getX();
+      double dx = x - robotPose.getX();
+      double dy = piecePose.getY() - robotPose.getY();
       if (Math.abs(x - pantryCenter.getX()) > HarvestHavocPantryLevel.PANTRY_HALF_WIDTH
-          || piecePose.getTranslation().toTranslation2d().getDistance(robotPose.getTranslation())
-              > MAX_OBJ_DISTANCE) continue;
+          || dx * dx + dy * dy > MAX_OBJ_DISTANCE * MAX_OBJ_DISTANCE) continue;
 
       int level = getPantryLevel(piecePose.getZ());
       if (level < 0 || isTrackedInPantry(level, x)) continue;
@@ -363,7 +396,7 @@ public class ObjectiveTracker extends SubsystemBase {
       }
       if (seenThisLoop.add(candidate)) candidate.addSighting(x, now);
       if (candidate.sightings >= PANTRY_CONFIRMATIONS && hasPantrySlot(level)) {
-        pantry.get(level).add(candidate.x);
+        addPantryPiece(level, candidate.x);
         if (candidate.isCarrotCake) pantryCakes[candidate.level] += 1;
         pantryCandidates.remove(candidate);
       }

@@ -19,6 +19,12 @@
         {
           "type": "named",
           "data": {
+            "name": "ElevatorStow"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
             "name": "PantryToCarrot"
           }
         },
@@ -38,6 +44,12 @@
           "type": "named",
           "data": {
             "name": "ScoreL1"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "ElevatorStow"
           }
         },
         {

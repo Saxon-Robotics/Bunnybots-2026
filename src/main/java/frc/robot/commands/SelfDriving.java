@@ -292,7 +292,7 @@ public class SelfDriving {
               Command next = tree.evaluate(traversalPath);
               Logger.recordOutput(
                   "SelfDriving/TraversalPath", traversalPath.toArray(new String[0]));
-              LoggedTracer.record("SelfDriving/Decision");
+              LoggedTracer.record("LoggedTracer/SelfDriving/DecisionMS");
               return next;
             })
         .until(() -> !pickedWhileParking[0] && timeToPark.getAsBoolean())

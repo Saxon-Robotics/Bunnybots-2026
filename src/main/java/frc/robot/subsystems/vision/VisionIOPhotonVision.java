@@ -21,7 +21,7 @@ import org.photonvision.PhotonCamera;
 /** IO implementation for real PhotonVision hardware. */
 public class VisionIOPhotonVision implements VisionIO {
   protected final PhotonCamera camera;
-  protected final Transform3d robotToCamera;
+  protected final Transform3d cameraToRobot;
 
   /**
    * Creates a new VisionIOPhotonVision.
@@ -31,7 +31,7 @@ public class VisionIOPhotonVision implements VisionIO {
    */
   public VisionIOPhotonVision(String name, Transform3d robotToCamera) {
     camera = new PhotonCamera(name);
-    this.robotToCamera = robotToCamera;
+    this.cameraToRobot = robotToCamera.inverse();
   }
 
   @Override
@@ -60,7 +60,7 @@ public class VisionIOPhotonVision implements VisionIO {
 
         // Calculate robot pose
         Transform3d fieldToCamera = multitagResult.estimatedPose.best;
-        Transform3d fieldToRobot = fieldToCamera.plus(robotToCamera.inverse());
+        Transform3d fieldToRobot = fieldToCamera.plus(cameraToRobot);
         Pose3d robotPose = new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation());
 
         // Calculate average tag distance
@@ -92,7 +92,7 @@ public class VisionIOPhotonVision implements VisionIO {
               new Transform3d(tagPose.get().getTranslation(), tagPose.get().getRotation());
           Transform3d cameraToTarget = target.bestCameraToTarget;
           Transform3d fieldToCamera = fieldToTarget.plus(cameraToTarget.inverse());
-          Transform3d fieldToRobot = fieldToCamera.plus(robotToCamera.inverse());
+          Transform3d fieldToRobot = fieldToCamera.plus(cameraToRobot);
           Pose3d robotPose = new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation());
 
           // Add tag ID
@@ -122,61 +122,6 @@ public class VisionIOPhotonVision implements VisionIO {
     int i = 0;
     for (int id : tagIds) {
       inputs.tagIds[i++] = id;
-    }
-  }
-
-  public static class ObjectIOPhotonVision extends VisionIOPhotonVision implements ObjectIO {
-    /**
-     * Creates a new VisionIOPhotonVision.
-     *
-     * @param name The configured name of the camera.
-     * @param robotToCamera The 3D position of the camera relative to the robot.
-     */
-    public ObjectIOPhotonVision(String name, Transform3d robotToCamera) {
-      super(name, robotToCamera);
-    }
-
-    @Override
-    public void updateInputs(VisionIOInputs inputs) {}
-
-    @Override
-    public void updateInputs(ObjectIOInputs inputs) {
-      inputs.connected = camera.isConnected();
-
-      // Read new camera observations
-      List<ObjectObservation> objectObservations = new LinkedList<>();
-      for (var result : camera.getAllUnreadResults()) {
-        // Update latest target observation
-        if (result.hasTargets()) {
-          inputs.latestTargetObservation =
-              new TargetObservation(
-                  Rotation2d.fromDegrees(result.getBestTarget().getYaw()),
-                  Rotation2d.fromDegrees(result.getBestTarget().getPitch()));
-        } else {
-          inputs.latestTargetObservation =
-              new TargetObservation(Rotation2d.kZero, Rotation2d.kZero);
-        }
-
-        // Update object observations
-        for (var target : result.targets) {
-          Transform3d cameraToTarget = target.bestCameraToTarget;
-          Transform3d robotToTarget = robotToCamera.plus(cameraToTarget);
-          objectObservations.add(
-              new ObjectObservation(
-                  result.getTimestampSeconds(),
-                  robotToTarget,
-                  target.poseAmbiguity,
-                  switch (target.objDetectId) {
-                    case 0 -> ObjectObservationType.CARROT;
-                    case 1 -> ObjectObservationType.CARROT_CAKE;
-                    case 2 -> ObjectObservationType.FOREIGN_ROBOT;
-                    default -> ObjectObservationType.INVALID;
-                  }));
-        }
-      }
-
-      // Save observations to inputs object
-      inputs.objectObservations = objectObservations.toArray(new ObjectObservation[0]);
     }
   }
 }

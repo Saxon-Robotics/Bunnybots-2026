@@ -90,7 +90,7 @@ public final class PhoenixUtil {
     if (rioSignals.length > 0) {
       BaseStatusSignal.refreshAll(rioSignals);
     }
-    LoggedTracer.record("Phoenix/SignalRefresh");
+    LoggedTracer.record("LoggedTracer/Phoenix/SignalRefreshMS");
   }
 
   public static class TalonFXMotorControllerSim implements SimulatedMotorController {

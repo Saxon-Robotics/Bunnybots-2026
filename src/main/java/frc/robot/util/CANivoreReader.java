@@ -14,13 +14,24 @@ import org.littletonrobotics.junction.Logger;
 
 public class CANivoreReader {
   private final CANBus canBus;
-  private final String logPrefix;
+  private final String statusKey;
+  private final String utilizationKey;
+  private final String offCountKey;
+  private final String txFullCountKey;
+  private final String receiveErrorCountKey;
+  private final String transmitErrorCountKey;
   private final Thread thread;
   private Optional<CANBusStatus> status = Optional.empty();
 
   public CANivoreReader(String canBusName) {
     canBus = new CANBus(canBusName);
-    logPrefix = "CANivoreStatus/" + canBusName + "/";
+    String logPrefix = "CANivoreStatus/" + canBusName + "/";
+    statusKey = logPrefix + "Status";
+    utilizationKey = logPrefix + "Utilization";
+    offCountKey = logPrefix + "OffCount";
+    txFullCountKey = logPrefix + "TxFullCount";
+    receiveErrorCountKey = logPrefix + "ReceiveErrorCount";
+    transmitErrorCountKey = logPrefix + "TransmitErrorCount";
     thread =
         new Thread(
             () -> {
@@ -47,12 +58,12 @@ public class CANivoreReader {
   public void logStatus() {
     var canivoreStatus = getStatus();
     if (canivoreStatus.isPresent()) {
-      Logger.recordOutput(logPrefix + "Status", canivoreStatus.get().Status.getName());
-      Logger.recordOutput(logPrefix + "Utilization", canivoreStatus.get().BusUtilization);
-      Logger.recordOutput(logPrefix + "OffCount", canivoreStatus.get().BusOffCount);
-      Logger.recordOutput(logPrefix + "TxFullCount", canivoreStatus.get().TxFullCount);
-      Logger.recordOutput(logPrefix + "ReceiveErrorCount", canivoreStatus.get().REC);
-      Logger.recordOutput(logPrefix + "TransmitErrorCount", canivoreStatus.get().TEC);
+      Logger.recordOutput(statusKey, canivoreStatus.get().Status.getName());
+      Logger.recordOutput(utilizationKey, canivoreStatus.get().BusUtilization);
+      Logger.recordOutput(offCountKey, canivoreStatus.get().BusOffCount);
+      Logger.recordOutput(txFullCountKey, canivoreStatus.get().TxFullCount);
+      Logger.recordOutput(receiveErrorCountKey, canivoreStatus.get().REC);
+      Logger.recordOutput(transmitErrorCountKey, canivoreStatus.get().TEC);
     }
   }
 }

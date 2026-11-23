@@ -10,6 +10,7 @@ import org.littletonrobotics.junction.Logger;
 
 public abstract class Motor<IOType extends MotorIO, InputsType extends MotorIO.MotorIOInputs> {
   protected final String name;
+  private final String encoderKey;
   protected final IOType io;
   protected final InputsType inputs;
   protected final EncoderIO encoderIO;
@@ -26,6 +27,7 @@ public abstract class Motor<IOType extends MotorIO, InputsType extends MotorIO.M
   protected Motor(
       String name, IOType io, InputsType inputs, EncoderIO encoderIO, BooleanSupplier brakeMode) {
     this.name = name;
+    this.encoderKey = name + "/Encoder";
     this.io = io;
     this.inputs = inputs;
     this.encoderIO = encoderIO;
@@ -54,7 +56,7 @@ public abstract class Motor<IOType extends MotorIO, InputsType extends MotorIO.M
    */
   public void periodic() {
     encoderIO.updateInputs(encoderInputs);
-    Logger.processInputs(name + "/Encoder", encoderInputs);
+    Logger.processInputs(encoderKey, encoderInputs);
 
     double highestTemp = inputs.tempCelsius;
     for (double temp : inputs.followerTempCelsius) {
@@ -93,7 +95,7 @@ public abstract class Motor<IOType extends MotorIO, InputsType extends MotorIO.M
   public Angle getAbsolutePosition(boolean refresh) {
     if (refresh) {
       encoderIO.updateInputs(encoderInputs);
-      Logger.processInputs(name + "/Encoder", encoderInputs);
+      Logger.processInputs(encoderKey, encoderInputs);
     }
     return encoderInputs.absolutePosition;
   }

@@ -34,5 +34,6 @@ public final class GripperConstants {
   public static final double VELOCITY_THRESHOLD = 0.5; // placeholder
   public static final double STATOR_THRESHOLD = 10; // placeholder
   public static final double OUTTAKE_TIMEOUT = 0.75;
+  public static final double AUTO_INTAKE_TIMEOUT = 2.0;
   public static final double SPUN_UP_RPS = RPS / 2.0;
 }

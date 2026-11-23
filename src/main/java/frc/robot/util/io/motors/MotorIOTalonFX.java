@@ -13,6 +13,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import edu.wpi.first.math.Pair;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.*;
 import edu.wpi.first.wpilibj.Notifier;
 import frc.robot.util.PhoenixUtil;
@@ -199,15 +200,15 @@ public class MotorIOTalonFX implements AutoCloseable, RollerIO, PivotIO, LinearS
 
   @Override
   public void updateInputs(PivotIOInputs inputs) {
-    inputs.positionDeg = position.getValue().in(Degrees);
-    inputs.velocityDegPerSec = velocity.getValue().in(DegreesPerSecond);
+    inputs.positionDeg = Units.rotationsToDegrees(position.getValueAsDouble());
+    inputs.velocityDegPerSec = Units.rotationsToDegrees(velocity.getValueAsDouble());
     updateMotorInputs(inputs);
   }
 
   @Override
   public void updateInputs(LinearSystemIOInputs inputs) {
-    inputs.positionRad = position.getValue().in(Radians);
-    inputs.velocityRadPerSec = velocity.getValue().in(RadiansPerSecond);
+    inputs.positionRad = Units.rotationsToRadians(position.getValueAsDouble());
+    inputs.velocityRadPerSec = Units.rotationsToRadians(velocity.getValueAsDouble());
     updateMotorInputs(inputs);
   }
 

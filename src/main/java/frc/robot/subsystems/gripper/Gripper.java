@@ -64,7 +64,7 @@ public class Gripper extends SubsystemBase {
     topDisconnectedAlert.set(!roller.isConnected());
     bottomDisconnectedAlert.set(!roller.getFollowerConnected()[0]);
 
-    LoggedTracer.record("Gripper/Periodic");
+    LoggedTracer.record("LoggedTracer/Gripper/PeriodicMS");
   }
 
   public Command intake() {

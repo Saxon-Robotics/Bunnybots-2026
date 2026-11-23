@@ -134,6 +134,12 @@ public class Drive extends ExtendedSubsystem implements Vision.VisionConsumer {
   private final GyroIO gyroIO;
   private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
   private final Module[] modules = new Module[4]; // FL, FR, BL, BR
+  private static final String[] MODULE_TRACER_KEYS = {
+    "LoggedTracer/Drive/Module0/PeriodicMS",
+    "LoggedTracer/Drive/Module1/PeriodicMS",
+    "LoggedTracer/Drive/Module2/PeriodicMS",
+    "LoggedTracer/Drive/Module3/PeriodicMS"
+  };
   private final SysIdRoutine sysId;
   private final Alert gyroDisconnectedAlert =
       new Alert("Disconnected gyro, using kinematics as fallback.", AlertType.kError);
@@ -141,16 +147,22 @@ public class Drive extends ExtendedSubsystem implements Vision.VisionConsumer {
   private final SwerveDriveKinematics kinematics =
       new SwerveDriveKinematics(getModuleTranslations());
   private Rotation2d rawGyroRotation = new Rotation2d();
+  private final SwerveModulePosition[] modulePositions = {
+    new SwerveModulePosition(),
+    new SwerveModulePosition(),
+    new SwerveModulePosition(),
+    new SwerveModulePosition()
+  };
   private final SwerveModulePosition[] lastModulePositions = // For delta tracking
-      new SwerveModulePosition[] {
-        new SwerveModulePosition(),
-        new SwerveModulePosition(),
-        new SwerveModulePosition(),
-        new SwerveModulePosition()
-      };
+      {
+    new SwerveModulePosition(),
+    new SwerveModulePosition(),
+    new SwerveModulePosition(),
+    new SwerveModulePosition()
+  };
   private final SwerveDrivePoseEstimator poseEstimator =
       new SwerveDrivePoseEstimator(
-          kinematics, rawGyroRotation, lastModulePositions, new Pose2d(3, 3, new Rotation2d()));
+          kinematics, rawGyroRotation, modulePositions, new Pose2d(3, 3, new Rotation2d()));
   public final Field2d field = new Field2d();
 
   private final Consumer<Pose2d> resetSimulationPoseCallBack;
@@ -242,10 +254,10 @@ public class Drive extends ExtendedSubsystem implements Vision.VisionConsumer {
     odometryLock.lock(); // Prevents odometry updates while reading data
     gyroIO.updateInputs(gyroInputs);
     Logger.processInputs("Drive/Gyro", gyroInputs);
-    LoggedTracer.record("Drive/Gyro/Update");
+    LoggedTracer.record("LoggedTracer/Drive/Gyro/UpdateMS");
     for (int i = 0; i < modules.length; i++) {
       modules[i].periodic();
-      LoggedTracer.record("Drive/Module" + i + "/Periodic");
+      LoggedTracer.record(MODULE_TRACER_KEYS[i]);
     }
     odometryLock.unlock();
 
@@ -254,17 +266,10 @@ public class Drive extends ExtendedSubsystem implements Vision.VisionConsumer {
         modules[0].getOdometryTimestamps(); // All signals are sampled together
     int sampleCount = sampleTimestamps.length;
     for (int i = 0; i < sampleCount; i++) {
-      // Read wheel positions and deltas from each module
-      SwerveModulePosition[] modulePositions = new SwerveModulePosition[4];
-      SwerveModulePosition[] moduleDeltas = new SwerveModulePosition[4];
+      // Read wheel positions from each module
       for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
-        modulePositions[moduleIndex] = modules[moduleIndex].getOdometryPositions()[i];
-        moduleDeltas[moduleIndex] =
-            new SwerveModulePosition(
-                modulePositions[moduleIndex].distanceMeters
-                    - lastModulePositions[moduleIndex].distanceMeters,
-                modulePositions[moduleIndex].angle);
         lastModulePositions[moduleIndex] = modulePositions[moduleIndex];
+        modulePositions[moduleIndex] = modules[moduleIndex].getOdometryPositions()[i];
       }
 
       // Update gyro angle
@@ -272,8 +277,8 @@ public class Drive extends ExtendedSubsystem implements Vision.VisionConsumer {
         // Use the real gyro angle
         rawGyroRotation = gyroInputs.odometryYawPositions[i];
       } else {
-        // Use the angle delta from the kinematics and module deltas
-        Twist2d twist = kinematics.toTwist2d(moduleDeltas);
+        // Use the angle delta from the kinematics and module positions
+        Twist2d twist = kinematics.toTwist2d(lastModulePositions, modulePositions);
         rawGyroRotation = rawGyroRotation.plus(new Rotation2d(twist.dtheta));
       }
 
@@ -287,7 +292,7 @@ public class Drive extends ExtendedSubsystem implements Vision.VisionConsumer {
     // Update robot pose in Field2d
     field.setRobotPose(getPose());
 
-    LoggedTracer.record("Drive/Periodic");
+    LoggedTracer.record("LoggedTracer/Drive/PeriodicMS");
   }
 
   /**
