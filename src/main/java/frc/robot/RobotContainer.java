@@ -96,10 +96,10 @@ public class RobotContainer {
         drive =
             new Drive(
                 new GyroIOPigeon2(),
-                new ModuleIOTalonFXReal(TunerConstants.FrontLeft, false),
-                new ModuleIOTalonFXReal(TunerConstants.FrontRight, false),
-                new ModuleIOTalonFXReal(TunerConstants.BackLeft, false),
-                new ModuleIOTalonFXReal(TunerConstants.BackRight, false),
+                new ModuleIOTalonFXReal(TunerConstants.FrontLeft),
+                new ModuleIOTalonFXReal(TunerConstants.FrontRight),
+                new ModuleIOTalonFXReal(TunerConstants.BackLeft),
+                new ModuleIOTalonFXReal(TunerConstants.BackRight),
                 pose -> {});
         elevator = new Elevator();
         arm = new Arm(elevator::getPositionMeters);
