@@ -165,8 +165,8 @@ public class Vision extends SubsystemBase {
         // Calculate standard deviations
         double stdDevFactor =
             Math.pow(observation.averageTagDistance(), 2.0) / observation.tagCount();
-        double linearStdDev = LINEAR_STD_DEV_BASELINE * stdDevFactor;
-        double angularStdDev = ANGULAR_STD_DEV_BASELINE * stdDevFactor;
+        double linearStdDev = LINEAR_STD_DEV_BASELINE.get() * stdDevFactor;
+        double angularStdDev = ANGULAR_STD_DEV_BASELINE.get() * stdDevFactor;
         //        if (observation.type() == PoseObservationType.MEGATAG_2) {
         //          linearStdDev *= LINEAR_STD_DEV_MEGATAG_2_FACTOR;
         //          angularStdDev *= ANGULAR_STD_DEV_MEGATAG_2_FACTOR;

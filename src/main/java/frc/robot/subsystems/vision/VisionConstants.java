@@ -6,6 +6,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Filesystem;
 import java.io.IOException;
+import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
 public final class VisionConstants {
   public static final AprilTagFieldLayout APRIL_TAG_LAYOUT;
@@ -25,6 +26,7 @@ public final class VisionConstants {
   public static final String CAMERA_1_NAME = "SideLeft";
   public static final String CAMERA_2_NAME = "SideRight";
   public static final String CAMERA_3_NAME = "Rear";
+  public static final String OD_CAMERA_0_NAME = "OD_Elevator";
 
   // Robot to camera transforms
   // (Not used by EagleEye, configure in web UI instead)
@@ -64,11 +66,11 @@ public final class VisionConstants {
               Units.degreesToRadians(-10), // roll
               Units.degreesToRadians(-22.5), // pitch
               Units.degreesToRadians(180.0 - 35.0))); // yaw
-  public static final Transform3d CAMERA_4_BASE_OFFSET =
+  public static final Transform3d OD_CAMERA_0_BASE_OFFSET =
       new Transform3d(
-          Units.inchesToMeters(0), // x, forward
-          Units.inchesToMeters(0), // y, left
-          Units.inchesToMeters(0), // z, elevator stowed height
+          Units.inchesToMeters(7.117), // x, forward
+          Units.inchesToMeters(5.5), // y, left
+          Units.inchesToMeters(45.534), // z, elevator stowed height
           new Rotation3d(
               Units.degreesToRadians(0), // roll
               Units.degreesToRadians(30), // pitch
@@ -81,8 +83,10 @@ public final class VisionConstants {
 
   // Standard deviation baselines, for 1-meter distance and 1 tag
   // (Adjusted automatically based on distance and # of tags)
-  public static final double LINEAR_STD_DEV_BASELINE = 0.055; // Meters
-  public static final double ANGULAR_STD_DEV_BASELINE = 0.3; // Radians
+  public static final LoggedNetworkNumber LINEAR_STD_DEV_BASELINE =
+      new LoggedNetworkNumber("/Tuning/Vision/LinearStdDevBaseline", 0.055); // Meters
+  public static final LoggedNetworkNumber ANGULAR_STD_DEV_BASELINE =
+      new LoggedNetworkNumber("/Tuning/Vision/AngularStdDevBaseline", 0.3); // Radians
 
   // Standard deviation multipliers for each camera
   // (Adjust to trust some cameras more than others)

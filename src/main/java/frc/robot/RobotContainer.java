@@ -10,6 +10,8 @@ import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
@@ -30,6 +32,7 @@ import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOTalonFXReal;
 import frc.robot.subsystems.drive.ModuleIOTalonFXSim;
 import frc.robot.subsystems.elevator.Elevator;
+import frc.robot.subsystems.elevator.ElevatorConstants;
 import frc.robot.subsystems.gripper.Gripper;
 import frc.robot.subsystems.gripper.GripperConstants;
 import frc.robot.subsystems.objectivetracker.ObjectiveTracker;
@@ -98,21 +101,36 @@ public class RobotContainer {
                 new ModuleIOTalonFXReal(TunerConstants.BackLeft, false),
                 new ModuleIOTalonFXReal(TunerConstants.BackRight, false),
                 pose -> {});
-        vision =
-            new Vision(
-                drive,
-                new VisionIOPhotonVision(
-                    VisionConstants.CAMERA_0_NAME, VisionConstants.CAMERA_0_OFFSET),
-                new VisionIOPhotonVision(
-                    VisionConstants.CAMERA_1_NAME, VisionConstants.CAMERA_1_OFFSET),
-                new VisionIOPhotonVision(
-                    VisionConstants.CAMERA_2_NAME, VisionConstants.CAMERA_2_OFFSET),
-                new VisionIOPhotonVision(
-                    VisionConstants.CAMERA_3_NAME, VisionConstants.CAMERA_3_OFFSET));
         elevator = new Elevator();
         arm = new Arm(elevator::getPositionMeters);
         gripper = new Gripper();
         trader = new Trader();
+        vision =
+            new Vision(
+                drive,
+                new VisionIO[] {
+                  new VisionIOPhotonVision(
+                      VisionConstants.CAMERA_0_NAME, VisionConstants.CAMERA_0_OFFSET),
+                  new VisionIOPhotonVision(
+                      VisionConstants.CAMERA_1_NAME, VisionConstants.CAMERA_1_OFFSET),
+                  new VisionIOPhotonVision(
+                      VisionConstants.CAMERA_2_NAME, VisionConstants.CAMERA_2_OFFSET),
+                  new VisionIOPhotonVision(
+                      VisionConstants.CAMERA_3_NAME, VisionConstants.CAMERA_3_OFFSET)
+                },
+                new ObjectIO[] {
+                  new ObjectIOPhotonVision(
+                      VisionConstants.OD_CAMERA_0_NAME,
+                      () ->
+                          VisionConstants.OD_CAMERA_0_BASE_OFFSET.plus(
+                              new Transform3d(
+                                  0,
+                                  0,
+                                  // manually calculate stage 1 height so we don't have to divide
+                                  // given carriage height by two every cycle
+                                  elevator.getPositionRad() * ElevatorConstants.DRUM_RADIUS,
+                                  Rotation3d.kZero)))
+                });
         sim = null;
       }
       case SIM -> {
