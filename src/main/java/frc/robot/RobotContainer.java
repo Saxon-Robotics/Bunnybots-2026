@@ -48,6 +48,7 @@ import frc.robot.util.sim.SimulationManager;
 import java.io.File;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
+import java.util.function.UnaryOperator;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.Logger;
@@ -554,26 +555,19 @@ public class RobotContainer {
       // main elevator controls
       // since neutral strum is the default state, don't let it fire an onTrue command when the
       // operator lets go of the strum bar without repressing the fret
+      UnaryOperator<Command> neutralOnly =
+          command ->
+              // this is jank but needed to prevent accidental subsystem requirements
+              Commands.deferredProxy(
+                  () -> neutralStrumBar.getAsBoolean() ? command : Commands.none());
       guitarHeroController
           .green()
           .and(guitarHeroControls)
-          .whileTrue(groundIntake.onlyIf(neutralStrumBar));
-      guitarHeroController
-          .red()
-          .and(guitarHeroControls)
-          .onTrue(rampElevator.onlyIf(neutralStrumBar));
-      guitarHeroController
-          .yellow()
-          .and(guitarHeroControls)
-          .onTrue(l1Elevator.onlyIf(neutralStrumBar));
-      guitarHeroController
-          .blue()
-          .and(guitarHeroControls)
-          .onTrue(l2Elevator.onlyIf(neutralStrumBar));
-      guitarHeroController
-          .orange()
-          .and(guitarHeroControls)
-          .onTrue(l3Elevator.onlyIf(neutralStrumBar));
+          .whileTrue(neutralOnly.apply(groundIntake));
+      guitarHeroController.red().and(guitarHeroControls).onTrue(neutralOnly.apply(rampElevator));
+      guitarHeroController.yellow().and(guitarHeroControls).onTrue(neutralOnly.apply(l1Elevator));
+      guitarHeroController.blue().and(guitarHeroControls).onTrue(neutralOnly.apply(l2Elevator));
+      guitarHeroController.orange().and(guitarHeroControls).onTrue(neutralOnly.apply(l3Elevator));
       // elevator backup controls
       guitarHeroController
           .green()

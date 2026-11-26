@@ -19,7 +19,7 @@ public final class GripperConstants {
       new TalonFXConfiguration()
           .withCurrentLimits(
               new CurrentLimitsConfigs()
-                  .withStatorCurrentLimit(30)
+                  .withStatorCurrentLimit(40)
                   .withSupplyCurrentLimit(40)
                   .withStatorCurrentLimitEnable(true)
                   .withSupplyCurrentLimitEnable(true))
