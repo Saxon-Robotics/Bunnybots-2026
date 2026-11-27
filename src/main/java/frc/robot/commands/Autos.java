@@ -22,7 +22,7 @@ public class Autos {
               default -> Commands.none();
             })
         .andThen(
-            SuperstructureCommands.outtake(elevator, arm, gripper)
+            SuperstructureCommands.outtake(arm, gripper)
                 .withTimeout(GripperConstants.OUTTAKE_TIMEOUT))
         .andThen(elevator.stow());
   }

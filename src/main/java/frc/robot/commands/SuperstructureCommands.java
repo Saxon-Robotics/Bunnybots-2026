@@ -17,20 +17,11 @@ public class SuperstructureCommands {
     return elevator.stow().andThen(arm.ground().alongWith(gripper.intake()));
   }
 
-  public static Command outtake(Elevator elevator, Arm arm, Gripper gripper) {
-    return Commands.either(arm.pantry(), arm.oven(), () -> elevator.getSetpoint().scoringIndex > 0)
+  public static Command outtake(Arm arm, Gripper gripper) {
+    return arm.outtake()
         .alongWith(
             Commands.waitUntil(arm::hasReachedSetpoint)
                 .withTimeout(WAIT_TIMEOUT_SEC)
                 .andThen(gripper.eject()));
-  }
-
-  public static Command timedOuttake(
-      Elevator elevator, Arm arm, Gripper gripper, double ejectTimeoutSec) {
-    return Commands.deadline(
-        Commands.waitUntil(arm::hasReachedSetpoint)
-            .withTimeout(WAIT_TIMEOUT_SEC)
-            .andThen(gripper.eject().withTimeout(ejectTimeoutSec)),
-        Commands.either(arm.pantry(), arm.oven(), () -> elevator.getSetpoint().scoringIndex > 0));
   }
 }

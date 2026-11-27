@@ -36,8 +36,12 @@ import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 public class SelfDriving {
   private DecisionTree.Node tree = DecisionTree.EMPTY;
 
+  private final ObjectiveTracker tracker;
   private final Drive drive;
   private final Elevator elevator;
+  private final Arm arm;
+  private final Gripper gripper;
+  private final Trader trader;
   private final BooleanSupplier timeToPark;
   private final LoggedNetworkBoolean holdForDinner =
       new LoggedNetworkBoolean("/SmartDashboard/SelfDriving/HoldForDinner", false);
@@ -49,14 +53,18 @@ public class SelfDriving {
       Arm arm,
       Gripper gripper,
       Trader trader) {
+    this.tracker = tracker;
     this.drive = drive;
     this.elevator = elevator;
+    this.arm = arm;
+    this.gripper = gripper;
+    this.trader = trader;
 
-    Command scoreL1 = scorePantry(0, tracker, drive, elevator, arm, gripper).withName("Score L1");
-    Command scoreL2 = scorePantry(1, tracker, drive, elevator, arm, gripper).withName("Score L2");
-    Command scoreL3 = scorePantry(2, tracker, drive, elevator, arm, gripper).withName("Score L3");
+    Command scoreL1 = scorePantry(0).withName("Score L1");
+    Command scoreL2 = scorePantry(1).withName("Score L2");
+    Command scoreL3 = scorePantry(2).withName("Score L3");
     Command scoreOven =
-        driveAndAlign(drive, OVEN)
+        driveAndAlign(OVEN)
             .andThen(
                 trader
                     .eject()
@@ -65,7 +73,7 @@ public class SelfDriving {
             .andThen(Commands.waitSeconds(OVEN_CREDIT_SECONDS))
             .withName("Score Oven");
     Command collectRamp =
-        driveAndAlign(drive, RAMP)
+        driveAndAlign(RAMP)
             .andThen(
                 SuperstructureCommands.intake(arm, gripper)
                     .until(gripper::isLoaded)
@@ -85,22 +93,17 @@ public class SelfDriving {
             .until(gripper::isLoaded)
             .withName("Collect Ground");
     Command traderCollectDepot =
-        driveAndAlign(drive, DEPOT)
-            .andThen(waitForPieceLimit(gripper, trader))
-            .withName("Collect Depot - Trader");
-    Command elevatorCollectDepot =
-        gripperDepotIntake(drive, elevator, gripper, trader).withName("Collect Depot - Elevator");
+        driveAndAlign(DEPOT).andThen(waitForPieceLimit()).withName("Collect Depot - Trader");
+    Command elevatorCollectDepot = gripperDepotIntake().withName("Collect Depot - Elevator");
     Command collectDepotMixed =
-        gripperDepotIntake(drive, elevator, gripper, trader)
-            .andThen(waitForPieceLimit(gripper, trader))
-            .withName("Collect Depot - Mixed");
+        gripperDepotIntake().andThen(waitForPieceLimit()).withName("Collect Depot - Mixed");
     Command stageCenter =
         drive
             .defer(() -> drive.pathfindToPose(stagePose()))
             .andThen(Commands.run(drive::stop, drive).onlyWhile(DriverStation::isAutonomousEnabled))
             .withName("Stage Center");
     Command park =
-        driveAndAlign(drive, TABLE)
+        driveAndAlign(TABLE)
             .alongWith(elevator.stow())
             .andThen(Commands.run(drive::stop, drive))
             .withName("Park");
@@ -122,8 +125,7 @@ public class SelfDriving {
         "gripperHasCake", () -> tracker.getGripperHeld() == GamePiece.CARROT_CAKE);
     DecisionTree.registerCondition("traderLoaded", trader::isLoaded);
     DecisionTree.registerCondition("traderFull", trader::isFull);
-    DecisionTree.registerCondition(
-        "atPieceLimit", () -> heldCount(gripper, trader) >= MAX_GAME_PIECES);
+    DecisionTree.registerCondition("atPieceLimit", () -> heldCount() >= MAX_GAME_PIECES);
 
     DecisionTree.registerCondition("cakeReady", tracker::isCakeReady);
     DecisionTree.registerCondition("trackingRP", tracker::isTrackingRP);
@@ -175,18 +177,17 @@ public class SelfDriving {
     return DriverStation.isTeleopEnabled() && matchTime >= 0.0 && matchTime <= ENDGAME_SECONDS;
   }
 
-  private static int heldCount(Gripper gripper, Trader trader) {
+  private int heldCount() {
     return trader.getNumGamePieces() + (gripper.isLoaded() ? 1 : 0);
   }
 
-  private static Command waitForPieceLimit(Gripper gripper, Trader trader) {
-    return Commands.waitUntil(() -> heldCount(gripper, trader) >= MAX_GAME_PIECES)
+  private Command waitForPieceLimit() {
+    return Commands.waitUntil(() -> heldCount() >= MAX_GAME_PIECES)
         .withTimeout(DEPOT_WAIT_TIMEOUT_SECONDS);
   }
 
-  private Command gripperDepotIntake(
-      Drive drive, Elevator elevator, Gripper gripper, Trader trader) {
-    return driveAndAlign(drive, DEPOT)
+  private Command gripperDepotIntake() {
+    return driveAndAlign(DEPOT)
         .andThen(
             gripper
                 .intake()
@@ -233,7 +234,7 @@ public class SelfDriving {
     return matchTime > needed;
   }
 
-  private Command driveAndAlign(Drive drive, Target target) {
+  private Command driveAndAlign(Target target) {
     return drive
         .defer(() -> drive.pathfindToPose(AutoAlign.setTarget(target, drive.getPose())))
         .andThen(
@@ -241,7 +242,7 @@ public class SelfDriving {
                 .withTimeout(ALIGN_TIMEOUT_SECONDS));
   }
 
-  private Command driveAndAlign(Drive drive, Target target, Pose2d pose) {
+  private Command driveAndAlign(Target target, Pose2d pose) {
     return drive
         .pathfindToPose(pose)
         .andThen(() -> AutoAlign.setTargetPose(target, pose))
@@ -250,13 +251,7 @@ public class SelfDriving {
                 .withTimeout(ALIGN_TIMEOUT_SECONDS));
   }
 
-  private Command scorePantry(
-      int level,
-      ObjectiveTracker tracker,
-      Drive drive,
-      Elevator elevator,
-      Arm arm,
-      Gripper gripper) {
+  private Command scorePantry(int level) {
     if (level < 0 || level > 2) {
       throw new IllegalArgumentException("Invalid pantry level: " + level);
     }
@@ -270,14 +265,14 @@ public class SelfDriving {
                 case 1 -> elevator.l2();
                 default -> elevator.l3();
               };
-          return driveAndAlign(drive, PANTRY, pose)
+          return driveAndAlign(PANTRY, pose)
               .andThen(raiseElevator.withTimeout(ELEVATOR_TIMEOUT_SECONDS))
               .andThen(
                   Commands.deadline(
                       Commands.waitUntil(arm::hasReachedSetpoint)
                           .withTimeout(ARM_TIMEOUT_SECONDS)
                           .andThen(gripper.eject().withTimeout(GripperConstants.OUTTAKE_TIMEOUT)),
-                      arm.pantry()))
+                      arm.outtake()))
               .andThen(elevator.stow());
         },
         Set.of(drive, elevator, arm, gripper));

@@ -344,8 +344,7 @@ public class RobotContainer {
     Command groundIntake =
         SuperstructureCommands.intakeFromGround(elevator, arm, gripper).withName("Ground Intake");
     Command gripperIntake = SuperstructureCommands.intake(arm, gripper).withName("Gripper Intake");
-    Command gripperEject =
-        SuperstructureCommands.outtake(elevator, arm, gripper).withName("Gripper Eject");
+    Command gripperEject = SuperstructureCommands.outtake(arm, gripper).withName("Gripper Eject");
 
     /* Trader commands */
     Command traderEject = trader.eject().withName("Trader Eject");
@@ -461,10 +460,9 @@ public class RobotContainer {
             .andThen(DriveCommands.alignToTarget(drive, AutoAlign::getLastAPTarget));
 
     Command scorePantry =
-        Commands.sequence(
-            pantryAlign,
-            SuperstructureCommands.timedOuttake(
-                elevator, arm, gripper, GripperConstants.OUTTAKE_TIMEOUT));
+        pantryAlign.andThen(
+            SuperstructureCommands.outtake(arm, gripper)
+                .withTimeout(GripperConstants.OUTTAKE_TIMEOUT));
     Command scoreOven =
         Commands.sequence(ovenAlign, trader.eject().until(() -> !trader.isLoaded()));
     Command intakeFromRamp =
@@ -536,8 +534,7 @@ public class RobotContainer {
           SuperstructureCommands.intakeFromGround(elevator, arm, gripper).withName("Ground Intake");
       Command gripperIntake =
           SuperstructureCommands.intake(arm, gripper).withName("Gripper Intake");
-      Command gripperEject =
-          SuperstructureCommands.outtake(elevator, arm, gripper).withName("Gripper Eject");
+      Command gripperEject = SuperstructureCommands.outtake(arm, gripper).withName("Gripper Eject");
       Command deployTongue = arm.tongue().withName("Tongue Deploy");
       Command disableArm = arm.release().withName("Arm Disable");
 

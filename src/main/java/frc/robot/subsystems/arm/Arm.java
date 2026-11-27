@@ -149,19 +149,11 @@ public class Arm extends ExtendedSubsystem {
     runSetpoint(Setpoint.STOWED);
   }
 
-  public Command ramp() {
-    return startEnd(() -> runSetpoint(Setpoint.RAMP), this::stow);
-  }
-
   public Command ground() {
     return startEnd(() -> runSetpoint(Setpoint.GROUND), this::stow);
   }
 
-  public Command oven() {
-    return startEnd(() -> runSetpoint(Setpoint.OVEN), this::stow);
-  }
-
-  public Command pantry() {
+  public Command outtake() {
     return startEnd(() -> runSetpoint(Setpoint.PANTRY), this::stow);
   }
 
